@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFrameworks>net7.0-windows;net48</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <UseWindowsForms>True</UseWindowsForms>
+    <ApplicationIcon>Icon.ico</ApplicationIcon>
+    <Title>Explorer Tab Utility</Title>
+    <Authors>w4po</Authors>
+    <Company>$(AssemblyName)</Company>
+    <Description>Explorer Tab Utility: Force new windows to tabs. Streamline navigation!</Description>
+    <Copyright>Copyright © 2023 @w4po</Copyright>
+    <PackageProjectUrl>https://github.com/w4po/ExplorerTabUtility</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/w4po/ExplorerTabUtility</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FlaUI.UIA3" Version="4.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+</Project>
