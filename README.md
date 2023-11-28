@@ -58,7 +58,7 @@ To prevent having multiple Explorer windows opened like this:
 
 1. There is a slight delay when a new File Explorer window is opened before we can hide it and extract the location and the selected files.
 
-2. When a File Explorer is alredy opened in the given directory, Windows just focuses the existing window instead of creating a new one and thus our approach doesn't work.
+2. When a File Explorer is already opened in the given directory, Windows just focuses the existing window instead of creating a new one and thus our approach doesn't work.
 
     *Technically, there is a Window Focused/Activated Event that can detect that, but the user selecting the window could also fire it, which won't be great for normal usage of the File Explorer when needed.*
 
