@@ -84,6 +84,7 @@ public class UiAutomation : IDisposable
                 location = addressBar.Patterns.Value.Pattern.Value.Value;
                 if (string.IsNullOrWhiteSpace(location)) return;
             }
+            location = Helper.GetFullPath(location);
 
             var tab = element.FindFirstChild(c => c.ByClassName("ShellTabWindowClass"));
 
