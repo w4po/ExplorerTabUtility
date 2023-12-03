@@ -7,6 +7,8 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <UseWindowsForms>True</UseWindowsForms>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
+	<Version>1.1.0</Version>
+	<LangVersion>latest</LangVersion>
     <Title>Explorer Tab Utility</Title>
     <Authors>w4po</Authors>
     <Company>$(AssemblyName)</Company>

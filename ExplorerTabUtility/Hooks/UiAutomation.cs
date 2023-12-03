@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using FlaUI.Core.AutomationElements;
@@ -49,18 +48,15 @@ public class UiAutomation : IDisposable
         if (_cache.Contains(hWnd)) return;
         _cache.Add(hWnd);
 
-        WinApi.GetWindowRect(hWnd, out var originalRect);
-        // Move the window outside the screen (Hide)
-        WinApi.SetWindowPos(hWnd, IntPtr.Zero, -1000, -1000, 0, 0, WinApi.SWP_NOSIZE | WinApi.SWP_NOZORDER);
+        var originalRect = HideWindow(hWnd);
         var showAgain = true;
         try
         {
-            // a new "This PC" window (unless the opened folder is called "This PC"?)
+            // A new "This PC" window (unless the opened folder is called "This PC"?)
             if (string.Equals(element.Name, "This PC"))
             {
-                // the window suppose to have only one tab, so we should be okay.
-                CloseRandomTabOfAWindow(element);
-                _onNewWindow.Invoke(new Window(string.Empty));
+                CloseAndNotifyNewWindow(element, new Window(string.Empty, oldWindowHandle: hWnd));
+                showAgain = false;
                 return;
             }
 
@@ -69,38 +65,47 @@ public class UiAutomation : IDisposable
 
             // We have to invoke the suggestBox to populate the address bar :(
             suggestBox.Patterns.Invoke.Pattern.Invoke();
-            Thread.Sleep(50);
 
             // Invoke searchBox to hide the suggestPopup window.
             searchBox.Patterns.Invoke.Pattern.Invoke();
-            Thread.Sleep(50);
 
-            var location = addressBar.Patterns.Value.Pattern.Value.Value;
+            var location = Helper.DoUntilCondition(
+                action: () => addressBar.Patterns.Value.Pattern.Value.Value,
+                predicate: l => !string.IsNullOrWhiteSpace(l));
 
             if (string.IsNullOrWhiteSpace(location))
+                return;
+
+            // ("Home") For English version.
+            if (string.Equals(location, "Home"))
             {
-                // Hmm... Let's try one more time.
-                Thread.Sleep(300);
-                location = addressBar.Patterns.Value.Pattern.Value.Value;
-                if (string.IsNullOrWhiteSpace(location)) return;
+                CloseAndNotifyNewWindow(element, new Window(string.Empty, oldWindowHandle: hWnd));
+                showAgain = false;
+                return;
             }
-            location = Helper.GetFullPath(location);
 
             var tab = element.FindFirstChild(c => c.ByClassName("ShellTabWindowClass"));
 
             var folderView = tab?.FindFirstDescendant(c => c.ByClassName("UIItemsView"));
-            if (folderView == null) return;
+            if (folderView == default)
+            {
+                // ("Home") For non English versions.
+                var home = tab?.FindFirstDescendant(c => c.ByClassName("HomeListView"));
+                if (home == default) return;
 
-            var selectedNames = folderView.Patterns.Selection.Pattern.Selection.Value?
-                .Select(s => s.Name).ToList();
+                CloseAndNotifyNewWindow(element, new Window(string.Empty, oldWindowHandle: hWnd));
+                showAgain = false;
+                return;
+            }
+
+            var selectedNames = folderView.Patterns.Selection.Pattern.Selection.Value
+                ?.Select(s => s.Name)
+                .ToList();
 
             var tabHWnd = tab!.Properties.NativeWindowHandle.Value;
 
-            // the window suppose to have only one tab, so we should be okay.
-            CloseRandomTabOfAWindow(element);
+            CloseAndNotifyNewWindow(element, new Window(location, selectedNames, hWnd, tabHWnd));
             showAgain = false;
-
-            _onNewWindow.Invoke(new Window(location, selectedNames, hWnd, tabHWnd));
         }
         finally
         {
@@ -108,7 +113,6 @@ public class UiAutomation : IDisposable
             if (showAgain)
                 WinApi.SetWindowPos(hWnd, IntPtr.Zero, originalRect.Left, originalRect.Top, 0, 0, WinApi.SWP_NOSIZE | WinApi.SWP_NOZORDER);
         }
-
     }
     public static AutomationElement? FromHandle(IntPtr hWnd) => Automation.FromHandle(hWnd);
     public static void AddNewTab(AutomationElement windowElement)
@@ -143,35 +147,18 @@ public class UiAutomation : IDisposable
         GetHeaderElements(windowElement, out var suggestBox, out var searchBox, out var addressBar);
         if (suggestBox == default || searchBox == default || addressBar == default) return;
 
-        // Set location
+        suggestBox.Patterns.Invoke.Pattern.Invoke();
         addressBar.Patterns.Value.Pattern.SetValue(location);
 
         // We have to invoke the suggestBox to Navigate :(
         suggestBox.Patterns.Invoke.Pattern.Invoke();
-        Thread.Sleep(50);
 
         // Invoke searchBox to hide the suggestPopup window.
         searchBox.Patterns.Invoke.Pattern.Invoke();
 
-        var suggestList = Helper.DoUntilNotDefault(() => suggestBox.FindFirstChild("SuggestionsList"));
-        if (suggestList != default)
-            searchBox.Patterns.Invoke.Pattern.Invoke();
-
-        //var startTime = Stopwatch.GetTimestamp();
-        //while (Stopwatch.GetElapsedTime(startTime).TotalMilliseconds < 700)
-        //{
-        //    var suggestList = suggestBox.FindFirstChild("SuggestionsList")?.FindAllChildren();
-        //    if (suggestList == default) continue;
-
-        //    foreach (var suggestItem in suggestList)
-        //    {
-        //        if (string.Equals(suggestItem.Name, location, StringComparison.OrdinalIgnoreCase))
-        //        {
-        //            suggestItem.Patterns.Invoke.Pattern.Invoke();
-        //            return;
-        //        }
-        //    }
-        //}
+        //var suggestList = Helper.DoUntilNotDefault(() => suggestBox.FindFirstDescendant("SuggestionsList"));
+        //if (suggestList != default)
+        //    searchBox.Patterns.Invoke.Pattern.Invoke();
     }
     public static void SelectItems(AutomationElement tabElement, ICollection<string> names)
     {
@@ -224,7 +211,20 @@ public class UiAutomation : IDisposable
         suggestBox = headerBar.FindFirstChild("PART_AutoSuggestBox");
         addressBar = suggestBox?.FindFirstChild(c => c.ByName("Address Bar"));
     }
+    private static RECT HideWindow(IntPtr hWnd)
+    {
+        WinApi.GetWindowRect(hWnd, out var originalRect);
+        // Move the window outside the screen (Hide)
+        WinApi.SetWindowPos(hWnd, IntPtr.Zero, -1000, -1000, 0, 0, WinApi.SWP_NOSIZE | WinApi.SWP_NOZORDER);
+        return originalRect;
+    }
+    private void CloseAndNotifyNewWindow(AutomationElement element, Window window)
+    {
+        // the window suppose to have only one tab, so we should be okay.
+        CloseRandomTabOfAWindow(element);
 
+        _onNewWindow.Invoke(window);
+    }
 
     public void Dispose()
     {

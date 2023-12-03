@@ -145,9 +145,8 @@ public class TrayIcon : ApplicationContext
 
             UiAutomation.AddNewTab(windowElement);
 
-            // If it is just a new (This PC) window, return.
+            // If it is just a new (This PC | Home), return.
             if (string.IsNullOrWhiteSpace(window.Path)) return;
-            if (!Uri.TryCreate(window.Path, UriKind.Absolute, out var uri)) return;
 
             var newTabHandle = WinApi.ListenForNewExplorerTab(oldTabs);
             if (newTabHandle == default) return;
@@ -155,7 +154,7 @@ public class TrayIcon : ApplicationContext
             var newTabElement = UiAutomation.FromHandle(newTabHandle);
             if (newTabElement == default) return;
 
-            UiAutomation.GoToLocation(uri.LocalPath, windowElement);
+            UiAutomation.GoToLocation(window.Path, windowElement);
 
             if (window.SelectedItems is not { } selectedItems) return;
 

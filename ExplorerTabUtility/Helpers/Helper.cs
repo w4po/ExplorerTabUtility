@@ -2,13 +2,25 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.IO;
 using System.Threading;
 
 namespace ExplorerTabUtility.Helpers;
 
 public static class Helper
 {
+    public static T DoUntilCondition<T>(Func<T> action, Predicate<T> predicate, int timeMs = 500, CancellationToken cancellationToken = default)
+    {
+        var startTicks = Stopwatch.GetTimestamp();
+
+        while (!cancellationToken.IsCancellationRequested && !IsTimeUp(startTicks, timeMs))
+        {
+            var result = action.Invoke();
+            if (predicate(result))
+                return result;
+        }
+
+        return action.Invoke();
+    }
     public static T DoUntilNotDefault<T>(Func<T> action, int timeMs = 500, CancellationToken cancellationToken = default)
     {
         var startTicks = Stopwatch.GetTimestamp();
@@ -58,22 +70,5 @@ public static class Helper
             : processName;
 
         return Icon.ExtractAssociatedIcon(location);
-    }
-
-    public static string GetFullPath(string path)
-    {
-        // Check if the path contains environment variables
-        if (path.StartsWith("%") && path.EndsWith("%"))
-        {
-            // Replace environment variables with their values
-            path = Environment.ExpandEnvironmentVariables(path);
-        }
-
-        // If it has : or \, assume it's a regular path
-        if (path.Contains(":") || path.Contains("\\")) return path;
-
-        // Check if the path is a special folder
-        var fullPath = $"{Environment.GetEnvironmentVariable("USERPROFILE")}\\{path}";
-        return Directory.Exists(fullPath) ? fullPath : path;
     }
 }
