@@ -8,39 +8,60 @@ namespace ExplorerTabUtility.Helpers;
 
 public static class Helper
 {
-    public static T DoUntilCondition<T>(Func<T> action, Predicate<T> predicate, int timeMs = 500, CancellationToken cancellationToken = default)
+    public static T DoUntilNotDefault<T>(Func<T> action, int timeMs = 500, int sleepMs = 20, CancellationToken cancellationToken = default)
+    {
+        return DoUntilCondition(
+            action,
+            result => !EqualityComparer<T?>.Default.Equals(result, default),
+            timeMs,
+            sleepMs,
+            cancellationToken);
+    }
+    public static void DoUntilTimeEnd(Action action, int timeMs = 500, int sleepMs = 20, CancellationToken cancellationToken = default)
+    {
+        DoUntilCondition(action, static () => false, timeMs, sleepMs, cancellationToken);
+    }
+    public static void DoUntilCondition(Action action, Func<bool> predicate, int timeMs = 500, int sleepMs = 20, CancellationToken cancellationToken = default)
     {
         var startTicks = Stopwatch.GetTimestamp();
 
         while (!cancellationToken.IsCancellationRequested && !IsTimeUp(startTicks, timeMs))
         {
-            var result = action.Invoke();
+            action();
+            if (predicate())
+                return;
+
+            Thread.Sleep(sleepMs);
+        }
+    }
+    public static T DoUntilCondition<T>(Func<T> action, Predicate<T> predicate, int timeMs = 500, int sleepMs = 20, CancellationToken cancellationToken = default)
+    {
+        var startTicks = Stopwatch.GetTimestamp();
+
+        while (!cancellationToken.IsCancellationRequested && !IsTimeUp(startTicks, timeMs))
+        {
+            var result = action();
             if (predicate(result))
                 return result;
+
+            Thread.Sleep(sleepMs);
         }
 
-        return action.Invoke();
+        return action();
     }
-    public static T DoUntilNotDefault<T>(Func<T> action, int timeMs = 500, CancellationToken cancellationToken = default)
+    public static void DoIfCondition(Action action, Func<bool> predicate, bool justOnce = false, int timeMs = 500, int sleepMs = 20, CancellationToken cancellationToken = default)
     {
         var startTicks = Stopwatch.GetTimestamp();
 
         while (!cancellationToken.IsCancellationRequested && !IsTimeUp(startTicks, timeMs))
         {
-            var result = action.Invoke();
-            if (!EqualityComparer<T?>.Default.Equals(result, default))
-                return result;
-        }
+            if (predicate())
+            {
+                action();
 
-        return action.Invoke();
-    }
-    public static void DoUntilTimeEnd(Action action, int timeMs = 5_000, CancellationToken cancellationToken = default)
-    {
-        var startTicks = Stopwatch.GetTimestamp();
-
-        while (!cancellationToken.IsCancellationRequested && !IsTimeUp(startTicks, timeMs))
-        {
-            action.Invoke();
+                if (justOnce) return;
+            }
+            Thread.Sleep(sleepMs);
         }
     }
 

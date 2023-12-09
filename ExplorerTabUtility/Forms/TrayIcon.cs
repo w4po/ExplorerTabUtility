@@ -1,73 +1,95 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Diagnostics;
+using System.Windows.Forms;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using FlaUI.Core.AutomationElements;
 using Microsoft.Win32;
-using ExplorerTabUtility.Helpers;
 using ExplorerTabUtility.Hooks;
 using ExplorerTabUtility.Models;
 using ExplorerTabUtility.WinAPI;
+using ExplorerTabUtility.Helpers;
+using Window = ExplorerTabUtility.Models.Window;
 
 namespace ExplorerTabUtility.Forms;
 
 public class TrayIcon : ApplicationContext
 {
-    private static NotifyIcon _notifyIcon = default!;
-    private static KeyboardHook _keyboardHook = default!;
-    private static UiAutomation _uiAutomation = default!;
-    private static readonly SemaphoreSlim Limiter = new(1);
     private static IntPtr _mainWindowHandle = IntPtr.Zero;
+    private static readonly NotifyIcon NotifyIcon;
+    private static readonly Keyboard KeyboardHook;
+    private static readonly Shell32 WindowHook;
+    private static readonly SemaphoreSlim Limiter;
+    private static WindowHookVia _windowHookVia;
 
-    public TrayIcon()
+    static TrayIcon()
     {
-        _keyboardHook = new KeyboardHook(OnNewWindow);
-        _uiAutomation = new UiAutomation(OnNewWindow);
+        Limiter = new SemaphoreSlim(1);
+        WindowHook = new Shell32(OnNewWindow);
+        KeyboardHook = new Keyboard(OnNewWindow);
 
-        InitializeComponent();
+        var isKeyboardHookActive = Properties.Settings.Default.KeyboardHook;
+        var isWindowHookActive = Properties.Settings.Default.WindowHook;
+        _windowHookVia = Properties.Settings.Default.WindowViaUi
+            ? WindowHookVia.Ui
+            : WindowHookVia.Keys;
 
-        Application.ApplicationExit += OnApplicationExit;
-    }
-
-    private static void InitializeComponent()
-    {
-        var windowHMenuItem = new ToolStripMenuItem("All Windows");
-        var keyboardHMenuItem = new ToolStripMenuItem("Keyboard (Win + E)");
-        var startupMenuItem = new ToolStripMenuItem("Add to startup");
-        var exitMenuItem = new ToolStripMenuItem("Exit");
-
-        windowHMenuItem.Checked = Properties.Settings.Default.WindowHook;
-        keyboardHMenuItem.Checked = Properties.Settings.Default.KeyboardHook;
-        startupMenuItem.Checked = IsInStartup();
-
-        if (windowHMenuItem.Checked)
-            _uiAutomation.StartHook();
-
-        if (keyboardHMenuItem.Checked)
-            _keyboardHook.StartHook();
-
-        _notifyIcon = new NotifyIcon
+        NotifyIcon = new NotifyIcon
         {
             Icon = Helper.GetIcon(),
             Text = "Explorer Tab Utility: Force new windows to tabs.",
 
-            ContextMenuStrip = new ContextMenuStrip()
+            ContextMenuStrip = CreateContextMenuStrip(isKeyboardHookActive, isWindowHookActive),
+            Visible = true
         };
 
-        _notifyIcon.ContextMenuStrip.Items.Add(windowHMenuItem);
-        _notifyIcon.ContextMenuStrip.Items.Add(keyboardHMenuItem);
-        _notifyIcon.ContextMenuStrip.Items.Add(new ToolStripSeparator());
-        _notifyIcon.ContextMenuStrip.Items.Add(startupMenuItem);
-        _notifyIcon.ContextMenuStrip.Items.Add(new ToolStripSeparator());
-        _notifyIcon.ContextMenuStrip.Items.Add(exitMenuItem);
+        if (isKeyboardHookActive) KeyboardHook.StartHook();
+        if (isWindowHookActive) WindowHook.StartHook();
 
-        windowHMenuItem.Click += (_, _) => ToggleWindowHook(windowHMenuItem);
-        keyboardHMenuItem.Click += (_, _) => ToggleKeyboardHook(keyboardHMenuItem);
-        startupMenuItem.Click += (_, _) => ToggleStartup(startupMenuItem);
-        exitMenuItem.Click += (_, _) => Application.Exit();
+        Application.ApplicationExit += OnApplicationExit;
+    }
+    private static ContextMenuStrip CreateContextMenuStrip(bool isKeyboardHookActive, bool isWindowHookActive)
+    {
+        var strip = new ContextMenuStrip();
 
-        _notifyIcon.Visible = true;
+        strip.Items.Add(CreateToolStripMenuItem("Keyboard (Win + E)", isKeyboardHookActive, ToggleKeyboardHook));
+        strip.Items.Add(CreateWindowHookMenuItem(isWindowHookActive));
+
+        strip.Items.Add(new ToolStripSeparator());
+        strip.Items.Add(CreateToolStripMenuItem("Add to startup", IsInStartup(), ToggleStartup));
+
+        strip.Items.Add(new ToolStripSeparator());
+        strip.Items.Add(CreateToolStripMenuItem("Exit", false, static (_, _) => Application.Exit()));
+
+        return strip;
+    }
+    private static ToolStripMenuItem CreateWindowHookMenuItem(bool isWindowHookActive)
+    {
+        var windowHookMenuItem = CreateToolStripMenuItem("All Windows", isWindowHookActive, ToggleWindowHook);
+
+        windowHookMenuItem.DropDownItems.Add(
+            CreateToolStripMenuItem("UI (Recommended)", _windowHookVia == WindowHookVia.Ui, WindowHookViaChanged, "WindowViaUi"));
+
+        windowHookMenuItem.DropDownItems.Add(
+            CreateToolStripMenuItem("Keys", _windowHookVia == WindowHookVia.Keys, WindowHookViaChanged, "WindowViaKeys"));
+
+        return windowHookMenuItem;
+    }
+    private static ToolStripMenuItem CreateToolStripMenuItem(string text, bool isChecked, EventHandler eventHandler, string? name = default)
+    {
+        var item = new ToolStripMenuItem
+        {
+            Text = text,
+            Checked = isChecked
+        };
+
+        if (name != default)
+            item.Name = name;
+
+        item.Click += eventHandler;
+        return item;
     }
 
     private static bool IsInStartup()
@@ -81,8 +103,10 @@ public class TrayIcon : ApplicationContext
         var value = key.GetValue(Constants.AppName) as string;
         return string.Equals(value, executablePath, StringComparison.OrdinalIgnoreCase);
     }
-    private static void ToggleStartup(ToolStripMenuItem startupMenuItem)
+    private static void ToggleStartup(object? sender, EventArgs _)
     {
+        if (sender is not ToolStripMenuItem item) return;
+
         var executablePath = Process.GetCurrentProcess().MainModule?.FileName;
         if (string.IsNullOrWhiteSpace(executablePath)) return;
 
@@ -94,38 +118,66 @@ public class TrayIcon : ApplicationContext
         {
             // Remove from startup
             key.DeleteValue(Constants.AppName, false);
-            startupMenuItem.Checked = false;
+            item.Checked = false;
         }
         else
         {
             // Add to startup
             key.SetValue(Constants.AppName, executablePath);
-            startupMenuItem.Checked = true;
+            item.Checked = true;
         }
     }
-    private static void ToggleWindowHook(ToolStripMenuItem windowHMenuItem)
+    private static void ToggleKeyboardHook(object? sender, EventArgs _)
     {
-        windowHMenuItem.Checked = !windowHMenuItem.Checked;
+        if (sender is not ToolStripMenuItem item) return;
 
-        Properties.Settings.Default.WindowHook = windowHMenuItem.Checked;
+        item.Checked = !item.Checked;
+
+        Properties.Settings.Default.KeyboardHook = item.Checked;
         Properties.Settings.Default.Save();
 
-        if (windowHMenuItem.Checked)
-            _uiAutomation.StartHook();
+        if (item.Checked)
+            KeyboardHook.StartHook();
         else
-            _uiAutomation.StopHook();
+            KeyboardHook.StopHook();
     }
-    private static void ToggleKeyboardHook(ToolStripMenuItem keyboardHMenuItem)
+    private static void ToggleWindowHook(object? sender, EventArgs _)
     {
-        keyboardHMenuItem.Checked = !keyboardHMenuItem.Checked;
+        if (sender is not ToolStripMenuItem item) return;
 
-        Properties.Settings.Default.KeyboardHook = keyboardHMenuItem.Checked;
+        item.Checked = !item.Checked;
+
+        Properties.Settings.Default.WindowHook = item.Checked;
         Properties.Settings.Default.Save();
 
-        if (keyboardHMenuItem.Checked)
-            _keyboardHook.StartHook();
+        if (item.Checked)
+            WindowHook.StartHook();
         else
-            _keyboardHook.StopHook();
+            WindowHook.StopHook();
+
+        foreach (ToolStripItem subItem in item.DropDownItems)
+            subItem.Enabled = item.Checked;
+    }
+    private static void WindowHookViaChanged(object? sender, EventArgs _)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+
+        var container = item.GetCurrentParent();
+        foreach (ToolStripMenuItem radio in container.Items)
+        {
+            radio.Checked = !radio.Checked;
+
+            if (radio.Name == "WindowViaUi")
+                Properties.Settings.Default.WindowViaUi = radio.Checked;
+            else if (radio.Name == "WindowViaKeys")
+                Properties.Settings.Default.WindowViaKeys = radio.Checked;
+        }
+
+        Properties.Settings.Default.Save();
+
+        _windowHookVia = Properties.Settings.Default.WindowViaUi
+            ? WindowHookVia.Ui
+            : WindowHookVia.Keys;
     }
 
     private static async Task OnNewWindow(Window window)
@@ -141,24 +193,30 @@ public class TrayIcon : ApplicationContext
             var windowElement = UiAutomation.FromHandle(windowHandle);
             if (windowElement == default) return;
 
+            // Store currently opened Tabs, before we open a new one.
             var oldTabs = WinApi.GetAllExplorerTabs();
 
-            UiAutomation.AddNewTab(windowElement);
+            // Add new tab.
+            AddNewTab(windowElement);
 
             // If it is just a new (This PC | Home), return.
             if (string.IsNullOrWhiteSpace(window.Path)) return;
 
+            // Get newly created tab's handle (That is not in 'oldTabs')
             var newTabHandle = WinApi.ListenForNewExplorerTab(oldTabs);
-            if (newTabHandle == default) return;
+            if (newTabHandle == 0) return;
 
+            // Get the tab element out of that handle.
             var newTabElement = UiAutomation.FromHandle(newTabHandle);
             if (newTabElement == default) return;
 
-            UiAutomation.GoToLocation(window.Path, windowElement);
+            // Navigate to the target location
+            Navigate(windowElement, newTabHandle, window.Path);
 
-            if (window.SelectedItems is not { } selectedItems) return;
+            if (window.SelectedItems is not { Count: > 0 } selectedItems) return;
 
-            UiAutomation.SelectItems(newTabElement, selectedItems);
+            // Select items
+            SelectItems(newTabElement, selectedItems);
         }
         finally
         {
@@ -168,9 +226,10 @@ public class TrayIcon : ApplicationContext
             Limiter.Release();
         }
     }
+
     private static IntPtr GetMainWindowHWnd(IntPtr otherThan)
     {
-        if (WinApi.IsWindowStillHasClassName(_mainWindowHandle, "CabinetWClass"))
+        if (WinApi.IsWindowHasClassName(_mainWindowHandle, "CabinetWClass"))
             return _mainWindowHandle;
 
         var allWindows = WinApi.FindAllWindowsEx();
@@ -180,11 +239,37 @@ public class TrayIcon : ApplicationContext
 
         return _mainWindowHandle;
     }
+    private static void AddNewTab(AutomationElement window)
+    {
+        // if via UI is selected try to add a new tab with UI Automation.
+        if (_windowHookVia == WindowHookVia.Ui && UiAutomation.AddNewTab(window))
+            return;
 
+        // Via Keys is selected or UI Automation fails.
+        Keyboard.AddNewTab(window.Properties.NativeWindowHandle.Value);
+    }
+    private static void Navigate(AutomationElement window, nint tabHandle, string location)
+    {
+        // if via UI is selected try to Navigate with UI Automation.
+        if (_windowHookVia == WindowHookVia.Ui && UiAutomation.Navigate(window, tabHandle, location))
+            return;
+
+        // Via Keys is selected or UI Automation fails.
+        Keyboard.Navigate(window.Properties.NativeWindowHandle.Value, tabHandle, location);
+    }
+    private static void SelectItems(AutomationElement tab, ICollection<string> names)
+    {
+        // if via UI is selected try to Select with UI Automation.
+        if (_windowHookVia == WindowHookVia.Ui && UiAutomation.SelectItems(tab, names))
+            return;
+
+        // Via Keys is selected or UI Automation fails.
+        Keyboard.SelectItems(tab.Properties.NativeWindowHandle.Value, names);
+    }
     private static void OnApplicationExit(object? _, EventArgs __)
     {
-        _notifyIcon.Visible = false;
-        _keyboardHook.Dispose();
-        _uiAutomation.Dispose();
+        NotifyIcon.Visible = false;
+        KeyboardHook.Dispose();
+        WindowHook.Dispose();
     }
 }

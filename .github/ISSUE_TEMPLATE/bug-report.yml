@@ -1,0 +1,75 @@
+name: 🐛 Bug Report
+description: Report an issue to help improve the project.
+title: "[BUG] title"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We're sorry that you're experiencing an issue.
+        Please fill in this form to the best of your ability, So that we can help you effectively.
+  - type: checkboxes
+    id: duplicates
+    attributes:
+      label: Has this bug been raised before?
+      description: Increase the chances of your issue being accepted by ensuring it has not been raised before.
+      options:
+        - label: I have checked "open" AND "closed" issues and this is not a duplicate
+    validations:
+        required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "Describe your issue:"
+      placeholder: When I click here this happens
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: What OS do you have?
+      value: "Windows 11"
+    validations:
+      required: true
+  - type: input
+    id: edition
+    attributes:
+      label: What edition?
+      value: "Home.."
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: OS Version?
+      value: "22H2.."
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: OS Build?
+      value: "23585.xxx"
+    validations:
+      required: true
+  - type: dropdown
+    id: tweaked
+    attributes:
+      label: Have you tweaked your Windows 11 look?
+      multiple: false
+      options:
+        - "No"
+        - "Yes"
+      default: 0
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: If "Yes" to the above, please explain how or what tools you have used.
+  - type: textarea
+    attributes:
+      label: Put here any screenshots or videos (optional)
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this issue! We will get back to you as soon as possible.

@@ -12,19 +12,20 @@ namespace ExplorerTabUtility.WinAPI;
 
 public static class WinApi
 {
-    public const nint WM_KEYDOWN = 0x0100; // Key down flag
-
-    public const int KEYEVENTF_KEYUP = 0x0002; // EventKey up flag
-    public const int SW_SHOWNOACTIVATE = 4; // Show window but not activated
+    public const int EVENT_OBJECT_CREATE = 0x8000;
 
     public const int VK_WIN = 0x5B; // Windows key code
-    public const int VK_CONTROL = 0x11; // CTRL key code
     public const int VK_E = 0x45;   // E key code
-    public const int VK_T = 0x54;   // T key code
 
-    public static uint SWP_NOSIZE = 0x0001;
-    public static uint SWP_NOZORDER = 0x0004;
+    public const int WM_KEYDOWN = 0x0100; // Key down flag
+    public const int WM_SETFOCUS = 0x0007; // Set Keyboard focus
 
+    public const int SW_HIDE = 0; // Hide window
+    public const int SW_SHOWNOACTIVATE = 4; // Show window but not activated
+    public const int SWP_NOSIZE = 0x0001; // Retains the current size
+    public const int SWP_NOZORDER = 0x0004; // Retains the current Z order
+
+    public const int GW_ENABLEDPOPUP = 6; // Get the popup window owned by the specified window
 
     [DllImport("kernel32.dll")]
     public static extern nint LoadLibrary(string lpFileName);
@@ -32,6 +33,11 @@ public static class WinApi
     [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
     public static extern bool FreeLibrary(nint hModule);
 
+    [DllImport("user32.dll")]
+    public static extern nint SetWinEventHook(uint eventMin, uint eventMax, nint hmodWinEventProc, WinEventDelegate lpfnWinEventProc, uint idProcess, uint idThread, uint dwFlags);
+
+    [DllImport("user32.dll")]
+    public static extern bool UnhookWinEvent(nint hWinEventHook);
 
     [DllImport("user32.dll", SetLastError = true)]
     public static extern nint SetWindowsHookEx(WinHookType HookType, HookProc lpfn, nint hMod, uint dwThreadId);
@@ -43,18 +49,14 @@ public static class WinApi
     [DllImport("user32.dll", SetLastError = true)]
     public static extern nint CallNextHookEx(nint hhk, int nCode, nint wParam, nint lParam);
 
-    [DllImport("user32.dll")]
-    public static extern IntPtr GetShellWindow();
-
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
-
     [DllImport("user32.dll", SetLastError = true)]
     public static extern nint FindWindow(string lpClassName, string? lpWindowName);
 
     [DllImport("user32.dll", SetLastError = true)]
-    public static extern IntPtr FindWindowEx(IntPtr parentHandle, IntPtr childAfter, string className, string? windowTitle);
+    public static extern nint FindWindowEx(nint parentHandle, nint childAfter, string className, string? windowTitle);
+
+    [DllImport("user32.dll")]
+    public static extern nint GetWindow(nint hWnd, uint uCmd);
 
     [DllImport("user32.dll")]
     public static extern bool ShowWindow(nint handle, int nCmdShow);
@@ -66,45 +68,43 @@ public static class WinApi
     public static extern bool SetWindowPos(nint hWnd, nint hWndInsertAfter, int x, int Y, int cx, int cy, uint wFlags);
 
     [DllImport("user32.dll", SetLastError = true)]
-    public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+    public static extern bool GetWindowRect(nint hWnd, out RECT lpRect);
 
     [DllImport("user32.dll")]
     public static extern bool IsIconic(nint handle);
 
     [DllImport("user32.dll")]
-    public static extern uint GetWindowThreadProcessId(nint hWnd, out nint processId);
-
-    [DllImport("user32.dll")]
     public static extern uint RealGetWindowClass(nint hwnd, StringBuilder pszType, uint cchType);
 
-    [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
-    public static extern void keybd_event(uint bVk, uint bScan, uint dwFlags, uint dwExtraInfo);
+    [return: MarshalAs(UnmanagedType.Bool)]
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    public static extern bool PostMessage(nint hWnd, uint Msg, nint wParam, nint lParam);
 
-    public static IntPtr GetAnotherExplorerWindow(IntPtr currentWindow)
+    public static nint GetAnotherExplorerWindow(nint currentWindow)
     {
         return currentWindow == default
             ? FindWindow("CabinetWClass", default)
             : FindAllWindowsEx()
                 .FirstOrDefault(window => window != currentWindow);
     }
-    public static IntPtr ListenForNewExplorerTab(IReadOnlyCollection<IntPtr> currentTabs, int searchTimeMs = 1000)
+    public static nint ListenForNewExplorerTab(IReadOnlyCollection<nint> currentTabs, int searchTimeMs = 1000)
     {
-        return Helper.DoUntilNotDefault(() => 
+        return Helper.DoUntilNotDefault(() =>
                 GetAllExplorerTabs()
                     .Except(currentTabs)
                     .FirstOrDefault(),
             searchTimeMs);
     }
-    public static List<IntPtr> GetAllExplorerTabs()
+    public static List<nint> GetAllExplorerTabs()
     {
-        var tabs = new List<IntPtr>();
+        var tabs = new List<nint>();
 
         foreach (var window in FindAllWindowsEx())
             tabs.AddRange(FindAllWindowsEx("ShellTabWindowClass", window));
 
         return tabs;
     }
-    public static IEnumerable<IntPtr> FindAllWindowsEx(string className = "CabinetWClass", nint parent = 0, string? windowTitle = default)
+    public static IEnumerable<nint> FindAllWindowsEx(string className = "CabinetWClass", nint parent = 0, string? windowTitle = default)
     {
         var handle = IntPtr.Zero;
         do
@@ -119,10 +119,24 @@ public static class WinApi
     }
     
     /// <summary>
+    /// Hides the specified window by moving it outside the visible screen area.
+    /// </summary>
+    /// <param name="hWnd">The handle to the window that needs to be hidden.</param>
+    /// <returns>The original position and size of the window before it was hidden, represented as a RECT structure.</returns>
+    public static RECT HideWindow(nint hWnd)
+    {
+        GetWindowRect(hWnd, out var originalRect);
+
+        // Move the window outside the screen (Hide)
+        SetWindowPos(hWnd, IntPtr.Zero, -1000, -1000, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+        return originalRect;
+    }
+
+    /// <summary>
     /// Restores the specified window to the foreground even if it was minimized.
     /// </summary>
     /// <param name="window">The handle to the window that needs to be restored to the foreground.</param>
-    public static void RestoreWindowToForeground(IntPtr window)
+    public static void RestoreWindowToForeground(nint window)
     {
         //If Minimized
         if (IsIconic(window))
@@ -135,13 +149,19 @@ public static class WinApi
         SetForegroundWindow(window);
     }
 
-    public static bool IsWindowStillHasClassName(IntPtr hWnd, string className)
+    public static string GetWindowClassName(nint hWnd, int maxClassNameLength = 254)
     {
-        if (hWnd == IntPtr.Zero) return false;
+        if (hWnd == IntPtr.Zero) return string.Empty;
 
-        var currentClassName = new StringBuilder(className.Length + 1);
-        _ = RealGetWindowClass(hWnd, currentClassName, (uint)(className.Length + 1));
+        var className = new StringBuilder(maxClassNameLength);
+        _ = RealGetWindowClass(hWnd, className, (uint)(maxClassNameLength + 1));
 
-        return string.Equals(currentClassName.ToString(), className, StringComparison.OrdinalIgnoreCase);
+        return className.ToString();
+    }
+    public static bool IsWindowHasClassName(nint hWnd, string className, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
+    {
+        var currentClassName = GetWindowClassName(hWnd, className.Length);
+
+        return string.Equals(currentClassName, className, comparison);
     }
 }

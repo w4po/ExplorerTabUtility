@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="FlaUI.UIA3" Version="4.0.0" />
+    <PackageReference Include="H.InputSimulator" Version="1.4.1" />
   </ItemGroup>
 
   <ItemGroup>

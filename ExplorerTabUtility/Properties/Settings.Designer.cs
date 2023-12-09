@@ -46,5 +46,29 @@ namespace ExplorerTabUtility.Properties {
                 this["WindowHook"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool WindowViaUi {
+            get {
+                return ((bool)(this["WindowViaUi"]));
+            }
+            set {
+                this["WindowViaUi"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool WindowViaKeys {
+            get {
+                return ((bool)(this["WindowViaKeys"]));
+            }
+            set {
+                this["WindowViaKeys"] = value;
+            }
+        }
     }
 }
