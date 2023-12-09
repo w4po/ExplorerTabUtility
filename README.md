@@ -34,9 +34,17 @@ To prevent having multiple Explorer windows opened like this:
 
     ![image](Assets/Menu.png)
 
-    ✅ `All Windows:` If you want to force all new windows to open a new tab instead.
-
     ✅ `Keyboard (Win + E):` If you want to open new tab when Win+E are pressed.
+
+    ✅ `All Windows:` If you want to force all new windows to open a new tab instead.
+    - `UI (Recommended):` To open and navigate using (UI Automation), which is the recommended way.
+    - `Keys:` To Open and navigate using the keyboard (CTRL + T, CTRL + L, typing the location, etc...).
+    
+        Don't use `Keys` unless `UI` is not working.
+
+        Or if `Keys` is simply faster for you.
+        
+        Maybe that's because you tweaked your Windows UI look,
 
     ✅ `Add to startup:` If you want the application to start on system startup.
 
@@ -52,7 +60,9 @@ To prevent having multiple Explorer windows opened like this:
     
     Then we close the window and pass the location and selected files to the next step.
 
-3. We use the same [FlaUI](https://github.com/FlaUI/FlaUI) library to click the `Add new Tab` button in the explorer window, and set the location & select the files (if any).
+3. We use the [FlaUI](https://github.com/FlaUI/FlaUI) library to click the `Add new Tab` button in the explorer window, and set the location & select the files (if any),
+
+    Or if you choose `Keys` under `All Windows`: We use [H.InputSimulator](https://github.com/HavenDV/H.InputSimulator) to Open and navigate using the keyboard (CTRL + T, CTRL + L, typing the location, etc...).
 
 ## Limitations
 
@@ -69,10 +79,12 @@ To prevent having multiple Explorer windows opened like this:
 5. We've to click on the window's address bar and sometimes it shows the suggest box and it stays visible.
 
 ## What I've tried
-I've tried using `Shell.Application` (`Shell32`) instead of `FlaUI` (UI Automation) which could be much faster and cleaner, But sadly Windows Shell only works for the first tab of a window and we can't control it.
+I've tried using `Shell.Application` (`Shell32`) instead of `FlaUI` (UI Automation) to open and navigate the tabs which could be much faster and cleaner, But sadly Windows Shell only works for the first tab of a window and we can't control it.
 
 ## Acknowledgements
 [FlaUI](https://github.com/FlaUI/FlaUI)
+
+[H.InputSimulator](https://github.com/HavenDV/H.InputSimulator)
 
 [File Explorer Interceptor](https://github.com/abdonkov/FileExplorerInterceptor)
 
