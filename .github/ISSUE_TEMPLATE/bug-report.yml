@@ -15,8 +15,7 @@ body:
       description: Increase the chances of your issue being accepted by ensuring it has not been raised before.
       options:
         - label: I have checked "open" AND "closed" issues and this is not a duplicate
-    validations:
-        required: true
+          required: true
   - type: textarea
     id: description
     attributes:
@@ -60,7 +59,6 @@ body:
       options:
         - "No"
         - "Yes"
-      default: 0
     validations:
       required: true
   - type: textarea

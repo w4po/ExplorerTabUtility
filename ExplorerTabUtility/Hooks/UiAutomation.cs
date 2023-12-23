@@ -14,32 +14,29 @@ using Window = ExplorerTabUtility.Models.Window;
 
 namespace ExplorerTabUtility.Hooks;
 
-public class UiAutomation : IDisposable
+public class UiAutomation(Func<Window, Task> onNewWindow) : IHook
 {
-    private readonly Func<Window, Task> _onNewWindow;
     private readonly HWndCache _cache = new(5_000);
     private static readonly UIA3Automation Automation = new();
-
-    public UiAutomation(Func<Window, Task> onNewWindow)
-    {
-        _onNewWindow = onNewWindow;
-    }
+    public bool IsHookActive { get; private set; }
 
     public void StartHook()
     {
         Automation
             .GetDesktop()
             .RegisterAutomationEvent(Automation.EventLibrary.Window.WindowOpenedEvent, TreeScope.Children, OnWindowOpenHandler);
+        IsHookActive = true;
     }
     public void StopHook()
     {
         Automation.UnregisterAllEvents();
+        IsHookActive = false;
     }
 
-    private void OnWindowOpenHandler(AutomationElement element, EventId _)
+    private async void OnWindowOpenHandler(AutomationElement element, EventId _)
     {
         if (element.ClassName != "CabinetWClass") return;
-        if (WinApi.FindAllWindowsEx().Take(2).Count() < 2) return;
+        if (WinApi.FindAllWindowsEx("CabinetWClass").Take(2).Count() < 2) return;
 
         var hWnd = element.Properties.NativeWindowHandle.Value;
 
@@ -54,23 +51,21 @@ public class UiAutomation : IDisposable
             // A new "This PC" window (unless the opened folder is called "This PC"?)
             if (string.Equals(element.Name, "This PC"))
             {
-                CloseAndNotifyNewWindow(element, new Window(string.Empty, oldWindowHandle: hWnd));
+                await CloseAndNotifyNewWindowAsync(element, new Window(string.Empty, oldWindowHandle: hWnd)).ConfigureAwait(false);
                 showAgain = false;
                 return;
             }
 
-            GetHeaderElements(element, out var suggestBox, out var searchBox, out var addressBar);
-            if (suggestBox == default || searchBox == default || addressBar == default) return;
+            var header = await GetHeaderElementsAsync(element).ConfigureAwait(false);
+            if (header?.SuggestBox == null || header.AddressBar == default) return;
 
-            // We have to invoke the suggestBox to populate the address bar :(
-            suggestBox.Patterns.Invoke.Pattern.Invoke();
+            // We have to invoke the suggestBox to populate the address bar
+            header.SuggestBox.Patterns.Invoke.Pattern.Invoke();
 
-            // Invoke searchBox to hide the suggestPopup window.
-            searchBox.Patterns.Invoke.Pattern.Invoke();
-
-            var location = Helper.DoUntilCondition(
-                action: () => addressBar.Patterns.Value.Pattern.Value.Value,
-                predicate: l => !string.IsNullOrWhiteSpace(l));
+            var location = await Helper.DoUntilConditionAsync(
+                action: () => header.AddressBar.Patterns.Value.Pattern.Value.Value,
+                predicate: l => !string.IsNullOrWhiteSpace(l))
+                .ConfigureAwait(false);
 
             if (string.IsNullOrWhiteSpace(location))
                 return;
@@ -78,7 +73,7 @@ public class UiAutomation : IDisposable
             // ("Home") For English version.
             if (string.Equals(location, "Home"))
             {
-                CloseAndNotifyNewWindow(element, new Window(string.Empty, oldWindowHandle: hWnd));
+                await CloseAndNotifyNewWindowAsync(element, new Window(string.Empty, oldWindowHandle: hWnd)).ConfigureAwait(false);
                 showAgain = false;
                 return;
             }
@@ -88,11 +83,11 @@ public class UiAutomation : IDisposable
             var folderView = tab?.FindFirstDescendant(c => c.ByClassName("UIItemsView"));
             if (folderView == default)
             {
-                // ("Home") For non English versions.
+                // ("Home") For non-English versions.
                 var home = tab?.FindFirstDescendant(c => c.ByClassName("HomeListView"));
                 if (home == default) return;
 
-                CloseAndNotifyNewWindow(element, new Window(string.Empty, oldWindowHandle: hWnd));
+                await CloseAndNotifyNewWindowAsync(element, new Window(string.Empty, oldWindowHandle: hWnd)).ConfigureAwait(false);
                 showAgain = false;
                 return;
             }
@@ -103,17 +98,42 @@ public class UiAutomation : IDisposable
 
             var tabHWnd = tab!.Properties.NativeWindowHandle.Value;
 
-            CloseAndNotifyNewWindow(element, new Window(location, selectedNames, hWnd, tabHWnd));
+            await CloseAndNotifyNewWindowAsync(element, new Window(location, selectedNames, hWnd, tabHWnd)).ConfigureAwait(false);
             showAgain = false;
         }
         finally
         {
             // Move the back to the screen (Show)
             if (showAgain)
-                WinApi.SetWindowPos(hWnd, IntPtr.Zero, originalRect.Left, originalRect.Top, 0, 0, WinApi.SWP_NOSIZE | WinApi.SWP_NOZORDER);
+                WinApi.SetWindowPos(hWnd, default, originalRect.Left, originalRect.Top, 0, 0, WinApi.SWP_NOSIZE | WinApi.SWP_NOZORDER);
         }
     }
-    public static AutomationElement? FromHandle(IntPtr hWnd) => Automation.FromHandle(hWnd);
+
+    public static AutomationElement? FromHandle(nint hWnd) => Automation.FromHandle(hWnd);
+    public static async Task<string?> GetCurrentTabLocationAsync(AutomationElement window)
+    {
+        var header = await GetHeaderElementsAsync(window).ConfigureAwait(false);
+        if (header?.SuggestBox == default || header.AddressBar == default) return default;
+
+        // Give the address bar focus to update its value with the current location.
+        header.AddressBar.Focus();
+
+        var windowHandle = window.Properties.NativeWindowHandle.Value;
+        var tabHandle = window
+            .FindFirstChild(c => c.ByClassName("ShellTabWindowClass"))
+            .Properties.NativeWindowHandle.Value;
+
+        if (tabHandle == default)
+            tabHandle = windowHandle;
+
+        // Wait in the background for 700ms and give the focus to the tab to close the address bar.
+        _ = Helper.DoDelayedBackgroundAsync(() => WinApi.PostMessage(tabHandle, WinApi.WM_SETFOCUS, 0, 0), 700);
+
+        return await Helper.DoUntilConditionAsync<string?>(
+                action: () => header.AddressBar.Patterns.Value.Pattern.Value.Value,
+                predicate: l => !string.IsNullOrWhiteSpace(l))
+            .ConfigureAwait(false);
+    }
     public static bool AddNewTab(AutomationElement window)
     {
         var addButton = GetAddNewTabButton(window);
@@ -130,43 +150,31 @@ public class UiAutomation : IDisposable
 
         return addButton;
     }
-    public static bool Navigate(AutomationElement window, nint tabHandle, string location)
+    public static async Task<bool> NavigateAsync(AutomationElement window, nint tabHandle, string location)
     {
-        GetHeaderElements(window, out var suggestBox, out var searchBox, out var addressBar);
-        if (suggestBox == default || searchBox == default || addressBar == default)
+        var header = await GetHeaderElementsAsync(window).ConfigureAwait(false);
+        if (header?.SuggestBox == default || header.AddressBar == default)
             return false;
 
         // Set the location.
-        addressBar.Patterns.Value.Pattern.SetValue(location);
+        header.AddressBar.Patterns.Value.Pattern.SetValue(location);
 
         // We have to invoke the suggestBox to Navigate :(
-        suggestBox.Patterns.Invoke.Pattern.Invoke();
+        header.SuggestBox.Patterns.Invoke.Pattern.Invoke();
 
-        // Wait in the background
-        Task.Run(async () =>
-        {
-            await Task.Delay(700).ConfigureAwait(false);
-
-            var popupHandle = WinApi.GetWindow(window.Properties.NativeWindowHandle.Value, WinApi.GW_ENABLEDPOPUP);
-
-            // If for some reason the address bar doesn't have the focus anymore, return.
-            if (popupHandle == 0) return;
-
-            // Hide Suggestion popup.
-            WinApi.ShowWindow(popupHandle, WinApi.SW_HIDE);
-
-            // Give the focus to the tab to close the address bar.
-            WinApi.PostMessage(tabHandle, WinApi.WM_SETFOCUS, 0, 0);
-        });
+        // Wait in the background for 700ms and give the focus to the tab to close the address bar.
+        _ = Helper.DoDelayedBackgroundAsync(() => WinApi.PostMessage(tabHandle, WinApi.WM_SETFOCUS, 0, 0), 700);
 
         return true;
     }
-    public static bool SelectItems(AutomationElement tab, ICollection<string> names)
+    public static async Task<bool> SelectItemsAsync(AutomationElement tab, ICollection<string> names)
     {
         if (names.Count == 0) return false;
 
         var condition = new PropertyCondition(Automation.PropertyLibrary.Element.ClassName, "UIItemsView");
-        var itemsView = Helper.DoUntilNotDefault(() => tab.FindFirstWithOptions(TreeScope.Subtree, condition, TreeTraversalOptions.Default, tab));
+        var itemsView = await Helper.DoUntilNotDefaultAsync(
+            () => tab.FindFirstWithOptions(TreeScope.Subtree, condition, TreeTraversalOptions.Default, tab))
+            .ConfigureAwait(false);
 
         var files = itemsView?.FindAllChildren();
         if (files == default) return false;
@@ -185,12 +193,15 @@ public class UiAutomation : IDisposable
         // At least one is selected.
         return selectedCount > 0;
     }
-    public static bool CloseRandomTabOfAWindow(AutomationElement window)
+    public static async Task<bool> CloseRandomTabOfAWindowAsync(AutomationElement window)
     {
-        var headerBar = Helper.DoUntilNotDefault(() => window.FindFirstChild(c => c.ByClassName("Microsoft.UI.Content.DesktopChildSiteBridge")));
+        var headerBar = await Helper.DoUntilNotDefaultAsync(
+            () => window.FindFirstChild(c => c.ByClassName("Microsoft.UI.Content.DesktopChildSiteBridge")))
+            .ConfigureAwait(false);
+
         if (headerBar == default) return false;
 
-        var closeButton = Helper.DoUntilNotDefault(() => headerBar.FindFirstDescendant("CloseButton"));
+        var closeButton = await Helper.DoUntilNotDefaultAsync(() => headerBar.FindFirstDescendant("CloseButton")).ConfigureAwait(false);
 
         var invokePattern = closeButton?.Patterns.Invoke.Pattern;
         if (invokePattern == default)
@@ -200,33 +211,32 @@ public class UiAutomation : IDisposable
 
         return true;
     }
-    private static void GetHeaderElements(AutomationElement window, out AutomationElement? suggestBox, out AutomationElement? searchBox, out AutomationElement? addressBar)
+    public static async Task<WindowHeaderElements?> GetHeaderElementsAsync(AutomationElement window)
     {
-        suggestBox = default;
-        searchBox = default;
-        addressBar = default;
+        var headerBar = await Helper.DoUntilNotDefaultAsync(
+            action: () => window.FindFirstChild(c => c.ByClassName("Microsoft.UI.Content.DesktopChildSiteBridge")))
+            .ConfigureAwait(false);
 
-        var headerBar = Helper.DoUntilNotDefault(() => window.FindFirstChild(c => c.ByClassName("Microsoft.UI.Content.DesktopChildSiteBridge")));
-        if (headerBar == default) return;
+        if (headerBar == default) return default;
 
-        searchBox = Helper.DoUntilNotDefault(() => headerBar.FindFirstChild("FileExplorerSearchBox"));
-        if (searchBox == default) return;
+        var suggestBox = headerBar.FindFirstChild("PART_AutoSuggestBox");
+        var addressBar = suggestBox?.FindFirstChild(c => c.ByName("Address Bar"));
 
-        suggestBox = headerBar.FindFirstChild("PART_AutoSuggestBox");
-        addressBar = suggestBox?.FindFirstChild(c => c.ByName("Address Bar"));
+        return new WindowHeaderElements(suggestBox, addressBar);
     }
-    private void CloseAndNotifyNewWindow(AutomationElement element, Window window)
+    private async Task CloseAndNotifyNewWindowAsync(AutomationElement element, Window window)
     {
         // the window suppose to have only one tab, so we should be okay.
-        CloseRandomTabOfAWindow(element);
+        await CloseRandomTabOfAWindowAsync(element).ConfigureAwait(false);
 
-        _onNewWindow.Invoke(window);
+        _ = onNewWindow.Invoke(window);
     }
 
     public void Dispose()
     {
-        Automation.UnregisterAllEvents();
+        StopHook();
         Automation.Dispose();
+        GC.SuppressFinalize(this);
     }
     ~UiAutomation()
     {

@@ -1,124 +1,131 @@
-﻿using WindowsInput;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using ExplorerTabUtility.Managers;
+using WindowsInput;
+using H.Hooks;
 using ExplorerTabUtility.Models;
 using ExplorerTabUtility.WinAPI;
-using System.Threading;
+using ExplorerTabUtility.Helpers;
 
 namespace ExplorerTabUtility.Hooks;
 
-public class Keyboard : IDisposable
+public class Keyboard : IHook
 {
-    private nint _hookId = 0;
-    private nint _user32LibraryHandle = 0;
-    private bool _isWinKeyDown;
-    private HookProc? _keyboardHookCallback; // We have to keep a reference because of GC
-    private readonly Func<Window, Task> _onNewWindow;
+    private readonly LowLevelKeyboardHook _lowLevelKeyboardHook;
+    private readonly IReadOnlyCollection<HotKeyProfile> _hotkeyProfiles;
+    private readonly Action<HotKeyProfile> _onHotKeyProfileTriggered;
     private static readonly IKeyboardSimulator KeyboardSimulator = new InputSimulator().Keyboard;
+    public bool IsHookActive => _lowLevelKeyboardHook.IsStarted;
 
-    public Keyboard(Func<Window, Task> onNewWindow)
+    public Keyboard(IReadOnlyCollection<HotKeyProfile> hotkeyProfiles, Action<HotKeyProfile> onHotKeyProfileTriggered)
     {
-        _onNewWindow = onNewWindow;
+        _hotkeyProfiles = hotkeyProfiles;
+        _onHotKeyProfileTriggered = onHotKeyProfileTriggered;
+        _lowLevelKeyboardHook = new LowLevelKeyboardHook { Handling = true };
+        _lowLevelKeyboardHook.Down += LowLevelKeyboardHook_Down;
     }
 
-    public void StartHook()
+    public void StartHook() => _lowLevelKeyboardHook.Start();
+    public void StopHook() => _lowLevelKeyboardHook.Stop();
+
+    private void LowLevelKeyboardHook_Down(object? sender, KeyboardEventArgs e)
     {
-        _keyboardHookCallback = KeyboardHookCallback;
-        _user32LibraryHandle = WinApi.LoadLibrary("User32");
-        _hookId = WinApi.SetWindowsHookEx(WinHookType.WH_KEYBOARD_LL, _keyboardHookCallback, _user32LibraryHandle, 0);
+        var isFileExplorerForeground = WinApi.IsFileExplorerForeground(out _);
+
+        foreach (var profile in _hotkeyProfiles)
+        {
+            // Skip if the profile is disabled or if it doesn't have any hotkeys.
+            if (!profile.IsEnabled || profile.HotKeys?.Any() != true) continue;
+
+            // Skip if the profile is for File Explorer but File Explorer is not the foreground window.
+            if (profile.Scope == HotkeyScope.FileExplorer && !isFileExplorerForeground) continue;
+
+            // Skip if the hotkeys don't match.
+            if (!e.Keys.Are(profile.HotKeys)) continue;
+
+            // Set handled value.
+            e.IsHandled = profile.IsHandled;
+
+            // Invoke the profile action in the background in order for `IsHandled` to successfully prevent further processing.
+            Task.Run(() => _onHotKeyProfileTriggered(profile));
+        }
     }
-
-    public void StopHook()
-    {
-        Dispose();
-    }
-
-    private nint KeyboardHookCallback(int nCode, nint wParam, nint lParam)
-    {
-        if (nCode < 0)
-            return WinApi.CallNextHookEx(_hookId, nCode, wParam, lParam);
-
-        // Read key
-        var vkCode = Marshal.ReadInt32(lParam);
-
-        // Windows key
-        if (vkCode == WinApi.VK_WIN)
-            _isWinKeyDown = wParam == WinApi.WM_KEYDOWN; //DOWN or UP
-
-        if (!_isWinKeyDown || vkCode != WinApi.VK_E || wParam != WinApi.WM_KEYDOWN)
-            return WinApi.CallNextHookEx(_hookId, nCode, wParam, lParam);
-
-        // No Explorer windows, Continue with normal flow.
-        if (!WinApi.FindAllWindowsEx().Take(1).Any())
-            return WinApi.CallNextHookEx(_hookId, nCode, wParam, lParam);
-
-        // It is better not to wait for the invocation, otherwise the normal flow might open a new window
-        Task.Run(() => _onNewWindow.Invoke(new Window(string.Empty)));
-
-        // Return dummy value to prevent normal flow.
-        return 1;
-    }
-
-    public static void AddNewTab(nint windowHandle)
+    public static async Task<string?> GetCurrentTabLocationAsync(nint windowHandle, bool restoreToForeground = true)
     {
         // Restore the window to foreground.
-        WinApi.RestoreWindowToForeground(windowHandle);
-
-        // Give the focus to the folder view.
-        WinApi.PostMessage(windowHandle, WinApi.WM_SETFOCUS, 0, 0);
-
-        // Send CTRL + T
-        KeyboardSimulator
-            .Sleep(300)
-            .ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_T);
-    }
-    public static void Navigate(nint windowHandle, nint tabHandle, string location)
-    {
-        // Restore the window to foreground.
-        WinApi.RestoreWindowToForeground(windowHandle);
-
-        // Give the keyboard focus to the tab.
-        WinApi.PostMessage(tabHandle, WinApi.WM_SETFOCUS, 0, 0);
+        if (restoreToForeground)
+        {
+            WinApi.RestoreWindowToForeground(windowHandle);
+            await Task.Delay(350).ConfigureAwait(false);
+        }
 
         // Send CTRL + L to activate the address bar
-        KeyboardSimulator
-            .Sleep(300)
-            .ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_L);
+        KeyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_L);
+        await Task.Delay(150).ConfigureAwait(false);
+
+        // Store the current clipboard data
+        var backup = ClipboardManager.GetClipboardData();
+
+        // Clear the clipboard.
+        ClipboardManager.ClearClipboard();
+
+        // Send CTRL + C to copy the address location.
+        KeyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_C);
+
+        // Get the text from the clipboard.
+        var addressLocation = await Helper.DoUntilConditionAsync(
+            action: ClipboardManager.GetClipboardText,
+            predicate: l => !string.IsNullOrWhiteSpace(l))
+            .ConfigureAwait(false);
+        
+        // Give the focus to the window to close the address bar.
+        WinApi.PostMessage(windowHandle, WinApi.WM_SETFOCUS, 0, 0);
+        
+        // Restore the previous clipboard data.
+        ClipboardManager.SetClipboardData(backup);
+
+        return addressLocation;
+    }
+
+    public static async Task AddNewTabAsync(nint windowHandle)
+    {
+        // Restore the window to foreground.
+        WinApi.RestoreWindowToForeground(windowHandle);
+
+        await Task.Delay(200).ConfigureAwait(false);
+
+        // Send CTRL + T
+        KeyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_T);
+    }
+    public static async Task NavigateAsync(nint windowHandle, string location)
+    {
+        // Restore the window to foreground.
+        WinApi.RestoreWindowToForeground(windowHandle);
+
+        await Task.Delay(300).ConfigureAwait(false);
+
+        // Send CTRL + L to activate the address bar
+        KeyboardSimulator.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_L);
+
+        await Task.Delay(300).ConfigureAwait(false);
 
         // Type the location.
-        KeyboardSimulator
-            .Sleep(300)
-            .TextEntry(location)
-            .Sleep(250 + location.Length * 5) // Longer locations require longer wait time.
-            .KeyPress(VirtualKeyCode.RETURN); // Press Enter
+        KeyboardSimulator.TextEntry(location);
 
-        // Do in the background
-        Task.Run(async () =>
-        {
-            // for ~1250 Milliseconds (25 * 50)
-            for (var i = 0; i < 25; i++)
-            {
-                await Task.Delay(50);
+        // Longer locations require longer wait time.
+        await Task.Delay(270 + location.Length * 5).ConfigureAwait(false);
 
-                var popupHandle = WinApi.GetWindow(windowHandle, WinApi.GW_ENABLEDPOPUP);
-
-                // If the suggestion popup is not visible, continue.
-                if (popupHandle == 0) continue;
-
-                // Hide the suggestion popup.
-                WinApi.ShowWindow(popupHandle, WinApi.SW_HIDE);
-            }
-        });
+        // Press Enter
+        KeyboardSimulator.KeyPress(VirtualKeyCode.RETURN);
     }
-    public static void SelectItems(nint tabHandle, ICollection<string> names)
+    public static async Task SelectItemsAsync(nint tabHandle, ICollection<string> names)
     {
         // Restore the window to foreground.
         WinApi.RestoreWindowToForeground(tabHandle);
 
-        Thread.Sleep(500);
+        await Task.Delay(500).ConfigureAwait(false);
 
         // Type the first name.
         KeyboardSimulator.TextEntry(names.First());
@@ -126,21 +133,9 @@ public class Keyboard : IDisposable
 
     public void Dispose()
     {
-        if (_hookId != IntPtr.Zero)
-        {
-            WinApi.UnhookWindowsHookEx(_hookId);
-            _hookId = IntPtr.Zero;
-        }
-
-        _keyboardHookCallback = null;
-        if (_user32LibraryHandle == IntPtr.Zero) return;
-
-        // reduces reference to library by 1.
-        WinApi.FreeLibrary(_user32LibraryHandle);
-        _user32LibraryHandle = IntPtr.Zero;
+        StopHook();
+        _lowLevelKeyboardHook.Dispose();
     }
-    ~Keyboard()
-    {
-        Dispose();
-    }
+
+    ~Keyboard() => Dispose();
 }

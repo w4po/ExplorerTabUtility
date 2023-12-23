@@ -12,7 +12,7 @@ namespace ExplorerTabUtility.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.8.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.9.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -25,13 +25,13 @@ namespace ExplorerTabUtility.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool KeyboardHook {
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int InteractionMethod {
             get {
-                return ((bool)(this["KeyboardHook"]));
+                return ((int)(this["InteractionMethod"]));
             }
             set {
-                this["KeyboardHook"] = value;
+                this["InteractionMethod"] = value;
             }
         }
         
@@ -50,24 +50,38 @@ namespace ExplorerTabUtility.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool WindowViaUi {
+        public bool KeyboardHook {
             get {
-                return ((bool)(this["WindowViaUi"]));
+                return ((bool)(this["KeyboardHook"]));
             }
             set {
-                this["WindowViaUi"] = value;
+                this["KeyboardHook"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool WindowViaKeys {
+        [global::System.Configuration.DefaultSettingValueAttribute("[{\"Name\":\"Home\",\"HotKeys\":[91,69],\"Scope\":0,\"Action\":0,\"Path\":\"\",\"IsHandled\":true" +
+            ",\"IsEnabled\":true,\"Delay\":0},{\"Name\":\"Duplicate\",\"HotKeys\":[17,68],\"Scope\":1,\"Ac" +
+            "tion\":1,\"Path\":null,\"IsHandled\":true,\"IsEnabled\":true,\"Delay\":0}]")]
+        public string HotKeyProfiles {
             get {
-                return ((bool)(this["WindowViaKeys"]));
+                return ((string)(this["HotKeyProfiles"]));
             }
             set {
-                this["WindowViaKeys"] = value;
+                this["HotKeyProfiles"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SaveProfilesOnExit {
+            get {
+                return ((bool)(this["SaveProfilesOnExit"]));
+            }
+            set {
+                this["SaveProfilesOnExit"] = value;
             }
         }
     }

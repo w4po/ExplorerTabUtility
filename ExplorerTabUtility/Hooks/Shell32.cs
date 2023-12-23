@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -9,34 +10,31 @@ using ExplorerTabUtility.Models;
 
 namespace ExplorerTabUtility.Hooks;
 
-public class Shell32 : IDisposable
+public class Shell32(Action<Window, bool> onNewWindow) : IHook
 {
-    private IntPtr _hookId = IntPtr.Zero;
+    private nint _hookId;
     private WinEventDelegate? _eventHookCallback; // We have to keep a reference because of GC
-    private readonly Func<Window, Task> _onNewWindow;
     private static object? _shell;
     private static Type? _shellType;
     private static Type? _windowType;
-
-    public Shell32(Func<Window, Task> onNewWindow)
-    {
-        _onNewWindow = onNewWindow;
-    }
+    public bool IsHookActive { get; private set; }
 
     public void StartHook()
     {
         _eventHookCallback = OnWindowOpenHandler;
-        _hookId = WinApi.SetWinEventHook(WinApi.EVENT_OBJECT_CREATE, WinApi.EVENT_OBJECT_CREATE, IntPtr.Zero, _eventHookCallback, 0, 0, 0);
+        _hookId = WinApi.SetWinEventHook(WinApi.EVENT_OBJECT_CREATE, WinApi.EVENT_OBJECT_CREATE, default, _eventHookCallback, 0, 0, 0);
+        IsHookActive = true;
     }
     public void StopHook()
     {
-        Dispose();
+        WinApi.UnhookWinEvent(_hookId);
+        IsHookActive = false;
     }
 
-    private void OnWindowOpenHandler(IntPtr hWinEventHook, uint eventType, IntPtr hWnd, int idObject, int idChild, uint dwEventThread, uint dWmsEventTime)
+    private void OnWindowOpenHandler(nint hWinEventHook, uint eventType, nint hWnd, int idObject, int idChild, uint dwEventThread, uint dWmsEventTime)
     {
         if (!WinApi.IsWindowHasClassName(hWnd, "CabinetWClass")) return;
-        if (WinApi.FindAllWindowsEx().Take(2).Count() < 2) return;
+        if (WinApi.FindAllWindowsEx("CabinetWClass").Take(2).Count() < 2) return;
 
         var originalRect = WinApi.HideWindow(hWnd);
         var showAgain = true;
@@ -69,7 +67,7 @@ public class Shell32 : IDisposable
         {
             // Move the back to the screen (Show)
             if (showAgain)
-                WinApi.SetWindowPos(hWnd, IntPtr.Zero, originalRect.Left, originalRect.Top, 0, 0, WinApi.SWP_NOSIZE | WinApi.SWP_NOZORDER);
+                WinApi.SetWindowPos(hWnd, default, originalRect.Left, originalRect.Top, 0, 0, WinApi.SWP_NOSIZE | WinApi.SWP_NOZORDER);
         }
     }
 
@@ -81,7 +79,7 @@ public class Shell32 : IDisposable
         _shell ??= Activator.CreateInstance(_shellType);
         if (_shell == default) return default;
 
-        var windows = _shellType.InvokeMember("Windows", BindingFlags.InvokeMethod, null, _shell, Array.Empty<object>());
+        var windows = _shellType.InvokeMember("Windows", BindingFlags.InvokeMethod, null, _shell, []);
         _windowType ??= windows?.GetType();
 
         return windows;
@@ -110,7 +108,7 @@ public class Shell32 : IDisposable
     {
         if (window == default || _windowType == default) return;
 
-        _windowType.InvokeMember("Navigate", BindingFlags.InvokeMethod, null, window, new object?[] { location });
+        _windowType.InvokeMember("Navigate", BindingFlags.InvokeMethod, null, window, [location]);
     }
 
     private static int GetCount(object? item)
@@ -120,20 +118,20 @@ public class Shell32 : IDisposable
         var obj = _windowType.InvokeMember("Count", BindingFlags.GetProperty, null, item, null);
         return obj is int count ? count : default;
     }
-    public static object? GetWindowByHandle(object? windows, IntPtr hWnd)
+    public static object? GetWindowByHandle(object? windows, nint hWnd)
     {
         if (hWnd == default || windows == default || _windowType == default) return default;
 
         var count = GetCount(windows);
         for (var i = 0; i < count; i++)
         {
-            var window = _windowType.InvokeMember("Item", BindingFlags.InvokeMethod, null, windows, new object[] { i });
+            var window = _windowType.InvokeMember("Item", BindingFlags.InvokeMethod, null, windows, [i]);
             if (window == default) continue;
 
             var itemHWnd = _windowType.InvokeMember("HWND", BindingFlags.GetProperty, null, window, null);
             if (itemHWnd == default) continue;
 
-            if ((long)itemHWnd == hWnd.ToInt64())
+            if ((long)itemHWnd == hWnd)
                 return window;
         }
 
@@ -162,7 +160,7 @@ public class Shell32 : IDisposable
         var selectedList = new List<string>(count);
         for (var i = 0; i < count; i++)
         {
-            var selectedItem = _windowType.InvokeMember("Item", BindingFlags.InvokeMethod, null, selectedItems, new object[] { i });
+            var selectedItem = _windowType.InvokeMember("Item", BindingFlags.InvokeMethod, null, selectedItems, [i]);
             if (selectedItem == default) return default;
 
             if (_windowType.InvokeMember("Name", BindingFlags.GetProperty, null, selectedItem, null) is string selectedItemName)
@@ -198,7 +196,7 @@ public class Shell32 : IDisposable
         var selectedCount = 0;
         for (var i = 0; i < count; i++)
         {
-            var item = _windowType.InvokeMember("Item", BindingFlags.InvokeMethod, null, files, new object[] { i });
+            var item = _windowType.InvokeMember("Item", BindingFlags.InvokeMethod, null, files, [i]);
             if (item == default) return;
 
             var name = _windowType.InvokeMember("Name", BindingFlags.GetProperty, null, item, null) as string;
@@ -206,7 +204,7 @@ public class Shell32 : IDisposable
             if (!names.Any(n => n.Equals(name, StringComparison.OrdinalIgnoreCase)))
                 continue;
 
-            _windowType.InvokeMember("SelectItem", BindingFlags.InvokeMethod, null, document, new[] { item, 1 });
+            _windowType.InvokeMember("SelectItem", BindingFlags.InvokeMethod, null, document, [item, 1]);
 
             if (++selectedCount >= names.Count) return;
         }
@@ -224,15 +222,34 @@ public class Shell32 : IDisposable
 
         CloseWindow(item);
 
-        Task.Run(() => _onNewWindow.Invoke(window));
+        Task.Run(() => onNewWindow.Invoke(window, false));
     }
 
-    public void Dispose()
+    public static void OpenNewWindowAndSelectItems(string folderPath, ICollection<string>? names)
     {
-        WinApi.UnhookWinEvent(_hookId);
+        // If there are no names, add an empty string to the list, Otherwise the parent folder will open instead.
+        if (names == default || names.Count == 0)
+            names = new[] { string.Empty };
+        
+        var folderPidl = WinApi.ILCreateFromPathW(folderPath);
+        if (folderPidl == default) return;
+
+        var filesApidl = GetFilesPidls(folderPath, names);
+        WinApi.SHOpenFolderAndSelectItems(folderPidl, (uint)filesApidl.Length, filesApidl, 0);
+
+        WinApi.ILFree(folderPidl);
+        if (filesApidl.Length == 0) return;
+
+        foreach (var pidl in filesApidl) WinApi.ILFree(pidl);
     }
-    ~Shell32()
+    private static nint[] GetFilesPidls(string folderPath, IEnumerable<string> fileNames)
     {
-        Dispose();
+        return fileNames
+            .Select(file => WinApi.ILCreateFromPathW(Path.Combine(folderPath, file)))
+            .Where(nativeFile => nativeFile != default)
+            .ToArray();
     }
+
+    public void Dispose() => StopHook();
+    ~Shell32() => Dispose();
 }
