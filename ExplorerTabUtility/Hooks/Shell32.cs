@@ -230,7 +230,7 @@ public class Shell32(Action<Window, bool> onNewWindow) : IHook
         // If there are no names, add an empty string to the list, Otherwise the parent folder will open instead.
         if (names == default || names.Count == 0)
             names = new[] { string.Empty };
-        
+
         var folderPidl = WinApi.ILCreateFromPathW(folderPath);
         if (folderPidl == default) return;
 

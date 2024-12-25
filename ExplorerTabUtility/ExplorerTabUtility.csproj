@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net7.0-windows;net481</TargetFrameworks>
+    <TargetFrameworks>net9.0-windows;net481</TargetFrameworks>
     <Nullable>enable</Nullable>
     <UseWindowsForms>True</UseWindowsForms>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
@@ -23,10 +23,11 @@
 
   <ItemGroup>
     <PackageReference Include="FlaUI.UIA3" Version="4.0.0" />
-    <PackageReference Include="H.Hooks" Version="1.6.0" />
-    <PackageReference Include="H.InputSimulator" Version="1.4.1" />
+    <PackageReference Include="H.Hooks" Version="1.7.0" />
+    <PackageReference Include="H.InputSimulator" Version="1.5.0" />
     <PackageReference Include="MaterialSkin.2" Version="2.3.1" />
-    <PackageReference Include="System.Text.Json" Version="8.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.3" />
+    <PackageReference Include="System.Text.Json" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>

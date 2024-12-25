@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
 using ExplorerTabUtility.Models;
@@ -19,6 +20,7 @@ public partial class HotKeyProfileControl : UserControl
     // Constants
     private const int ExpandedHeight = 76;
     // Properties
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
     public bool IsEnabled
     {
         get => cbEnabled.Checked;
@@ -28,6 +30,7 @@ public partial class HotKeyProfileControl : UserControl
             cbEnabled.Checked = value;
         }
     }
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
     public bool IsCollapsed
     {
         get => _isCollapsed;
@@ -72,7 +75,7 @@ public partial class HotKeyProfileControl : UserControl
     // Event handlers
     private void CbEnabled_CheckedChanged(object? _, EventArgs __) => UpdateControlsEnabledState();
     private void TxtName_TextChanged(object? _, EventArgs __) => _profile.Name = txtName.Text;
-    private void CbScope_SelectedIndexChanged(object? _, EventArgs __) => _profile.Scope = (HotkeyScope)cbScope.SelectedItem;
+    private void CbScope_SelectedIndexChanged(object? _, EventArgs __) => _profile.Scope = (HotkeyScope)(cbScope.SelectedItem ?? 0);
     private void CbAction_SelectedIndexChanged(object? _, EventArgs __) => UpdateAction();
     private void TxtPath_TextChanged(object? _, EventArgs __) => _profile.Path = txtPath.Text;
     private void CbHandled_CheckedChanged(object? _, EventArgs __) => _profile.IsHandled = cbHandled.Checked;
@@ -153,7 +156,7 @@ public partial class HotKeyProfileControl : UserControl
     }
     private void UpdateAction()
     {
-        var selectedAction = (HotKeyAction)cbAction.SelectedItem;
+        var selectedAction = (HotKeyAction)(cbAction.SelectedItem ?? 0);
         _profile.Action = selectedAction;
 
         switch (selectedAction)
