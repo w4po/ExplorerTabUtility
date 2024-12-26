@@ -5,6 +5,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
+using System.Text;
+using System.Web;
 using ExplorerTabUtility.WinAPI;
 using ExplorerTabUtility.Models;
 
@@ -17,7 +19,16 @@ public class Shell32(Action<Window, bool> onNewWindow) : IHook
     private static object? _shell;
     private static Type? _shellType;
     private static Type? _windowType;
+    private static readonly Encoding Windows1252Encoding;
     public bool IsHookActive { get; private set; }
+
+    static Shell32()
+    {
+#if NET7_0_OR_GREATER
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+#endif
+        Windows1252Encoding = Encoding.GetEncoding("windows-1252");
+    }
 
     public void StartHook()
     {
@@ -95,7 +106,8 @@ public class Shell32(Action<Window, bool> onNewWindow) : IHook
     {
         if (window == default || _windowType == default) return default;
 
-        return _windowType.InvokeMember("LocationURL", BindingFlags.GetProperty, null, window, null) as string;
+        var location = _windowType.InvokeMember("LocationURL", BindingFlags.GetProperty, null, window, null) as string;
+        return location != default ? HttpUtility.UrlDecode(location, Windows1252Encoding) : default;
     }
 
     /// <summary>
