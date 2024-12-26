@@ -59,7 +59,11 @@ public class Shell32(Action<Window, bool> onNewWindow) : IHook
             // Home
             if (location == string.Empty)
             {
-                CloseAndNotifyNewWindow(window, new Window(string.Empty, oldWindowHandle: hWnd));
+                // Home, This PC, Recycle Bin, Network, Gallery.
+                // All of these return empty location, so we have to check the tab's title.
+                var caption = GetWindowTitle(window) ?? string.Empty;
+
+                CloseAndNotifyNewWindow(window, new Window(caption, oldWindowHandle: hWnd));
                 showAgain = false;
                 return;
             }
@@ -94,6 +98,18 @@ public class Shell32(Action<Window, bool> onNewWindow) : IHook
         _windowType ??= windows?.GetType();
 
         return windows;
+    }
+
+    /// <summary>
+    /// Retrieves the title of the specified window.
+    /// </summary>
+    /// <param name="window">The window object for which to get the title. This should be an instance of a window obtained from the Shell32 API.</param>
+    /// <returns>The current title of the window as a string, or null if the window or window type is not defined.</returns>
+    public static string? GetWindowTitle(object? window)
+    {
+        if (window == default || _windowType == default) return default;
+
+        return _windowType.InvokeMember("LocationName", BindingFlags.GetProperty, null, window, null) as string;
     }
 
     /// <summary>
@@ -143,7 +159,7 @@ public class Shell32(Action<Window, bool> onNewWindow) : IHook
             var itemHWnd = _windowType.InvokeMember("HWND", BindingFlags.GetProperty, null, window, null);
             if (itemHWnd == default) continue;
 
-            if ((long)itemHWnd == hWnd)
+            if (Convert.ToInt64(itemHWnd) == hWnd)
                 return window;
         }
 
