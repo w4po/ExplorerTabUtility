@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Threading;
 using System.Text;
 using System.Web;
 using ExplorerTabUtility.WinAPI;
@@ -16,14 +15,17 @@ public class Shell32(Action<Window, bool> onNewWindow) : IHook
 {
     private nint _hookId;
     private WinEventDelegate? _eventHookCallback; // We have to keep a reference because of GC
-    private static object? _shell;
-    private static Type? _shellType;
+    private static readonly object ShellApp;
+    private static readonly Type ShellAppType;
     private static Type? _windowType;
     private static readonly Encoding Windows1252Encoding;
     public bool IsHookActive { get; private set; }
 
     static Shell32()
     {
+        ShellAppType = Type.GetTypeFromProgID("Shell.Application")!;
+        ShellApp = Activator.CreateInstance(ShellAppType)!;
+
 #if NET7_0_OR_GREATER
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 #endif
@@ -47,11 +49,16 @@ public class Shell32(Action<Window, bool> onNewWindow) : IHook
         if (!WinApi.IsWindowHasClassName(hWnd, "CabinetWClass")) return;
         if (WinApi.FindAllWindowsEx("CabinetWClass").Take(2).Count() < 2) return;
 
+        Task.Run(() => ProcessWindowAsync(hWnd));
+    }
+
+    private async Task ProcessWindowAsync(nint hWnd)
+    {
         var originalRect = WinApi.HideWindow(hWnd);
         var showAgain = true;
         try
         {
-            var window = GetWindowByHandle(GetWindows(), hWnd);
+            var window = await GetWindowByHandleAsync(hWnd).ConfigureAwait(false);
             if (window == default) return;
 
             var location = GetWindowLocation(window);
@@ -63,7 +70,7 @@ public class Shell32(Action<Window, bool> onNewWindow) : IHook
                 // All of these return empty location, so we have to check the tab's title.
                 var caption = GetWindowTitle(window) ?? string.Empty;
 
-                CloseAndNotifyNewWindow(window, new Window(caption, oldWindowHandle: hWnd));
+                await CloseAndNotifyNewWindowAsync(window, new Window(caption, oldWindowHandle: hWnd)).ConfigureAwait(false);
                 showAgain = false;
                 return;
             }
@@ -72,15 +79,15 @@ public class Shell32(Action<Window, bool> onNewWindow) : IHook
                 return;
 
             // Give the selection some time to take effect.
-            Thread.Sleep(70);
+            await Task.Delay(70).ConfigureAwait(false);
             var selectedItems = GetSelectedItems(window);
 
-            CloseAndNotifyNewWindow(window, new Window(uri.LocalPath, selectedItems, oldWindowHandle: hWnd));
+            await CloseAndNotifyNewWindowAsync(window, new Window(uri.LocalPath, selectedItems, oldWindowHandle: hWnd)).ConfigureAwait(false);
             showAgain = false;
         }
         finally
         {
-            // Move the back to the screen (Show)
+            // Move back to the screen (Show)
             if (showAgain)
                 WinApi.SetWindowPos(hWnd, default, originalRect.Left, originalRect.Top, 0, 0, WinApi.SWP_NOSIZE | WinApi.SWP_NOZORDER);
         }
@@ -88,13 +95,7 @@ public class Shell32(Action<Window, bool> onNewWindow) : IHook
 
     public static object? GetWindows()
     {
-        _shellType ??= Type.GetTypeFromProgID("Shell.Application");
-        if (_shellType == default) return default;
-
-        _shell ??= Activator.CreateInstance(_shellType);
-        if (_shell == default) return default;
-
-        var windows = _shellType.InvokeMember("Windows", BindingFlags.InvokeMethod, null, _shell, []);
+        var windows = ShellAppType.InvokeMember("Windows", BindingFlags.InvokeMethod, null, ShellApp, []);
         _windowType ??= windows?.GetType();
 
         return windows;
@@ -146,24 +147,40 @@ public class Shell32(Action<Window, bool> onNewWindow) : IHook
         var obj = _windowType.InvokeMember("Count", BindingFlags.GetProperty, null, item, null);
         return obj is int count ? count : default;
     }
-    public static object? GetWindowByHandle(object? windows, nint hWnd)
+
+    public static async Task<object?> GetWindowByHandleAsync(nint hWnd)
     {
-        if (hWnd == default || windows == default || _windowType == default) return default;
+        if (hWnd == default) return default;
 
-        var count = GetCount(windows);
-        for (var i = 0; i < count; i++)
+        var retries = 0;
+        while (true)
         {
-            var window = _windowType.InvokeMember("Item", BindingFlags.InvokeMethod, null, windows, [i]);
-            if (window == default) continue;
+            try
+            {
+                var windows = GetWindows();
+                if (_windowType == default) return default;
 
-            var itemHWnd = _windowType.InvokeMember("HWND", BindingFlags.GetProperty, null, window, null);
-            if (itemHWnd == default) continue;
+                var count = GetCount(windows);
+                for (var i = 0; i < count; i++)
+                {
+                    var window = _windowType.InvokeMember("Item", BindingFlags.InvokeMethod, null, windows, [i]);
+                    if (window == default) continue;
 
-            if (Convert.ToInt64(itemHWnd) == hWnd)
-                return window;
+                    var itemHWnd = _windowType.InvokeMember("HWND", BindingFlags.GetProperty, null, window, null);
+                    if (itemHWnd == default) continue;
+
+                    if (Convert.ToInt64(itemHWnd) == hWnd) return window;
+                }
+            }
+            catch
+            {
+                // If a window is closed during the loop it might cause an error
+            }
+
+            if (++retries == 2) return default;
+
+            await Task.Delay(1000).ConfigureAwait(false);
         }
-
-        return default;
     }
 
     /// <summary>
@@ -244,13 +261,22 @@ public class Shell32(Action<Window, bool> onNewWindow) : IHook
 
         _windowType.InvokeMember("Quit", BindingFlags.InvokeMethod, null, window, null);
     }
-    private void CloseAndNotifyNewWindow(object? item, Window window)
+    private Task CloseAndNotifyNewWindowAsync(object? item, Window window)
     {
-        if (item == default || _windowType == default) return;
+        if (item == default || _windowType == default) return Task.CompletedTask;
 
-        CloseWindow(item);
-
-        Task.Run(() => onNewWindow.Invoke(window, false));
+        return Task.Run(() =>
+        {
+            try
+            {
+                CloseWindow(item);
+            }
+            catch
+            {
+                //
+            }
+            onNewWindow.Invoke(window, false);
+        });
     }
 
     public static void OpenNewWindowAndSelectItems(string folderPath, ICollection<string>? names)
