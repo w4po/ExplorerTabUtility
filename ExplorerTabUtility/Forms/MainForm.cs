@@ -4,7 +4,6 @@ using System.Text;
 using System.Text.Json;
 using System.Windows.Forms;
 using System.Collections.Generic;
-using System.Diagnostics;
 using MaterialSkin;
 using MaterialSkin.Controls;
 using ExplorerTabUtility.Models;
@@ -121,6 +120,10 @@ public partial class MainForm : MaterialForm
             profileMenuItem.Tag = profile;
             menuItem.DropDownItems.Add(profileMenuItem);
         }
+
+        // if the hook is active and there not a single profile enabled, deactivate the hook
+        if (SettingsManager.IsKeyboardHookActive && !_hotKeyProfiles.Any(p => p.IsEnabled))
+            menuItem.PerformClick();
     }
     private ToolStripMenuItem CreateInteractionMethodMenuItem()
     {
@@ -160,7 +163,7 @@ public partial class MainForm : MaterialForm
     private void UpdateMenuAndSaveProfiles()
     {
         // Remove profiles that don't have any hotkeys.
-        _hotKeyProfiles.FindAll(p => p.HotKeys?.Any() != true).ForEach(RemoveProfile);
+        _hotKeyProfiles.FindAll(p => p.HotKeys == null || p.HotKeys.Length == 0).ForEach(RemoveProfile);
 
         UpdateKeyboardHookMenu();
 
@@ -181,6 +184,8 @@ public partial class MainForm : MaterialForm
     private void AddProfile(HotKeyProfile? profile = default)
     {
         _hotKeyProfiles.Add(profile ??= new HotKeyProfile());
+
+        // We have to stop the main keyboard hook when we edit a profile key bindings (ControlStartedKeyboardHook, ControlStoppedKeyboardHook)
         flpProfiles.Controls.Add(new HotKeyProfileControl(profile, RemoveProfile, ControlStartedKeyboardHook, ControlStoppedKeyboardHook));
     }
     private void ClearProfiles()
@@ -216,13 +221,11 @@ public partial class MainForm : MaterialForm
 
     private void ControlStartedKeyboardHook()
     {
-        Debug.WriteLine($"{nameof(ControlStartedKeyboardHook)}");
         if (!SettingsManager.IsKeyboardHookActive) return;
         _hookManager.StopKeyboardHook();
     }
     private void ControlStoppedKeyboardHook()
     {
-        Debug.WriteLine($"{nameof(ControlStoppedKeyboardHook)}");
         if (!SettingsManager.IsKeyboardHookActive) return;
         _hookManager.StartKeyboardHook();
     }
@@ -232,7 +235,7 @@ public partial class MainForm : MaterialForm
         if (!Enum.TryParse(item.Name, out InteractionMethod method)) return;
         InteractionManager.InteractionMethod = method;
 
-        foreach (ToolStripMenuItem radio in item.GetCurrentParent().Items)
+        foreach (ToolStripMenuItem radio in item.GetCurrentParent()!.Items)
             radio.Checked = radio == item;
 
         SettingsManager.InteractionMethod = (int)method;
@@ -256,6 +259,13 @@ public partial class MainForm : MaterialForm
     private void ToggleKeyboardHook(object? sender, EventArgs _)
     {
         if (sender is not ToolStripMenuItem item) return;
+
+        if (item.Checked && _hotKeyProfiles.Count == 0)
+        {
+            item.Checked = false;
+            _hookManager.StopKeyboardHook();
+            return;
+        }
 
         SettingsManager.IsKeyboardHookActive = item.Checked;
 

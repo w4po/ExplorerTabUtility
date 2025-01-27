@@ -1,0 +1,112 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers on tags like v1.3.0
+
+env:
+  PROJECT_NAME: ExplorerTabUtility  # project name
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        framework: [ 'net9.0-windows', 'net481' ]
+        arch: [ 'x64', 'x86' ]
+      fail-fast: false
+      max-parallel: 4
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract Version from .csproj
+        id: get_version
+        run: |
+          $version = (Select-String -Path "${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}.csproj" -Pattern '<Version>(.*?)</Version>').Matches.Groups[1].Value
+          Write-Output "Version extracted: $version"
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore Dependencies
+        run: dotnet restore
+
+      - name: Publish Project
+        run: |
+          $outputDir = "publish/${{ matrix.framework }}/${{ matrix.arch }}"
+          if ("${{ matrix.framework }}" -eq "net9.0-windows") {
+            # .NET 9.0 build
+            dotnet publish -f ${{ matrix.framework }} -r win-${{ matrix.arch }} --self-contained false -c Release -o $outputDir
+          } else {
+            # .NET Framework 4.8.1 build
+            dotnet publish "${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}.csproj" -f ${{ matrix.framework }} -c Release -o $outputDir /p:Platform=${{ matrix.arch }}
+          }
+        shell: pwsh
+
+      - name: Zip Artifacts
+        id: zip_artifacts
+        run: |
+          $version = "${{ steps.get_version.outputs.version }}"
+          $frameworkName = if ("${{ matrix.framework }}" -eq "net9.0-windows") { "Net9.0_FrameworkDependent" } else { "NetFW4.8.1" }
+          $zipName = "${{ env.PROJECT_NAME }}_v${version}_${{ matrix.arch }}_${frameworkName}.zip"
+          Compress-Archive -Path "publish/${{ matrix.framework }}/${{ matrix.arch }}/*" -DestinationPath $zipName
+          echo "zipName=$zipName" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.zip_artifacts.outputs.zipName }}
+          path: ${{ steps.zip_artifacts.outputs.zipName }}
+
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # Required to create releases
+      pull-requests: read   # Required to read PRs for changelog generation
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+        
+      - name: List Files (Debugging)
+        run: ls -R artifacts  # Debug step to verify structure
+        
+      - name: Generate Changelog
+        id: generate_changelog
+        uses: mikepenz/release-changelog-builder-action@v5
+        with:
+          commitMode: true
+          configuration: |
+            categories:
+              - title: "🚀 Features"
+                labels: ["feature"]
+                regex: '^feat:'
+              - title: "🐛 Bug Fixes"
+                labels: ["bug"]
+                regex: '^fix:'
+              - title: "📜 Other Changes"
+                labels: ["*"]
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ env.PROJECT_NAME }} ${{ github.ref_name }}
+          body: |
+            ${{ steps.generate_changelog.outputs.changelog }}
+            
+            **Note:** If you are not sure, then you probably want [${{ env.PROJECT_NAME }}_${{ github.ref_name }}_x64_NetFW4.8.1.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ env.PROJECT_NAME }}_${{ github.ref_name }}_x64_NetFW4.8.1.zip).
+          files: artifacts/**/*.zip

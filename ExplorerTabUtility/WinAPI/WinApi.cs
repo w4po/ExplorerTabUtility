@@ -1,4 +1,4 @@
-﻿// ReSharper disable IdentifierTypo
+// ReSharper disable IdentifierTypo
 // ReSharper disable InconsistentNaming
 
 using System;
@@ -222,7 +222,7 @@ public static class WinApi
         GetWindowRect(hWnd, out var originalRect);
 
         // Move the window outside the screen (Hide)
-        SetWindowPos(hWnd, IntPtr.Zero, -1000, -1000, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+        SetWindowPos(hWnd, IntPtr.Zero, -5000, -5000, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
         return originalRect;
     }
 

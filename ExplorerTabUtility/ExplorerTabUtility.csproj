@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>True</UseWindowsForms>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
-	<Version>1.3.0</Version>
+	<Version>1.4.0</Version>
 	<LangVersion>latest</LangVersion>
     <Title>Explorer Tab Utility</Title>
     <Authors>w4po</Authors>
@@ -17,12 +17,17 @@
     <RepositoryUrl>https://github.com/w4po/ExplorerTabUtility</RepositoryUrl>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="Icon.ico" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net481'">
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+  </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net481'">
     <Reference Include="System.Web" />
+    <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Icon.ico" />
   </ItemGroup>
   
   <ItemGroup>
