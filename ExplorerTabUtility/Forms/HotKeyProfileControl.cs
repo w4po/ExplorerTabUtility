@@ -181,6 +181,13 @@ public partial class HotKeyProfileControl : UserControl
                 cbScope.Invalidate();
                 break;
             }
+            case HotKeyAction.SetTargetWindow:
+            {
+                txtPath.Enabled = false;
+                cbScope.SelectedIndex = cbScope.FindStringExact(nameof(HotkeyScope.FileExplorer));
+                cbScope.Invalidate();
+                break;
+            }
         }
     }
     private void InitializeKeyboardHook()

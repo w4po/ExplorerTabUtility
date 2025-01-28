@@ -43,6 +43,7 @@ public sealed class HookManager
             }
             case HotKeyAction.Duplicate: _windowHook.DuplicateActiveTab(foregroundWindow); break;
             case HotKeyAction.ReopenClosed: _windowHook.ReopenClosedTab(foregroundWindow); break;
+            case HotKeyAction.SetTargetWindow: _windowHook.SetTargetWindow(foregroundWindow); break;
             default: throw new ArgumentOutOfRangeException(nameof(profile), profile.Action, @"Invalid profile action");
         }
     }

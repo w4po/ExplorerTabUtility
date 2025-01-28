@@ -99,6 +99,11 @@ public class ExplorerWatcher : IHook
 
         _ = OpenTabNavigateWithSelection(closedWindow, windowHandle);
     }
+    public void SetTargetWindow(nint windowHandle)
+    {
+        if (Helper.IsFileExplorerWindow(windowHandle))
+            _mainWindowHandle = windowHandle;
+    }
 
     private void OnWindowShown(nint hWinEventHook, uint eventType, nint hWnd, int idObject, int idChild, uint dwEventThread, uint dWmsEventTime)
     {

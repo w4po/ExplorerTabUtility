@@ -4,5 +4,6 @@ public enum HotKeyAction
 {
     Open,
     Duplicate,
-    ReopenClosed
+    ReopenClosed,
+    SetTargetWindow
 }
