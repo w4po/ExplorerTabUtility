@@ -15,17 +15,17 @@ namespace ExplorerTabUtility.Forms;
 
 public partial class MainForm : MaterialForm
 {
+    private readonly HookManager _hookManager;
     private readonly List<HotKeyProfile> _hotKeyProfiles = [];
     private bool _allowVisible;
     private NotifyIcon _notifyIcon = null!;
-    private readonly HookManager _hookManager;
 
     public MainForm()
     {
         Application.ApplicationExit += OnApplicationExit;
-        InteractionManager.InteractionMethod = (InteractionMethod)SettingsManager.InteractionMethod;
-        _hookManager = new HookManager(_hotKeyProfiles, InteractionManager.OnHotKeyProfileTriggered, InteractionManager.OnNewWindow);
-        
+
+        _hookManager = new HookManager(_hotKeyProfiles);
+
         InitializeComponent();
         SetupMaterialSkin();
         InitializeNotifyIcon();
@@ -43,7 +43,7 @@ public partial class MainForm : MaterialForm
     private void InitializeNotifyIcon()
     {
         var importedList = DeserializeHotKeyProfiles(SettingsManager.HotKeyProfiles);
-        if (importedList != default) AddProfiles(importedList);
+        if (importedList != null) AddProfiles(importedList);
 
         _notifyIcon = new NotifyIcon
         {
@@ -70,9 +70,6 @@ public partial class MainForm : MaterialForm
     private ContextMenuStrip CreateContextMenuStrip()
     {
         var strip = new ContextMenuStrip();
-
-        // Interaction Menu
-        strip.Items.Add(CreateInteractionMethodMenuItem());
 
         // KeyboardHook Menu
         strip.Items.Add(CreateKeyboardHookMenuItem());
@@ -107,7 +104,7 @@ public partial class MainForm : MaterialForm
     private void UpdateKeyboardHookMenu()
     {
         var menuItem = (ToolStripMenuItem?)_notifyIcon.ContextMenuStrip?.Items["KeyboardHookMenu"];
-        if (menuItem == default) return;
+        if (menuItem == null) return;
 
         menuItem.DropDownItems.Clear();
         AddProfilesToMenuItem(menuItem);
@@ -125,21 +122,8 @@ public partial class MainForm : MaterialForm
         if (SettingsManager.IsKeyboardHookActive && !_hotKeyProfiles.Any(p => p.IsEnabled))
             menuItem.PerformClick();
     }
-    private ToolStripMenuItem CreateInteractionMethodMenuItem()
-    {
-        var isUiAutomation = InteractionManager.InteractionMethod == InteractionMethod.UiAutomation;
-
-        var windowHookMenuItem = CreateMenuItem("Interaction Method", checkOnClick: false,
-            dropDownItems:
-            [
-                CreateMenuItem("UIAutomation (Recommended)", isUiAutomation, InteractionMethodChanged, nameof(InteractionMethod.UiAutomation), false),
-                CreateMenuItem("Keyboard", !isUiAutomation, InteractionMethodChanged, nameof(InteractionMethod.Keyboard), false)
-            ]);
-
-        return windowHookMenuItem;
-    }
-    private static ToolStripMenuItem CreateMenuItem(string text, bool isChecked = default, EventHandler? eventHandler = default,
-        string? name = default, bool checkOnClick = true, params ToolStripItem[] dropDownItems)
+    private static ToolStripMenuItem CreateMenuItem(string text, bool isChecked = false, EventHandler? eventHandler = null,
+        string? name = null, bool checkOnClick = true, params ToolStripItem[] dropDownItems)
     {
         var item = new ToolStripMenuItem
         {
@@ -148,10 +132,10 @@ public partial class MainForm : MaterialForm
             CheckOnClick = checkOnClick
         };
 
-        if (name != default)
+        if (name != null)
             item.Name = name;
 
-        if (eventHandler != default)
+        if (eventHandler != null)
             item.Click += eventHandler;
 
         if (dropDownItems.Length > 0)
@@ -181,7 +165,7 @@ public partial class MainForm : MaterialForm
         flpProfiles.ResumeDrawing();
         flpProfiles.ResumeLayout();
     }
-    private void AddProfile(HotKeyProfile? profile = default)
+    private void AddProfile(HotKeyProfile? profile = null)
     {
         _hotKeyProfiles.Add(profile ??= new HotKeyProfile());
 
@@ -198,7 +182,7 @@ public partial class MainForm : MaterialForm
         _hotKeyProfiles.Remove(profile);
 
         var control = FindControlByProfile(profile);
-        if (control != default)
+        if (control != null)
             flpProfiles.Controls.Remove(control);
     }
     private HotKeyProfileControl? FindControlByProfile(HotKeyProfile profile)
@@ -215,7 +199,7 @@ public partial class MainForm : MaterialForm
         }
         catch
         {
-            return default;
+            return null;
         }
     }
 
@@ -228,17 +212,6 @@ public partial class MainForm : MaterialForm
     {
         if (!SettingsManager.IsKeyboardHookActive) return;
         _hookManager.StartKeyboardHook();
-    }
-    private static void InteractionMethodChanged(object? sender, EventArgs _)
-    {
-        if (sender is not ToolStripMenuItem item) return;
-        if (!Enum.TryParse(item.Name, out InteractionMethod method)) return;
-        InteractionManager.InteractionMethod = method;
-
-        foreach (ToolStripMenuItem radio in item.GetCurrentParent()!.Items)
-            radio.Checked = radio == item;
-
-        SettingsManager.InteractionMethod = (int)method;
     }
     private void KeyboardHookProfileItemClick(object? sender, EventArgs _)
     {
@@ -304,7 +277,7 @@ public partial class MainForm : MaterialForm
 
         var jsonString = System.IO.File.ReadAllText(ofd.FileName);
         var importedList = DeserializeHotKeyProfiles(jsonString);
-        if (importedList == default) return;
+        if (importedList == null) return;
 
         AddProfiles(importedList, true);
     }

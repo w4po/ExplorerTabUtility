@@ -3,5 +3,6 @@
 public enum HotKeyAction
 {
     Open,
-    Duplicate
+    Duplicate,
+    ReopenClosed
 }

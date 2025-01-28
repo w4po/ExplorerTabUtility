@@ -43,7 +43,7 @@ public partial class HotKeyProfileControl : UserControl
     }
 
     // Constructor
-    public HotKeyProfileControl(HotKeyProfile profile, Action<HotKeyProfile>? removeAction = default, Action? keyboardHookStarted = default, Action? keyboardHookStopped = default)
+    public HotKeyProfileControl(HotKeyProfile profile, Action<HotKeyProfile>? removeAction = null, Action? keyboardHookStarted = null, Action? keyboardHookStopped = null)
     {
         InitializeComponent();
         Tag = profile;
@@ -174,6 +174,13 @@ public partial class HotKeyProfileControl : UserControl
                 cbScope.Invalidate();
                 break;
             }
+            case HotKeyAction.ReopenClosed:
+            {
+                txtPath.Enabled = false;
+                cbScope.SelectedIndex = cbScope.FindStringExact(nameof(HotkeyScope.FileExplorer));
+                cbScope.Invalidate();
+                break;
+            }
         }
     }
     private void InitializeKeyboardHook()
@@ -186,7 +193,7 @@ public partial class HotKeyProfileControl : UserControl
     }
     private void DisposeKeyboardHook(bool inform = true)
     {
-        if (_lowLevelKeyboardHook == default) return;
+        if (_lowLevelKeyboardHook == null) return;
         _lowLevelKeyboardHook.Stop();
         _lowLevelKeyboardHook.Dispose();
 

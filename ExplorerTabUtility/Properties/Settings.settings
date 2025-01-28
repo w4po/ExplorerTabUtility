@@ -2,9 +2,6 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ExplorerTabUtility.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="InteractionMethod" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">0</Value>
-    </Setting>
     <Setting Name="WindowHook" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
@@ -12,7 +9,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="HotKeyProfiles" Type="System.String" Scope="User">
-      <Value Profile="(Default)">[{"Name":"Home","HotKeys":[91,69],"Scope":0,"Action":0,"Path":"","IsHandled":true,"IsEnabled":true,"Delay":0},{"Name":"Duplicate","HotKeys":[17,68],"Scope":1,"Action":1,"Path":null,"IsHandled":true,"IsEnabled":true,"Delay":0}]</Value>
+      <Value Profile="(Default)">[{"Name":"Home","HotKeys":[91,69],"Scope":0,"Action":0,"Path":"","IsHandled":true,"IsEnabled":true,"Delay":0},{"Name":"Duplicate","HotKeys":[17,68],"Scope":1,"Action":1,"Path":null,"IsHandled":true,"IsEnabled":true,"Delay":0},{"Name":"ReopenClosed","HotKeys":[16,17,84],"Scope":1,"Action":2,"Path":null,"IsHandled":true,"IsEnabled":true,"Delay":0}]</Value>
     </Setting>
     <Setting Name="SaveProfilesOnExit" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

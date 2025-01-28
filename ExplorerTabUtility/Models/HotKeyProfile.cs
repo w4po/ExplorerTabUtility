@@ -14,7 +14,7 @@ public class HotKeyProfile
     public int Delay { get; set; }
 
     public HotKeyProfile() { }
-    public HotKeyProfile(string name, Key[] hotKeys, HotKeyAction action, string? path = default, HotkeyScope scope = HotkeyScope.Global, int delay = 0)
+    public HotKeyProfile(string name, Key[] hotKeys, HotKeyAction action, string? path = null, HotkeyScope scope = HotkeyScope.Global, int delay = 0)
     {
         Name = name;
         HotKeys = hotKeys;

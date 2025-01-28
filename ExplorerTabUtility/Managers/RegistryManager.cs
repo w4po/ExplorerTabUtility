@@ -12,7 +12,7 @@ public static class RegistryManager
         if (string.IsNullOrWhiteSpace(executablePath)) return false;
 
         using var key = OpenCurrentUserKey(Constants.RunRegistryKeyPath, false);
-        if (key == default) return false;
+        if (key == null) return false;
 
         var value = key.GetValue(Constants.AppName) as string;
         return string.Equals(value, executablePath, StringComparison.OrdinalIgnoreCase);
@@ -24,7 +24,7 @@ public static class RegistryManager
         if (string.IsNullOrWhiteSpace(executablePath)) return;
 
         using var key = OpenCurrentUserKey(Constants.RunRegistryKeyPath, true);
-        if (key == default) return;
+        if (key == null) return;
 
         // If already set in startup
         if (string.Equals(key.GetValue(Constants.AppName) as string, executablePath, StringComparison.OrdinalIgnoreCase))
