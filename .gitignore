@@ -132,6 +132,9 @@ _ReSharper*/
 *.[Rr]e[Ss]harper
 *.DotSettings.user
 
+.idea/
+.windsurfrules
+
 # TeamCity is a build add-in
 _TeamCity*
 

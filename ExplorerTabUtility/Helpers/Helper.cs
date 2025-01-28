@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ExplorerTabUtility.WinAPI;
 
 namespace ExplorerTabUtility.Helpers;
 
@@ -195,6 +197,64 @@ public static class Helper
     }
     
     public static Icon? GetIcon() => Icon.ExtractAssociatedIcon(GetExecutablePath());
+
+    public static bool IsFileExplorerTab(nint tab)
+    {
+        return tab != 0 && WinApi.IsWindowHasClassName(tab, "ShellTabWindowClass");
+    }
+    public static bool IsFileExplorerWindow(nint window)
+    {
+        return window != 0 && WinApi.IsWindowHasClassName(window, "CabinetWClass");
+    }
+    public static bool IsFileExplorerForeground(out nint foregroundWindow)
+    {
+        foregroundWindow = WinApi.GetForegroundWindow();
+        return IsFileExplorerWindow(foregroundWindow);
+    }
+    public static nint GetAnotherExplorerWindow(nint currentWindow)
+    {
+        return currentWindow == default
+            ? WinApi.FindWindow("CabinetWClass", null)
+            : WinApi.FindAllWindowsEx("CabinetWClass")
+                .FirstOrDefault(window => window != currentWindow);
+    }
+    public static nint ListenForNewExplorerTab(IReadOnlyCollection<nint> currentTabs, int searchTimeMs = 1000)
+    {
+        return DoUntilNotDefault(() =>
+                GetAllExplorerTabs()
+                    .Except(currentTabs)
+                    .FirstOrDefault(),
+            searchTimeMs);
+    }
+    public static Task<nint> ListenForNewExplorerTabAsync(IReadOnlyCollection<nint> currentTabs, int searchTimeMs = 1000)
+    {
+        return DoUntilNotDefaultAsync(() =>
+                GetAllExplorerTabs()
+                    .Except(currentTabs)
+                    .FirstOrDefault(),
+            searchTimeMs);
+    }
+    public static Task<nint> ListenForNewExplorerTabAsync(nint window, IReadOnlyCollection<nint> currentTabs, int searchTimeMs = 1000)
+    {
+        return DoUntilNotDefaultAsync(() =>
+                GetAllExplorerTabs(window)
+                    .Except(currentTabs)
+                    .FirstOrDefault(),
+            searchTimeMs);
+    }
+    public static List<nint> GetAllExplorerTabs()
+    {
+        var tabs = new List<nint>();
+
+        foreach (var window in WinApi.FindAllWindowsEx("CabinetWClass"))
+            tabs.AddRange(WinApi.FindAllWindowsEx("ShellTabWindowClass", window));
+
+        return tabs;
+    }
+    public static IEnumerable<nint> GetAllExplorerTabs(nint window)
+    {
+        return WinApi.FindAllWindowsEx("ShellTabWindowClass", window);
+    }
 
     public static string GetExecutablePath()
     {

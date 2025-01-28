@@ -12,7 +12,7 @@ namespace ExplorerTabUtility.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.9.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.13.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -20,18 +20,6 @@ namespace ExplorerTabUtility.Properties {
         public static Settings Default {
             get {
                 return defaultInstance;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int InteractionMethod {
-            get {
-                return ((int)(this["InteractionMethod"]));
-            }
-            set {
-                this["InteractionMethod"] = value;
             }
         }
         
@@ -61,9 +49,7 @@ namespace ExplorerTabUtility.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("[{\"Name\":\"Home\",\"HotKeys\":[91,69],\"Scope\":0,\"Action\":0,\"Path\":\"\",\"IsHandled\":true" +
-            ",\"IsEnabled\":true,\"Delay\":0},{\"Name\":\"Duplicate\",\"HotKeys\":[17,68],\"Scope\":1,\"Ac" +
-            "tion\":1,\"Path\":null,\"IsHandled\":true,\"IsEnabled\":true,\"Delay\":0}]")]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"[{""Name"":""Home"",""HotKeys"":[91,69],""Scope"":0,""Action"":0,""Path"":"""",""IsHandled"":true,""IsEnabled"":true,""Delay"":0},{""Name"":""Duplicate"",""HotKeys"":[17,68],""Scope"":1,""Action"":1,""Path"":null,""IsHandled"":true,""IsEnabled"":true,""Delay"":0},{""Name"":""ReopenClosed"",""HotKeys"":[16,17,84],""Scope"":1,""Action"":2,""Path"":null,""IsHandled"":true,""IsEnabled"":true,""Delay"":0}]")]
         public string HotKeyProfiles {
             get {
                 return ((string)(this["HotKeyProfiles"]));

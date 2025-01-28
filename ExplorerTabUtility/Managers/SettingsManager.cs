@@ -2,15 +2,6 @@
 
 public static class SettingsManager
 {
-    public static int InteractionMethod
-    {
-        get => Properties.Settings.Default.InteractionMethod;
-        set
-        {
-            Properties.Settings.Default.InteractionMethod = value;
-            SaveSettings();
-        }
-    }
     public static bool IsKeyboardHookActive
     {
         get => Properties.Settings.Default.KeyboardHook;

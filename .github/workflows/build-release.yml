@@ -23,41 +23,47 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Extract Version from .csproj
-        id: get_version
-        run: |
-          $version = (Select-String -Path "${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}.csproj" -Pattern '<Version>(.*?)</Version>').Matches.Groups[1].Value
-          Write-Output "Version extracted: $version"
-          echo "version=$version" >> $env:GITHUB_OUTPUT
-        shell: pwsh
-
+      - name: Setup MSBuild Environments
+        uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: '17.0'  # Visual Studio 2022
+          
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 9.0.x
 
-      - name: Restore Dependencies
-        run: dotnet restore
-
-      - name: Publish Project
+      - name: Build Project
         run: |
-          $outputDir = "publish/${{ matrix.framework }}/${{ matrix.arch }}"
+          $outputDir = "../publish/${{ matrix.framework }}/${{ matrix.arch }}"
           if ("${{ matrix.framework }}" -eq "net9.0-windows") {
             # .NET 9.0 build
-            dotnet publish -f ${{ matrix.framework }} -r win-${{ matrix.arch }} --self-contained false -c Release -o $outputDir
+            msbuild "${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}.csproj" /restore /t:Publish /p:Configuration=Release /p:TargetFramework=${{ matrix.framework }} /p:RuntimeIdentifier=win-${{ matrix.arch }} /p:PublishDir=$outputDir /p:DebugType=none /p:PublishSingleFile=true
           } else {
             # .NET Framework 4.8.1 build
-            dotnet publish "${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}.csproj" -f ${{ matrix.framework }} -c Release -o $outputDir /p:Platform=${{ matrix.arch }}
+            msbuild "${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}.csproj" /restore /t:Publish /p:Configuration=Release /p:TargetFramework=${{ matrix.framework }} /p:RuntimeIdentifier=win-${{ matrix.arch }} /p:PublishDir=$outputDir /p:DebugType=none
           }
         shell: pwsh
-
+      
       - name: Zip Artifacts
         id: zip_artifacts
         run: |
-          $version = "${{ steps.get_version.outputs.version }}"
           $frameworkName = if ("${{ matrix.framework }}" -eq "net9.0-windows") { "Net9.0_FrameworkDependent" } else { "NetFW4.8.1" }
-          $zipName = "${{ env.PROJECT_NAME }}_v${version}_${{ matrix.arch }}_${frameworkName}.zip"
-          Compress-Archive -Path "publish/${{ matrix.framework }}/${{ matrix.arch }}/*" -DestinationPath $zipName
+          $zipName = "${{ env.PROJECT_NAME }}_${{ github.ref_name }}_${{ matrix.arch }}_${frameworkName}.zip"
+          
+          # Create a temporary directory with PROJECT_NAME as the root
+          $tempDir = "temp-$(New-Guid)"
+          New-Item -Path "$tempDir/${{ env.PROJECT_NAME }}" -ItemType Directory -Force | Out-Null
+          
+          # Copy published files into PROJECT_NAME subdirectory
+          Copy-Item -Path "publish/${{ matrix.framework }}/${{ matrix.arch }}/*" -Destination "$tempDir/${{ env.PROJECT_NAME }}" -Recurse
+          
+          # Compress the entire temp directory (includes PROJECT_NAME folder)
+          Compress-Archive -Path "$tempDir/*" -DestinationPath $zipName
+          
+          # Clean up temporary directory
+          Remove-Item -Path $tempDir -Recurse -Force
+          
           echo "zipName=$zipName" >> $env:GITHUB_OUTPUT
         shell: pwsh
 
@@ -79,32 +85,44 @@ jobs:
         with:
           path: artifacts
         
-      - name: List Files (Debugging)
-        run: ls -R artifacts  # Debug step to verify structure
-        
       - name: Generate Changelog
         id: generate_changelog
         uses: mikepenz/release-changelog-builder-action@v5
         with:
-          commitMode: true
-          configuration: |
-            categories:
-              - title: "🚀 Features"
-                labels: ["feature"]
-                regex: '^feat:'
-              - title: "🐛 Bug Fixes"
-                labels: ["bug"]
-                regex: '^fix:'
-              - title: "📜 Other Changes"
-                labels: ["*"]
-          token: ${{ secrets.GITHUB_TOKEN }}
-      
+          mode: "COMMIT"
+          configurationJson: |
+            {
+              "template": "#{{CHANGELOG}}",
+              "categories": [
+                {
+                    "title": "## 🚀 Feature",
+                    "labels": ["feat", "feature"]
+                },
+                {
+                    "title": "## 🐛 Fix",
+                    "labels": ["fix", "bug"]
+                },
+                {
+                    "title": "## 📜 Other",
+                    "labels": []
+                }
+              ],
+              "label_extractor": [
+                {
+                  "pattern": "^(build|chore|ci|docs|feat|fix|bug|perf|refactor|revert|style|test){1}(\\([\\w\\-\\.]+\\))?(!)?: ([\\w ])+([\\s\\S]*)",
+                  "target": "$1"
+                }
+              ]
+            }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ env.PROJECT_NAME }} ${{ github.ref_name }}
+          draft: true
           body: |
             ${{ steps.generate_changelog.outputs.changelog }}
             
