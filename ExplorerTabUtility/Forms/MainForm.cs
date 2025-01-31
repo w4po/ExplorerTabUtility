@@ -24,6 +24,7 @@ public partial class MainForm : MaterialForm
         Application.ApplicationExit += OnApplicationExit;
 
         _hookManager = new HookManager(_hotKeyProfiles);
+        _hookManager.OnVisibilityToggled += ToggleFormVisibility;
 
         InitializeComponent();
         SetupMaterialSkin();
@@ -322,7 +323,16 @@ public partial class MainForm : MaterialForm
         WinApi.ShowWindow(Handle, WinApi.SW_SHOWNOACTIVATE);
         WinApi.SetForegroundWindow(Handle);
     }
-    
+    private void ToggleFormVisibility()
+    {
+        Invoke(() =>
+        {
+            if (Visible)
+                Hide();
+            else
+                ShowForm();
+        });
+    }
     protected override void OnResize(EventArgs e)
     {
         if (WindowState == FormWindowState.Minimized)

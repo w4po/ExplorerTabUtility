@@ -11,6 +11,7 @@ public sealed class HookManager
     private readonly ExplorerWatcher _windowHook;
     public bool IsKeyboardHookStarted => _keyboardHook.IsHookActive;
     public bool IsWindowHookStarted => _windowHook.IsHookActive;
+    public event Action? OnVisibilityToggled;
 
     public HookManager(IReadOnlyCollection<HotKeyProfile> hotKeyProfiles)
     {
@@ -33,6 +34,7 @@ public sealed class HookManager
             case HotKeyAction.Duplicate: _windowHook.DuplicateActiveTab(foregroundWindow); break;
             case HotKeyAction.ReopenClosed: _windowHook.ReopenClosedTab(foregroundWindow); break;
             case HotKeyAction.SetTargetWindow: _windowHook.SetTargetWindow(foregroundWindow); break;
+            case HotKeyAction.ToggleVisibility: OnVisibilityToggled?.Invoke();  break;
             default: throw new ArgumentOutOfRangeException(nameof(profile), profile.Action, @"Invalid profile action");
         }
     }
