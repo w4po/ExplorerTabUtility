@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using ExplorerTabUtility.Models;
 using ExplorerTabUtility.Hooks;
-using System.Threading.Tasks;
 
 namespace ExplorerTabUtility.Managers;
 
@@ -29,18 +28,7 @@ public sealed class HookManager
     {
         switch (profile.Action)
         {
-            case HotKeyAction.Open:
-            {
-                if (profile.Delay > 0)
-                    await Task.Delay(profile.Delay).ConfigureAwait(false);
-
-                if (string.IsNullOrWhiteSpace(profile.Path))
-                    _windowHook.RequestToOpenNewTab(foregroundWindow, bringToFront: true);
-                else
-                    _windowHook.OpenNewTab(foregroundWindow, profile.Path!);
-
-                break;
-            }
+            case HotKeyAction.Open: await _windowHook.Open(profile.Path, foregroundWindow, profile.Delay); break;
             case HotKeyAction.Duplicate: _windowHook.DuplicateActiveTab(foregroundWindow); break;
             case HotKeyAction.ReopenClosed: _windowHook.ReopenClosedTab(foregroundWindow); break;
             case HotKeyAction.SetTargetWindow: _windowHook.SetTargetWindow(foregroundWindow); break;
@@ -48,18 +36,19 @@ public sealed class HookManager
         }
     }
 
-    public void Dispose()
-    {
-        _keyboardHook.Dispose();
-        _windowHook.Dispose();
-    }
     private static void ChangeHookStatus(IHook hook, bool isActive)
     {
         if (hook.IsHookActive == isActive) return;
-        
+
         if (isActive)
             hook.StartHook();
         else
             hook.StopHook();
+    }
+
+    public void Dispose()
+    {
+        _keyboardHook.Dispose();
+        _windowHook.Dispose();
     }
 }

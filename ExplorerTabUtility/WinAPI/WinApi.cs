@@ -52,6 +52,9 @@ public static class WinApi
     [DllImport("user32.dll")]
     public static extern bool SetLayeredWindowAttributes(nint hWnd, uint crKey, byte bAlpha, uint dwFlags);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool GetLayeredWindowAttributes(nint hwnd, out uint pcrKey, out byte pbAlpha, out uint pdwFlags);
+
     [DllImport("user32.dll")]
     public static extern bool IsIconic(nint handle);
 
@@ -99,6 +102,14 @@ public static class WinApi
         SetForegroundWindow(window);
     }
 
+    private static void EnsureWindowIsLayered(nint hWnd)
+    {
+        var exStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
+        if ((exStyle & WS_EX_LAYERED) != 0) return;
+
+        SetWindowLong(hWnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+    }
+
     /// <summary>
     /// Sets the transparency of the specified window.
     /// </summary>
@@ -112,14 +123,31 @@ public static class WinApi
         // Clamp the alpha value between 0 and 255
         alpha = alpha.Clamp(byte.MinValue, byte.MaxValue);
 
-        // Get the current extended window style
-        var extendedStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
-
-        // Make the window layered
-        SetWindowLong(hWnd, GWL_EXSTYLE, extendedStyle | WS_EX_LAYERED);
+        // Ensure the window is layered
+        EnsureWindowIsLayered(hWnd);
 
         // Set the transparency (alpha value) of the window (0 = transparent, 255 = opaque)
         SetLayeredWindowAttributes(hWnd, 0, alpha, LWA_ALPHA);
+    }
+
+    /// <summary>
+    /// Retrieves the alpha transparency value of the specified window.
+    /// </summary>
+    /// <param name="hWnd">Handle to the window.</param>
+    /// <returns>Alpha value (0-255) if successful; otherwise, null.</returns>
+    public static byte? GetWindowTransparency(nint hWnd)
+    {
+        // Ensure the window is layered
+        EnsureWindowIsLayered(hWnd);
+
+        var success = GetLayeredWindowAttributes(hWnd, out _, out var pbAlpha, out var dwFlags);
+        if (!success) return null;
+
+        if ((dwFlags & LWA_ALPHA) != 0)
+            return pbAlpha;
+
+        // The window doesn't use alpha blending
+        return null;
     }
 
     public static string GetWindowClassName(nint hWnd, int maxClassNameLength = 254)

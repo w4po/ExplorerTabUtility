@@ -65,6 +65,12 @@ public class ExplorerWatcher : IHook
         if (bringToFront && windowHandle == 0)
             windowHandle = GetMainWindowHWnd(0);
 
+        if (windowHandle == 0)
+        {
+            Process.Start("explorer.exe");
+            return;
+        }
+
         var tabHandle = WinApi.FindWindowEx(windowHandle, 0, "ShellTabWindowClass", null);
         if (tabHandle == 0) return;
 
@@ -73,6 +79,19 @@ public class ExplorerWatcher : IHook
 
         if (bringToFront)
             WinApi.RestoreWindowToForeground(windowHandle);
+    }
+    public async Task Open(string? location, nint windowHandle, int delay = 0)
+    {
+        if (delay > 0)
+            await Task.Delay(delay).ConfigureAwait(false);
+
+        if (string.IsNullOrWhiteSpace(location))
+        {
+            RequestToOpenNewTab(windowHandle, bringToFront: true);
+            return;
+        }
+
+        OpenNewTab(windowHandle, NormalizeLocation(location!));
     }
     public void OpenNewTab(nint windowHandle, string location)
     {
@@ -194,7 +213,13 @@ public class ExplorerWatcher : IHook
         finally
         {
             if (showAgain)
+            {
                 WinApi.SetWindowTransparency(hWnd, 255);
+
+                // OnWindowShown might fire after ShellWindowRegistered and hide it again.
+                await Task.Delay(1500).ConfigureAwait(false);
+                WinApi.SetWindowTransparency(hWnd, 255);
+            }
         }
     }
     private void HookWindowEvents(InternetExplorer window, WindowEventHandlers handlers)
@@ -315,24 +340,27 @@ public class ExplorerWatcher : IHook
 
         return _mainWindowHandle == 0 ? otherThan : _mainWindowHandle;
     }
-    private async Task<nint> GetTabHandle(InternetExplorer window)
+    private Task<nint> GetTabHandle(InternetExplorer window)
     {
-        if (_windowEntryDict.TryGetValue(window, out WindowEntry entry) && entry.OptionalKey is { } ok and > 0)
-            return ok;
+        if (_windowEntryDict.TryGetValue(window, out WindowEntry entry) && entry.OptionalKey is { } handle and > 0)
+            return Task.FromResult(handle);
 
-        if (window is not Interop.IServiceProvider sp) return 0;
-
-        // Get the shell browser
-        sp.QueryService(ref _shellBrowserGuid, ref _shellBrowserGuid, out var shellBrowser);
-        if (shellBrowser == null) return 0;
-
-        // Schedule the operation on the STA thread and wait for the result
-        var task = Task.Factory.StartNew(() =>
+        // Schedule the operation on STA
+        return Task.Factory.StartNew(() =>
         {
+            if (window is not Interop.IServiceProvider sp) return 0;
+
+            sp.QueryService(ref _shellBrowserGuid, ref _shellBrowserGuid, out var shellBrowser);
+            if (shellBrowser == null) return 0;
+
             try
             {
-                shellBrowser.GetWindow(out var handle);
-                return handle;
+                shellBrowser.GetWindow(out var hWnd);
+
+                if (hWnd != 0)
+                    _windowEntryDict.UpdateOptionalKey(window, hWnd);
+
+                return hWnd;
             }
             finally
             {
@@ -342,27 +370,11 @@ public class ExplorerWatcher : IHook
         CancellationToken.None,
         TaskCreationOptions.None,
         _staTaskScheduler);
-
-        var handle = await task.ConfigureAwait(false);
-
-        if (handle != 0)
-            _windowEntryDict.UpdateOptionalKey(window, handle);
-
-        return handle;
     }
     private static nint GetActiveTabHandle(nint windowHandle)
     {
         // Active tab always at the top of the z-index
         return WinApi.FindWindowEx(windowHandle, 0, "ShellTabWindowClass", null);
-    }
-    private static string GetLocation(InternetExplorer window)
-    {
-        var path = window.LocationURL;
-        if (!string.IsNullOrWhiteSpace(path)) return path;
-
-        // Recycle Bin, This PC, etc
-        path = ((window.Document as ShellFolderView)!.Folder as Folder2)!.Self.Path;
-        return path.StartsWith(":") ? $"shell:{path}" : path;
     }
     private InternetExplorer? GetWindowByTabHandle(nint tabHandle)
     {
@@ -396,6 +408,25 @@ public class ExplorerWatcher : IHook
             if (item == null) continue;
             document.SelectItem(ref item, 1);
         }
+    }
+    private static string GetLocation(InternetExplorer window)
+    {
+        var path = window.LocationURL;
+        if (!string.IsNullOrWhiteSpace(path)) return path;
+
+        // Recycle Bin, This PC, etc
+        path = ((window.Document as ShellFolderView)!.Folder as Folder2)!.Self.Path;
+        return path.StartsWith(":") ? $"shell:{path}" : path;
+    }
+    private static string NormalizeLocation(string location)
+    {
+        if (location.IndexOf('%') > -1)
+            location = Environment.ExpandEnvironmentVariables(location);
+
+        if (location.StartsWith("{", StringComparison.Ordinal))
+            location = $"shell:::{location}";
+
+        return location;
     }
 
     private async Task MonitorExplorerProcess()
