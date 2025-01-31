@@ -297,7 +297,7 @@ public partial class MainForm : MaterialForm
     private void FlpProfiles_Resize(object _, EventArgs __)
     {
         foreach (Control c in flpProfiles.Controls)
-            c.Width = flpProfiles.Width - 20;
+            c.Width = flpProfiles.Width - 25;
     }
     private void MainForm_Resize(object _, EventArgs __)
     {

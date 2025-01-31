@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace ExplorerTabUtility.Interop;
 
@@ -8,6 +7,6 @@ namespace ExplorerTabUtility.Interop;
 [ComImport]
 public interface IShellBrowser
 {
-    [MethodImpl(MethodImplOptions.PreserveSig)]
+    [PreserveSig]
     int GetWindow(out nint handle);
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
@@ -102,9 +103,7 @@ public partial class HotKeyProfileControl : UserControl
             return;
         }
 
-        // Two or more keys and must have a modifier key. (CTRL, ALT, SHIFT, WIN)
-        if (e.Keys.Values.Count < 2 || !e.Keys.Values.Any(k => k is Key.Ctrl or Key.Alt or Key.Shift or Key.LWin or Key.RWin))
-            return;
+        if (!IsAllowedKeys(e.Keys.Values)) return;
 
         // Prevent the key from being handled by other applications.
         e.IsHandled = true;
@@ -117,6 +116,26 @@ public partial class HotKeyProfileControl : UserControl
 
         _profile.HotKeys = keys;
         Invoke(() => txtHotKeys.Text = string.Join(" + ", keys.Select(k => k.ToFixedString())));
+    }
+    private static bool IsAllowedKeys(IReadOnlyCollection<Key> keys)
+    {
+        // CTRL, ALT, SHIFT, WIN
+        if (keys.Any(k => k is Key.Ctrl or Key.Alt or Key.Shift or Key.LWin or Key.RWin))
+            return true;
+
+        // F1 to F23
+        if (keys.Any(k => k is >= Key.F1 and <= Key.F23))
+            return true;
+
+        // *, +, -, /
+        if (keys.Any(k => k is Key.Multiply or Key.Add or Key.Subtract or Key.Divide))
+            return true;
+
+        // PageUp, PageDown, Print, PrintScreen, Insert, Delete
+        if (keys.Any(k => k is Key.PageUp or Key.PageDown or Key.Print or Key.PrintScreen or Key.Insert or Key.Delete))
+            return true;
+
+        return false;
     }
 
     // Methods

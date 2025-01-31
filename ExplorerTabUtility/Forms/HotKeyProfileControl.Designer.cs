@@ -117,7 +117,7 @@ partial class HotKeyProfileControl
         cbAction.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
         cbAction.DropDownHeight = 118;
         cbAction.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-        cbAction.DropDownWidth = 121;
+        cbAction.DropDownWidth = 155;
         cbAction.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
         cbAction.ForeColor = System.Drawing.Color.FromArgb(222, 0, 0, 0);
         cbAction.FormattingEnabled = true;
@@ -402,7 +402,7 @@ partial class HotKeyProfileControl
         txtPath.LeaveOnEnterKey = true;
         txtPath.Location = new System.Drawing.Point(72, 0);
         txtPath.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-        txtPath.MaxLength = 50;
+        txtPath.MaxLength = 1000;
         txtPath.MouseState = MaterialSkin.MouseState.OUT;
         txtPath.Multiline = false;
         txtPath.Name = "txtPath";

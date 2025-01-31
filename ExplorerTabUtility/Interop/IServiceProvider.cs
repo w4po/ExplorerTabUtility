@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace ExplorerTabUtility.Interop;
@@ -9,6 +8,6 @@ namespace ExplorerTabUtility.Interop;
 [ComImport]
 public interface IServiceProvider
 {
-    [MethodImpl(MethodImplOptions.PreserveSig)]
+    [PreserveSig]
     int QueryService(ref Guid guidService, ref Guid riid, [MarshalAs(UnmanagedType.Interface)] out IShellBrowser? ppvObject);
 }
