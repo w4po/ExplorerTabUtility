@@ -65,6 +65,8 @@ public partial class MainForm : MaterialForm
     {
         if (SettingsManager.IsWindowHookActive) _hookManager.StartWindowHook();
         if (SettingsManager.IsKeyboardHookActive) _hookManager.StartKeyboardHook();
+
+        _hookManager.SetReuseTabs(SettingsManager.ReuseTabs);
     }
 
     private ContextMenuStrip CreateContextMenuStrip()
@@ -76,6 +78,9 @@ public partial class MainForm : MaterialForm
 
         // WindowHook
         strip.Items.Add(CreateMenuItem("Window Hook", SettingsManager.IsWindowHookActive, ToggleWindowHook));
+
+        // WindowHook
+        strip.Items.Add(CreateMenuItem("ReuseTabs", SettingsManager.ReuseTabs, ToggleReuseTabs));
 
         // Separator
         strip.Items.Add(new ToolStripSeparator());
@@ -266,6 +271,13 @@ public partial class MainForm : MaterialForm
             _hookManager.StartWindowHook();
         else
             _hookManager.StopWindowHook();
+    }
+    private void ToggleReuseTabs(object? sender, EventArgs _)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+
+        SettingsManager.ReuseTabs = item.Checked;
+        _hookManager.SetReuseTabs(item.Checked);
     }
     private void BtnNewProfile_Click(object _, EventArgs __) => AddProfile();
     private void BtnImport_Click(object _, EventArgs __)

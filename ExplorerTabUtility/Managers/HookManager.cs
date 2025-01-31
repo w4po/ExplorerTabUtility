@@ -23,6 +23,7 @@ public sealed class HookManager
     public void StopKeyboardHook() => ChangeHookStatus(_keyboardHook, false);
     public void StartWindowHook() => ChangeHookStatus(_windowHook, true);
     public void StopWindowHook() => ChangeHookStatus(_windowHook, false);
+    public void SetReuseTabs(bool value) => _windowHook.SetReuseTabs(value);
 
     public async void OnHotKeyProfileTriggered(HotKeyProfile profile, nint foregroundWindow = 0)
     {

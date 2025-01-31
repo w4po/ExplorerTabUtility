@@ -22,11 +22,16 @@ public static class WinApi
     public const int WS_EX_LAYERED = 0x80000; // Layered window.
     public const int LWA_ALPHA = 0x2; // Determine the opacity of a layered window
 
+    public const uint SIGDN_URL = 0x80068000;
+
     [DllImport("user32.dll")]
     public static extern nint SetWinEventHook(uint eventMin, uint eventMax, nint hModWinEventProc, WinEventDelegate lPfnWinEventProc, uint idProcess, uint idThread, uint dwFlags);
 
     [DllImport("user32.dll")]
     public static extern bool UnhookWinEvent(nint hWinEventHook);
+
+    [DllImport("user32.dll")]
+    public static extern nint GetParent(nint hWnd);
 
     [DllImport("user32.dll", SetLastError = true)]
     public static extern nint FindWindow(string lpClassName, string? lpWindowName);
@@ -70,6 +75,12 @@ public static class WinApi
 
     [DllImport("shell32.dll", SetLastError = true)]
     public static extern int SHOpenFolderAndSelectItems(nint pidlFolder, uint cIdl, [In, MarshalAs(UnmanagedType.LPArray)] nint[] apidl, uint dwFlags);
+
+    [DllImport("shell32.dll")]
+    public static extern int SHGetDesktopFolder(out nint ppshf);
+
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode, PreserveSig = false)]
+    public static extern void SHGetNameFromIDList(nint pidl, uint sigdnName, [MarshalAs(UnmanagedType.LPWStr)] out string? ppszName);
 
     public static IEnumerable<nint> FindAllWindowsEx(string className, nint parent = 0, string? windowTitle = null)
     {

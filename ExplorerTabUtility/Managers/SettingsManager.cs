@@ -20,6 +20,15 @@ public static class SettingsManager
             SaveSettings();
         }
     }
+    public static bool ReuseTabs
+    {
+        get => Properties.Settings.Default.ReuseTabs;
+        set
+        {
+            Properties.Settings.Default.ReuseTabs = value;
+            SaveSettings();
+        }
+    }
     public static string HotKeyProfiles
     {
         get => Properties.Settings.Default.HotKeyProfiles;
