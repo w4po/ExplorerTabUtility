@@ -191,8 +191,6 @@ namespace ExplorerTabUtility.Forms
             Padding = new System.Windows.Forms.Padding(3, 55, 3, 3);
             Text = "Settings";
             Deactivate += MainForm_Deactivate;
-            FormClosing += MainForm_FormClosing;
-            Resize += MainForm_Resize;
             ResumeLayout(false);
             PerformLayout();
         }

@@ -17,7 +17,6 @@ public partial class MainForm : MaterialForm
 {
     private readonly HookManager _hookManager;
     private readonly List<HotKeyProfile> _hotKeyProfiles = [];
-    private bool _allowVisible;
     private NotifyIcon _notifyIcon = null!;
 
     public MainForm()
@@ -311,39 +310,6 @@ public partial class MainForm : MaterialForm
         foreach (Control c in flpProfiles.Controls)
             c.Width = flpProfiles.Width - 25;
     }
-    private void MainForm_Resize(object _, EventArgs __)
-    {
-        if (WindowState == FormWindowState.Normal)
-        {
-            _allowVisible = true;
-        }
-        else if (WindowState == FormWindowState.Minimized)
-        {
-            WindowState = FormWindowState.Normal;
-            _allowVisible = false;
-            Hide();
-
-            if (!cbSaveProfilesOnExit.Checked) return;
-
-            // Save
-            UpdateMenuAndSaveProfiles();
-        }
-    }
-    private void MainForm_FormClosing(object _, FormClosingEventArgs e)
-    {
-        if (e.CloseReason != CloseReason.UserClosing) return;
-
-        e.Cancel = true;
-        _allowVisible = false;
-
-        // Hide the form instead of closing it when the close button is clicked
-        Hide();
-
-        if (!cbSaveProfilesOnExit.Checked) return;
-
-        // Save
-        UpdateMenuAndSaveProfiles();
-    }
     private void MainForm_Deactivate(object _, EventArgs __) => flpProfiles.Focus();
     private void OnApplicationExit(object? _, EventArgs __)
     {
@@ -353,16 +319,40 @@ public partial class MainForm : MaterialForm
 
     private void ShowForm()
     {
-        _allowVisible = true;
-        WindowState = FormWindowState.Normal;
-        Show();
+        WinApi.ShowWindow(Handle, WinApi.SW_SHOWNOACTIVATE);
+        WinApi.SetForegroundWindow(Handle);
+    }
+    
+    protected override void OnResize(EventArgs e)
+    {
+        if (WindowState == FormWindowState.Minimized)
+        {
+            Hide();
+            
+            if (cbSaveProfilesOnExit.Checked)
+                UpdateMenuAndSaveProfiles();
+        }
+
+        base.OnResize(e);
+    }
+    protected override void OnFormClosing(FormClosingEventArgs e)
+    {
+        if (e.CloseReason == CloseReason.UserClosing)
+        {
+            e.Cancel = true;
+            Hide();
+            
+            if (cbSaveProfilesOnExit.Checked)
+                UpdateMenuAndSaveProfiles();
+        }
+        base.OnFormClosing(e);
     }
     protected override void SetVisibleCore(bool value)
     {
-        if (!_allowVisible)
+        if (!IsHandleCreated)
         {
             value = false;
-            if (!IsHandleCreated) CreateHandle();
+            CreateHandle();
         }
         base.SetVisibleCore(value);
     }
