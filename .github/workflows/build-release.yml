@@ -15,9 +15,9 @@ jobs:
     strategy:
       matrix:
         framework: [ 'net9.0-windows', 'net481' ]
-        arch: [ 'x64', 'x86' ]
-      fail-fast: false
-      max-parallel: 4
+        arch: [ 'x64', 'x86', 'arm64' ]
+      fail-fast: true
+      max-parallel: 6
 
     steps:
       - name: Checkout code
