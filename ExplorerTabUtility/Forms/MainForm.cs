@@ -25,6 +25,8 @@ public partial class MainForm : MaterialForm
 
         _hookManager = new HookManager(_hotKeyProfiles);
         _hookManager.OnVisibilityToggled += ToggleFormVisibility;
+        _hookManager.OnWindowHookToggled += () => Invoke(() => GetMenuItemByKey("WindowHook")!.PerformClick());
+        _hookManager.OnReuseTabsToggled += () => Invoke(() => GetMenuItemByKey("ReuseTabs")!.PerformClick());
 
         InitializeComponent();
         SetupMaterialSkin();
@@ -77,10 +79,10 @@ public partial class MainForm : MaterialForm
         strip.Items.Add(CreateKeyboardHookMenuItem());
 
         // WindowHook
-        strip.Items.Add(CreateMenuItem("Window Hook", SettingsManager.IsWindowHookActive, ToggleWindowHook));
+        strip.Items.Add(CreateMenuItem("Window Hook", SettingsManager.IsWindowHookActive, ToggleWindowHook, "WindowHook"));
 
         // WindowHook
-        strip.Items.Add(CreateMenuItem("ReuseTabs", SettingsManager.ReuseTabs, ToggleReuseTabs));
+        strip.Items.Add(CreateMenuItem("ReuseTabs", SettingsManager.ReuseTabs, ToggleReuseTabs, "ReuseTabs"));
 
         // Separator
         strip.Items.Add(new ToolStripSeparator());
@@ -99,6 +101,11 @@ public partial class MainForm : MaterialForm
 
         return strip;
     }
+
+    private ToolStripItem? GetMenuItemByKey(string key)
+    {
+        return _notifyIcon.ContextMenuStrip!.Items[key];
+    }
     private ToolStripMenuItem CreateKeyboardHookMenuItem()
     {
         var menuItem = CreateMenuItem("Keyboard Hook", SettingsManager.IsKeyboardHookActive, ToggleKeyboardHook, "KeyboardHookMenu");
@@ -108,10 +115,9 @@ public partial class MainForm : MaterialForm
     }
     private void UpdateKeyboardHookMenu()
     {
-        var menuItem = (ToolStripMenuItem?)_notifyIcon.ContextMenuStrip?.Items["KeyboardHookMenu"];
-        if (menuItem == null) return;
+        var menuItem = GetMenuItemByKey("KeyboardHookMenu") as ToolStripMenuItem;
 
-        menuItem.DropDownItems.Clear();
+        menuItem!.DropDownItems.Clear();
         AddProfilesToMenuItem(menuItem);
     }
     private void AddProfilesToMenuItem(ToolStripMenuItem menuItem)

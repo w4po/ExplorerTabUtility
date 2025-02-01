@@ -6,5 +6,7 @@ public enum HotKeyAction
     Duplicate,
     ReopenClosed,
     SetTargetWindow,
+    ToggleWinHook,
+    ToggleReuseTabs,
     ToggleVisibility
 }

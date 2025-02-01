@@ -238,7 +238,8 @@ public class ExplorerWatcher : IHook
             }
 
             // Check if this is a single tab window and there are other windows
-            var shouldReopenAsTab = _isForcingTabs && _windowEntryDict.Count > 1 &&
+            var shouldReopenAsTab = (_isForcingTabs || _reuseTabs) &&
+                                    _windowEntryDict.Count > 1 &&
                                     Helper.GetAllExplorerTabs(hWnd).Take(2).Count() == 1;
 
             if (shouldReopenAsTab)
@@ -501,7 +502,7 @@ public class ExplorerWatcher : IHook
         if (location.StartsWith("{", StringComparison.Ordinal))
             location = $"shell:::{location}";
 
-        return location;
+        return location.Trim(' ', '\n', '\'', '"');
     }
 
     private async Task MonitorExplorerProcess()

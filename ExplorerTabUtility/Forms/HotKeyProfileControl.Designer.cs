@@ -117,7 +117,7 @@ partial class HotKeyProfileControl
         cbAction.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
         cbAction.DropDownHeight = 118;
         cbAction.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-        cbAction.DropDownWidth = 155;
+        cbAction.DropDownWidth = 175;
         cbAction.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
         cbAction.ForeColor = System.Drawing.Color.FromArgb(222, 0, 0, 0);
         cbAction.FormattingEnabled = true;

@@ -12,6 +12,8 @@ public sealed class HookManager
     public bool IsKeyboardHookStarted => _keyboardHook.IsHookActive;
     public bool IsWindowHookStarted => _windowHook.IsHookActive;
     public event Action? OnVisibilityToggled;
+    public event Action? OnWindowHookToggled;
+    public event Action? OnReuseTabsToggled;
 
     public HookManager(IReadOnlyCollection<HotKeyProfile> hotKeyProfiles)
     {
@@ -26,7 +28,7 @@ public sealed class HookManager
     public void StopWindowHook() => ChangeHookStatus(_windowHook, false);
     public void SetReuseTabs(bool value) => _windowHook.SetReuseTabs(value);
 
-    public async void OnHotKeyProfileTriggered(HotKeyProfile profile, nint foregroundWindow = 0)
+    private async void OnHotKeyProfileTriggered(HotKeyProfile profile, nint foregroundWindow = 0)
     {
         switch (profile.Action)
         {
@@ -35,6 +37,8 @@ public sealed class HookManager
             case HotKeyAction.ReopenClosed: _windowHook.ReopenClosedTab(foregroundWindow); break;
             case HotKeyAction.SetTargetWindow: _windowHook.SetTargetWindow(foregroundWindow); break;
             case HotKeyAction.ToggleVisibility: OnVisibilityToggled?.Invoke();  break;
+            case HotKeyAction.ToggleWinHook: OnWindowHookToggled?.Invoke();  break;
+            case HotKeyAction.ToggleReuseTabs: OnReuseTabsToggled?.Invoke();  break;
             default: throw new ArgumentOutOfRangeException(nameof(profile), profile.Action, @"Invalid profile action");
         }
     }
