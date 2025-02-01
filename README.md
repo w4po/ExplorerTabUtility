@@ -1,95 +1,249 @@
-![logo](Assets/ExplorerTabUtilityLogo.gif)
-
 # Explorer Tab Utility
- **Force new `File Explorer's` windows to Tabs:**
- *Intercept `Win+E` keys and `File Explorer's` directory opening to open a new tab instead.*
- 
-**Note**: The File Explorer's Tabs feature is only available in Windows 11 22H2 Build (22621) or later.
 
-## Why was this made?
-To prevent having multiple Explorer windows opened like this:
-![ExplorerTabUtility](Assets/TheWhy.png)
+> [!TIP]
+> Force new File Explorer windows to open as tabs in Windows 11, making your workflow cleaner and more organized!
 
-## Features
+<div align="center">
+  <img src="Assets/ExplorerTabUtilityLogo.gif" alt="Explorer Tab Utility Logo">
+  
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Windows 11](https://img.shields.io/badge/Windows%2011-22H2+-blue.svg)](https://www.microsoft.com/windows/windows-11)
+  [![.NET](https://img.shields.io/badge/.NET-9.0-purple.svg)](https://dotnet.microsoft.com/download)
+  [![.NET Framework](https://img.shields.io/badge/.NET%20Framework-4.8.1-purple.svg)](https://dotnet.microsoft.com/download/dotnet-framework)
+</div>
 
-- **(`Win + E`) Before:**
-![Before ExplorerTabUtility](Assets/Before_ExplorerTabUtility.gif)
+> [!IMPORTANT]
+> This application requires Windows 11 (22H2 Build 22621 or later) with the File Explorer Tabs feature.
 
-- **(`Win + E`) After:**
-![After ExplorerTabUtility](Assets/After_ExplorerTabUtility.gif)
+## 🤔 Why Explorer Tab Utility?
 
-- **Intercept new window opening:**
-![Window opening ExplorerTabUtility](Assets/DoubleClickOpen.gif)
+<div align="center">
+  <img src="Assets/TheWhy.png" alt="Why use Explorer Tab Utility">
+</div>
 
-- **Show in folder (`Select files`):**
-![Show in folder ExplorerTabUtility](Assets/ShowInFolder.gif)
+Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab Utility automatically converts new windows into tabs, providing a cleaner and more organized file management experience.
 
-## Usage
+## ✨ Features
 
-1. Download `ExplorerTabUtility` from the [Releases](https://github.com/w4po/ExplorerTabUtility/releases) page.
+<details>
+<summary>🔄 Automatic Window to Tab Conversion</summary>
 
-2. Run the application:
+- Seamlessly converts new Explorer windows into tabs
+- Switches to existing tabs if path is already opened
+- Supports virtual desktop switching with a hotkey
+- Supports attaching/detaching tabs
+- Handles "Show in folder" file selection elegantly
+- Handles opening multiple tabs at once
 
-    *A tray icon will be visible with the following options:*
+**See it in action:**
+![Window to tab conversion](Assets/After_ExplorerTabUtility.gif)
+![Multiple windows opening](Assets/MultiOpen.gif)
+</details>
 
-    ![image](Assets/Menu.png)
+<details>
+<summary>🖨️ Duplicate Current Tab</summary>
 
-    ✅ `Keyboard (Win + E):` If you want to open new tab when Win+E are pressed.
+![Duplicate current tab](Assets/DuplicateTab.gif)
+</details>
 
-    ✅ `All Windows:` If you want to force all new windows to open a new tab instead.
-    - `UI (Recommended):` To open and navigate using (UI Automation), which is the recommended way.
-    - `Keys:` To Open and navigate using the keyboard (CTRL + T, CTRL + L, typing the location, etc...).
-    
-        Don't use `Keys` unless `UI` is not working.
+<details>
+<summary>♻️ Reopen Closed Tabs</summary>
 
-        Or if `Keys` is simply faster for you.
-        
-        Maybe that's because you tweaked your Windows UI look,
+![Reopen closed tabs](Assets/ReopenClosedTab.gif)
+</details>
 
-    ✅ `Add to startup:` If you want the application to start on system startup.
+<details>
+<summary>📁 Custom Path Navigation</summary>
 
-## How does it work?
-1. (`Win+E hook`) By setting a global keyboard hook to listen for Win+E
+- Assign hotkeys to quickly open your favorite locations
+- Supports multiple path formats:
+  - Standard paths: `C:\Users\Documents`
+  - Environment variables: `%USERPROFILE%\Downloads`
+  - Windows CLSID paths: `{A8CDFF1C-4878-43be-B5FD-F8091C1C60D0}` (Special Folders)
+- Perfect for frequently accessed directories
+- Instant access to system folders using CLSIDs
 
-    This way we can catch the keys before a new window is created to prevent it, and then we open a new tab instead (it is much faster than the `All Windows hook`).
-2. (`All Windows hook`) By using the [FlaUI](https://github.com/FlaUI/FlaUI) library that wraps the native UI Automation, We use it to hook the `WindowOpenedEvent` event (which is triggered for any new window not just File Explorer).
+![Open custom path](Assets/OpenCustomPath.gif)
+</details>
 
-    We filter that window by it's class name to check if it's a File Explorer window or not.
+<details>
+<summary>⚡ Performance & Reliability</summary>
 
-    If it has the class `CabinetWClass` that means it's a File Explorer window, we then hide the window right away to extract the location and the selected files (if any).
-    
-    Then we close the window and pass the location and selected files to the next step.
+- Lightweight and resource-efficient
+- Fast and responsive tab creation
+- Stable COM-based implementation
+- Reliable window state management
+</details>
 
-3. We use the [FlaUI](https://github.com/FlaUI/FlaUI) library to click the `Add new Tab` button in the explorer window, and set the location & select the files (if any),
+## 🚀 Getting Started
 
-    Or if you choose `Keys` under `All Windows`: We use [H.InputSimulator](https://github.com/HavenDV/H.InputSimulator) to Open and navigate using the keyboard (CTRL + T, CTRL + L, typing the location, etc...).
+1. Download the latest version from the [Releases](https://github.com/w4po/ExplorerTabUtility/releases) page
+2. Run the application
+3. Look for the tray icon and you're ready to go!
+   ![image](Assets/Menu.png)
 
-## Limitations
+## ⚙️ Configuration
 
-1. There is a slight delay when a new File Explorer window is opened before we can hide it and extract the location and the selected files.
+> [!NOTE]
+> The application runs in the system tray minimized by default.
+> To configure it, double-click or right-click the tray icon.
 
-2. When a File Explorer is already opened in the given directory, Windows just focuses the existing window instead of creating a new one and thus our approach doesn't work.
+<details>
+<summary>🔧 General Settings</summary>
 
-    *Technically, there is a Window Focused/Activated Event that can detect that, but the user selecting the window could also fire it, which won't be great for normal usage of the File Explorer when needed.*
+- **WindowHook**: Enable/disable new windows being converted to tabs
+- **ReuseTabs**: Enable/disable reusing existing tabs instead of creating new ones
+- **Startup**: Configure automatic startup with Windows
+</details>
 
-3. When multiple windows are opened at the same time it takes some time to handle all of them.
+<details>
+<summary>⌨️ Hotkey Profile Management</summary>
 
-4. For multiple virtual desktops it switches back to the one that has an opened File Explorer.
+### Profile Options
+- Create new profiles
+- Import profiles from file
+- Export profiles to file
+- Enable/disable individual profiles
 
-5. We've to click on the window's address bar and sometimes it shows the suggest box and it stays visible.
+### Profile Settings
+Each profile contains the following settings:
 
-## What I've tried
-I've tried using `Shell.Application` (`Shell32`) instead of `FlaUI` (UI Automation) to open and navigate the tabs which could be much faster and cleaner, But sadly Windows Shell only works for the first tab of a window and we can't control it.
+1. **Basic Settings**
+   - Profile Name
+   - Hotkey Combination (set by focusing the input field and pressing desired keys)
+   - Scope: Global or Explorer-only (triggers only when File Explorer is focused)
 
-## Acknowledgements
-[FlaUI](https://github.com/FlaUI/FlaUI)
+2. **Action Settings**
+   - Action Type:
+     - `Open`: Open a new tab (optionally with specified path)
+     - `Duplicate`: Duplicate current tab
+     - `ReopenClosed`: Reopen last closed tab
+     - `SetTargetWindow`: Set current Explorer window as the destination for new tabs
+     - `ToggleWinHook`: Toggle window hook
+     - `ToggleReuseTabs`: Toggle tab reuse
+     - `ToggleVisibility`: Toggle form visibility
+   - Path Field (for `Open` action)
+     - Optional: Leave empty to open new tab
+     - Supports multiple path formats (see Custom Path Navigation section)
 
-[H.InputSimulator](https://github.com/HavenDV/H.InputSimulator)
+3. **Advanced Settings**
+   - Execution Delay: Slider to set delay before action execution
+   - Key Handling: Toggle whether hotkeys are passed to other applications
+   - Profile Deletion: Remove unwanted profiles
 
-[File Explorer Interceptor](https://github.com/abdonkov/FileExplorerInterceptor)
+![Form](Assets/Form.png)
 
-[WinENFET](https://github.com/tariibaba/WinENFET)
+> [!TIP]
+> Use the "Handled" toggle to prevent or allow hotkey propagation to other applications that might be listening for the same key combination.
+
+> [!NOTE]
+> The `SetTargetWindow` action lets you choose which Explorer window will receive new tabs. This is useful when you have multiple Explorer windows open or working on different virtual desktops and want to control where new tabs appear.
+</details>
+
+## 🔧 Technical Details
+
+<details>
+<summary>Implementation Overview</summary>
+
+### Core Components
+
+#### 1. 🔌 COM Integration
+- Direct interaction with Windows Shell through native COM interfaces:
+  - `Shell32`: Core shell functionality and file system operations
+  - `SHDocVw`: Explorer window and tab management
+  - Custom COM interface implementations for reliable shell interactions
+- Efficient PIDL (Pointer to ID List) handling for file system operations
+- Thread-safe COM object lifecycle management
+
+#### 2. 🪟 Window Management
+- Advanced window tracking and state management:
+  - Concurrent collections for thread-safe window tracking
+  - Efficient tab handle caching and validation
+  - Smart window-to-tab conversion logic
+- Support for special folder navigation (CLSID paths)
+
+#### 3. ⚡ Process & Event System
+- Robust Explorer process monitoring:
+  - Automatic recovery from Explorer crashes
+  - Event-driven architecture for responsive UI
+  - Efficient window event hooking
+- Asynchronous operation handling:
+  - STA (Single-threaded Apartment) task scheduler
+  - Non-blocking COM operations
+  - Proper synchronization with SemaphoreSlim
+
+#### 4. 🚀 Performance Optimizations
+- Smart caching mechanisms:
+  - Window handle caching
+  - Path comparison optimization
+  - Tab state tracking
+- Efficient resource management:
+  - Proper COM object disposal
+  - Memory-efficient collections
+  - Minimal window recreation
+
+### Key Technologies
+- .NET 9 and .NET Framework 4.8.1
+- Windows COM APIs
+  - Shell32 and SHDocVw interfaces
+  - Native P/Invoke
+- Advanced threading with STA scheduler
+- Concurrent collections for thread safety
+</details>
+
+## ℹ️ Notes
+
+> [!NOTE]
+> While this utility is optimized for best performance, some operations might experience delays due to limitations in Windows File Explorer itself:
+> - The File Explorer's tab interface lacks proper APIs for programmatic control
+> - Some operations in File Explorer are inherently laggy, especially with multiple simultaneous window operations
+> - Windows Shell doesn't expose all the necessary functionality for seamless tab management
+
+Despite these Windows limitations, the utility implements the best possible solutions using available Windows APIs and COM interfaces.
+
+## 💝 Support the Project
+
+If you find Explorer Tab Utility helpful, consider supporting its development:
+
+<p align="center">
+  <a href="https://github.com/sponsors/w4po">
+    <img src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#white" alt="GitHub Sponsors"/>
+  </a>
+  <a href="https://www.patreon.com/w4po">
+    <img src="https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white" alt="Patreon"/>
+  </a>
+  <a href="https://www.buymeacoffee.com/w4po">
+    <img src="https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me A Coffee"/>
+  </a>
+  <a href="https://paypal.me/w4po77">
+    <img src="https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white" alt="PayPal"/>
+  </a>
+</p>
+
+Your support helps maintain and improve the project! ❤️
+
+## Contributing
+
+Contributions are welcome! Feel free to submit issues and pull requests.
 
 ## License
 
-This project is licensed under the terms of the MIT license.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+This project makes use of the following excellent open-source packages:
+
+<p align="center">
+  <a href="https://github.com/HavenDV/H.Hooks">
+    <img src="https://img.shields.io/badge/H.Hooks-Keyboard%20Hook-purple?style=for-the-badge" alt="H.Hooks"/>
+  </a>
+  <a href="https://github.com/leocb/MaterialSkin">
+    <img src="https://img.shields.io/badge/MaterialSkin.2-UI%20Theming-blue?style=for-the-badge" alt="MaterialSkin"/>
+  </a>
+</p>
+
+- **[H.Hooks](https://github.com/HavenDV/H.Hooks)** - Efficient and reliable keyboard hook implementation
+- **[MaterialSkin.2](https://github.com/leocb/MaterialSkin)** - Beautiful Material Design theming for WinForms
+
+Special thanks to the maintainers of these packages for their excellent work!
