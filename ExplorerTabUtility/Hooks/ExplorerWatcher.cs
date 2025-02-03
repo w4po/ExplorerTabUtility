@@ -192,6 +192,7 @@ public class ExplorerWatcher : IHook
         if (!_isForcingTabs || idObject != 0 || idChild != 0) return;
         if (!WinApi.IsWindowHasClassName(hWnd, "CabinetWClass")) return;
 
+        if (_windowEntryDict.Count < 2) return;
         WinApi.SetWindowTransparency(hWnd, 0);
     }
     private InternetExplorer? GetRecentlyCreatedWindow(out WindowInfo? windowInfo)
