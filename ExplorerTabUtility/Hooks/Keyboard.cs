@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Collections.Generic;
 using H.Hooks;
 using ExplorerTabUtility.Models;
@@ -26,26 +26,47 @@ public sealed class Keyboard : IHook
 
     private void LowLevelKeyboardHook_Down(object? sender, KeyboardEventArgs e)
     {
-        if (OnHotKeyProfileTriggered == null) return;
+        var handler = OnHotKeyProfileTriggered;
+        if (handler == null) return;
 
-        var isFileExplorerForeground = Helper.IsFileExplorerForeground(out var handle);
-
+        bool? isFileExplorerForeground = null;
+        nint handle = 0;
         foreach (var profile in _hotkeyProfiles)
         {
-            // Skip if the profile is disabled or if it doesn't have any hotkeys.
+            // Skip disabled or empty
             if (!profile.IsEnabled || profile.HotKeys is null || profile.HotKeys.Length == 0) continue;
 
-            // Skip if the profile is for File Explorer but File Explorer is not the foreground window.
-            if (profile.Scope == HotkeyScope.FileExplorer && !isFileExplorerForeground) continue;
-
-            // Skip if the hotkeys don't match.
+            // Skip if keys do not match
             if (!e.Keys.Are(profile.HotKeys)) continue;
+
+            // Let's see if we need to check File Explorer
+            if (profile.Scope == HotkeyScope.FileExplorer)
+            {
+                // Check if File Explorer is foreground (only once)
+                isFileExplorerForeground ??= Helper.IsFileExplorerForeground(out handle);
+
+                if (isFileExplorerForeground == false)
+                {
+                    handle = 0; // Reset handle if not File Explorer
+
+                    continue;
+                }
+            }
 
             // Set handled value.
             e.IsHandled = profile.IsHandled;
-
-            // Invoke the profile action in the background in order for `IsHandled` to successfully prevent further processing.
-            Task.Run(() => OnHotKeyProfileTriggered.Invoke(profile, isFileExplorerForeground ? handle : 0));
+            
+            // Queue the hotkey trigger in a separate thread.
+#if NET7_0_OR_GREATER
+            ThreadPool.QueueUserWorkItem(static s => s.Handler.Invoke(s.Profile, s.Handle),
+                new State(handler, profile, handle), false);
+#else
+            ThreadPool.QueueUserWorkItem(static state =>
+            {
+                var s = (State)state!;
+                s.Handler.Invoke(s.Profile, s.Handle);
+            }, new State(handler, profile, handle));
+#endif
         }
     }
 
@@ -53,5 +74,12 @@ public sealed class Keyboard : IHook
     {
         StopHook();
         _lowLevelKeyboardHook.Dispose();
+    }
+
+    private readonly struct State(Action<HotKeyProfile, nint> handler, HotKeyProfile profile, nint handle)
+    {
+        public readonly Action<HotKeyProfile, nint> Handler = handler;
+        public readonly HotKeyProfile Profile = profile;
+        public readonly nint Handle = handle;
     }
 }
