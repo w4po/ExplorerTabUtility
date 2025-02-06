@@ -8,5 +8,6 @@ public enum HotKeyAction
     SetTargetWindow,
     ToggleWinHook,
     ToggleReuseTabs,
-    ToggleVisibility
+    ToggleVisibility,
+    NavigateBack
 }

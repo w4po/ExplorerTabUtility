@@ -38,15 +38,8 @@ public sealed class ShellPathComparer : IDisposable
     }
     public static string? GetPathFromPidl(nint pidl, uint sigdnName = WinApi.SIGDN_URL)
     {
-        try
-        {
-            WinApi.SHGetNameFromIDList(pidl, sigdnName, out var path);
-            return path;
-        }
-        catch
-        {
-            return null;
-        }
+        var hr = WinApi.SHGetNameFromIDList(pidl, sigdnName, out var path);
+        return hr == 0 ? path : null;
     }
     public bool CompareIds(nint pidl1, nint pidl2)
     {
@@ -125,9 +118,7 @@ public sealed class ShellPathComparer : IDisposable
         try
         {
             comparePidl = GetPidlFromPath(comparePath);
-            if (comparePidl == 0) return false;
-
-            return IsEquivalent(targetPidl, comparePidl);
+            return comparePidl != 0 && IsEquivalent(targetPidl, comparePidl);
         }
         catch
         {

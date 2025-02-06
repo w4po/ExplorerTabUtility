@@ -11,13 +11,16 @@ namespace ExplorerTabUtility.Forms;
 public partial class HotKeyProfileControl : UserControl
 {
     // Fields
+    private Key _lastClickKey;
+    private int _lastClickTime;
     private bool _isCollapsed;
     private readonly int _collapsedHeight;
     private readonly HotKeyProfile _profile;
     private readonly Action<HotKeyProfile>? _removeAction;
-    private readonly Action? _keyboardHookStarted;
-    private readonly Action? _keyboardHookStopped;
+    private readonly Action? _keybindingHookStarted;
+    private readonly Action? _keybindingHookStopped;
     private LowLevelKeyboardHook? _lowLevelKeyboardHook;
+    private LowLevelMouseHook? _lowLevelMouseHook;
     // Constants
     private const int ExpandedHeight = 76;
     // Properties
@@ -44,15 +47,15 @@ public partial class HotKeyProfileControl : UserControl
     }
 
     // Constructor
-    public HotKeyProfileControl(HotKeyProfile profile, Action<HotKeyProfile>? removeAction = null, Action? keyboardHookStarted = null, Action? keyboardHookStopped = null)
+    public HotKeyProfileControl(HotKeyProfile profile, Action<HotKeyProfile>? removeAction = null, Action? keybindingHookStarted = null, Action? keybindingHookStopped = null)
     {
         InitializeComponent();
         Tag = profile;
         _profile = profile;
         _collapsedHeight = Height;
         _removeAction = removeAction;
-        _keyboardHookStarted = keyboardHookStarted;
-        _keyboardHookStopped = keyboardHookStopped;
+        _keybindingHookStarted = keybindingHookStarted;
+        _keybindingHookStopped = keybindingHookStopped;
         InitializeControls();
     }
     // Initialize controls with hot key profile data
@@ -62,10 +65,10 @@ public partial class HotKeyProfileControl : UserControl
         txtName.Text = _profile.Name ?? string.Empty;
 
         if (_profile.HotKeys != null)
-            txtHotKeys.Text = string.Join(" + ", _profile.HotKeys.Select(k => k.ToFixedString()));
+            txtHotKeys.Text = KeysToString(_profile.HotKeys, _profile.IsDoubleClick);
 
         SetComboBoxDataSourceQuietly(cbScope, Enum.GetValues(typeof(HotkeyScope)), CbScope_SelectedIndexChanged);
-        SetComboBoxDataSourceQuietly(cbAction, Enum.GetValues(typeof(HotKeyAction)), CbAction_SelectedIndexChanged);
+        SetComboBoxDataSourceQuietly(cbAction, GetAllowedActions(_profile.Scope), CbAction_SelectedIndexChanged);
         cbScope.SelectedItem = _profile.Scope;
         cbAction.SelectedItem = _profile.Action;
         txtPath.Text = _profile.Path ?? string.Empty;
@@ -76,7 +79,23 @@ public partial class HotKeyProfileControl : UserControl
     // Event handlers
     private void CbEnabled_CheckedChanged(object? _, EventArgs __) => UpdateControlsEnabledState();
     private void TxtName_TextChanged(object? _, EventArgs __) => _profile.Name = txtName.Text;
-    private void CbScope_SelectedIndexChanged(object? _, EventArgs __) => _profile.Scope = (HotkeyScope)(cbScope.SelectedItem ?? 0);
+    private void CbScope_SelectedIndexChanged(object? _, EventArgs __)
+    {
+        _profile.Scope = (HotkeyScope)(cbScope.SelectedItem ?? 0);
+
+        var allowedActions = GetAllowedActions(_profile.Scope);
+
+        // Preserve the current action if it's allowed, otherwise use the first allowed action
+        var currentAction = (HotKeyAction)(cbAction.SelectedItem ?? 0);
+        var desiredAction = allowedActions.Contains(currentAction)
+            ? currentAction
+            : allowedActions.FirstOrDefault();
+
+        // Update the ComboBox data source
+        SetComboBoxDataSourceQuietly(cbAction, allowedActions, CbAction_SelectedIndexChanged);
+
+        cbAction.SelectedItem = desiredAction;
+    }
     private void CbAction_SelectedIndexChanged(object? _, EventArgs __) => UpdateAction();
     private void TxtPath_TextChanged(object? _, EventArgs __) => _profile.Path = txtPath.Text;
     private void CbHandled_CheckedChanged(object? _, EventArgs __) => _profile.IsHandled = cbHandled.Checked;
@@ -84,16 +103,16 @@ public partial class HotKeyProfileControl : UserControl
     private void BtnCollapse_Click(object? _, EventArgs __) => IsCollapsed = !_isCollapsed;
     private void BtnDelete_Click(object? _, EventArgs __) => _removeAction?.Invoke(_profile);
     private void TxtHotKeys_KeyDown(object? _, KeyEventArgs e) => e.SuppressKeyPress = true;
-    private void TxtHotKeys_Enter(object? _, EventArgs __) => InitializeKeyboardHook();
+    private void TxtHotKeys_Enter(object? _, EventArgs __) => InitializeKeybindingHooks();
     private void TxtHotKeys_Leave(object? _, EventArgs __)
     {
-        DisposeKeyboardHook();
+        DisposeKeybindingHooks();
 
         // If the name is empty, set it to the hotkey.
         if (string.IsNullOrEmpty(txtName.Text))
             txtName.Text = txtHotKeys.Text;
     }
-    private void LowLevelKeyboardHook_Down(object? _, KeyboardEventArgs e)
+    private void LowLevelHook_Down(object? _, KeyboardEventArgs e)
     {
         // Backspace removes the hotkey.
         if (e.Keys.Are(Key.Back))
@@ -103,7 +122,20 @@ public partial class HotKeyProfileControl : UserControl
             return;
         }
 
-        if (!IsAllowedKeys(e.Keys.Values)) return;
+        var isMouse = false;
+        var isDoubleClick = false;
+        if (e.Keys.Values.Any(k => k is >= Key.MouseLeft and <= Key.MouseXButton2))
+        {
+            if (!IsMouseOverHotkeyTextBox())
+                Invoke(void () => ActiveControl = null); // Remove focus / stop hooks
+            else
+            {
+                isMouse = true;
+                isDoubleClick = IsDoubleClick(e.CurrentKey);
+            }
+        }
+
+        if (!isMouse && !IsAllowedKeys(e.Keys.Values)) return;
 
         // Prevent the key from being handled by other applications.
         e.IsHandled = true;
@@ -115,7 +147,10 @@ public partial class HotKeyProfileControl : UserControl
             .ToArray();
 
         _profile.HotKeys = keys;
-        Invoke(() => txtHotKeys.Text = string.Join(" + ", keys.Select(k => k.ToFixedString())));
+        _profile.IsMouse = isMouse;
+        _profile.IsDoubleClick = isDoubleClick;
+
+        Invoke(() => txtHotKeys.Text = KeysToString(keys, isDoubleClick));
     }
     private static bool IsAllowedKeys(IReadOnlyCollection<Key> keys)
     {
@@ -136,6 +171,36 @@ public partial class HotKeyProfileControl : UserControl
             return true;
 
         return false;
+    }
+    private bool IsMouseOverHotkeyTextBox()
+    {
+        return (bool)Invoke(() =>
+        {
+            // Convert the global mouse position to the TextBox's client coordinates
+            var mousePositionInTextBox = txtHotKeys.PointToClient(Cursor.Position);
+
+            // Check if this point is within the TextBox's client rectangle
+            return txtHotKeys.ClientRectangle.Contains(mousePositionInTextBox);
+        });
+    }
+
+    private bool IsDoubleClick(Key currentKey)
+    {
+        var isDoubleClick = false;
+
+        var now = Environment.TickCount;
+        if (now - _lastClickTime < 500 && _lastClickKey == currentKey)
+            isDoubleClick = true;
+
+        _lastClickTime = now;
+        _lastClickKey = currentKey;
+        return isDoubleClick;
+    }
+    private string KeysToString(IEnumerable<Key> keys, bool isDoubleClick = false)
+    {
+        var text = string.Join(" + ", keys.Select(k => k.ToFixedString()));
+        if (isDoubleClick) text += "_DBL";
+        return text;
     }
 
     // Methods
@@ -178,52 +243,61 @@ public partial class HotKeyProfileControl : UserControl
         var selectedAction = (HotKeyAction)(cbAction.SelectedItem ?? 0);
         _profile.Action = selectedAction;
 
-        switch (selectedAction)
+        if (selectedAction is HotKeyAction.Open)
         {
-            case HotKeyAction.Open:
-            {
-                txtPath.Enabled = true;
-                txtPath.Text = _profile.Path ?? string.Empty;
-                break;
-            }
-            case HotKeyAction.Duplicate:
-            {
-                txtPath.Enabled = false;
-                cbScope.SelectedIndex = cbScope.FindStringExact(nameof(HotkeyScope.FileExplorer));
-                cbScope.Invalidate();
-                break;
-            }
-            case HotKeyAction.ReopenClosed:
-            {
-                txtPath.Enabled = false;
-                cbScope.SelectedIndex = cbScope.FindStringExact(nameof(HotkeyScope.FileExplorer));
-                cbScope.Invalidate();
-                break;
-            }
-            case HotKeyAction.SetTargetWindow:
-            {
-                txtPath.Enabled = false;
-                cbScope.SelectedIndex = cbScope.FindStringExact(nameof(HotkeyScope.FileExplorer));
-                cbScope.Invalidate();
-                break;
-            }
+            txtPath.Enabled = true;
+            txtPath.Text = _profile.Path ?? string.Empty;
+        }
+        else
+        {
+            txtPath.Enabled = false;
         }
     }
-    private void InitializeKeyboardHook()
+    private static HotKeyAction[] GetAllowedActions(HotkeyScope scope)
     {
-        DisposeKeyboardHook(false);
-        _keyboardHookStarted?.Invoke();
-        _lowLevelKeyboardHook = new LowLevelKeyboardHook { Handling = true };
-        _lowLevelKeyboardHook.Down += LowLevelKeyboardHook_Down;
-        _lowLevelKeyboardHook.Start();
+        return scope switch
+        {
+            HotkeyScope.Global =>
+            [
+                HotKeyAction.Open,
+                HotKeyAction.ToggleWinHook,
+                HotKeyAction.ToggleReuseTabs,
+                HotKeyAction.ToggleVisibility
+            ],
+            _ => Enum.GetValues(typeof(HotKeyAction))
+                .OfType<HotKeyAction>()
+                .ToArray()
+        };
     }
-    private void DisposeKeyboardHook(bool inform = true)
+
+
+    private void InitializeKeybindingHooks()
     {
-        if (_lowLevelKeyboardHook == null) return;
-        _lowLevelKeyboardHook.Stop();
-        _lowLevelKeyboardHook.Dispose();
+        DisposeKeybindingHooks(false);
+        _keybindingHookStarted?.Invoke();
+
+        _lowLevelKeyboardHook = new LowLevelKeyboardHook { Handling = true };
+        _lowLevelKeyboardHook.Down += LowLevelHook_Down;
+        _lowLevelKeyboardHook.Start();
+
+        _lowLevelMouseHook = new LowLevelMouseHook { AddKeyboardKeys = true };
+        _lowLevelMouseHook.Down += LowLevelHook_Down;
+        _lowLevelMouseHook.Start();
+    }
+    private void DisposeKeybindingHooks(bool inform = true)
+    {
+        if (_lowLevelKeyboardHook != null)
+        {
+            _lowLevelKeyboardHook.Stop();
+            _lowLevelKeyboardHook.Dispose();
+        }
+        if (_lowLevelMouseHook != null)
+        {
+            _lowLevelMouseHook.Stop();
+            _lowLevelMouseHook.Dispose();
+        }
 
         if (inform)
-            _keyboardHookStopped?.Invoke();
+            _keybindingHookStopped?.Invoke();
     }
 }

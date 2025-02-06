@@ -186,7 +186,21 @@ public class ExplorerWatcher : IHook
         if (Helper.IsFileExplorerWindow(windowHandle))
             _mainWindowHandle = windowHandle;
     }
+    public void NavigateBack(nint windowHandle)
+    {
+        var activeTabHandle = GetActiveTabHandle(windowHandle);
+        if (activeTabHandle == 0) return;
 
+        var window = GetWindowByTabHandle(activeTabHandle);
+        try
+        {
+            window?.GoBack();
+        }
+        catch
+        {
+            // Will throw if there is no further history
+        }
+    }
     private void OnWindowShown(nint hWinEventHook, uint eventType, nint hWnd, int idObject, int idChild, uint dwEventThread, uint dWmsEventTime)
     {
         if (!_isForcingTabs || idObject != 0 || idChild != 0) return;

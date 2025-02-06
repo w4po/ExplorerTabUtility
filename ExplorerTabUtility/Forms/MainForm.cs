@@ -66,6 +66,7 @@ public partial class MainForm : MaterialForm
     private void StartHooks()
     {
         if (SettingsManager.IsWindowHookActive) _hookManager.StartWindowHook();
+        if (SettingsManager.IsMouseHookActive) _hookManager.StartMouseHook();
         if (SettingsManager.IsKeyboardHookActive) _hookManager.StartKeyboardHook();
 
         _hookManager.SetReuseTabs(SettingsManager.ReuseTabs);
@@ -77,6 +78,9 @@ public partial class MainForm : MaterialForm
 
         // KeyboardHook Menu
         strip.Items.Add(CreateKeyboardHookMenuItem());
+
+        // MouseHook Menu
+        strip.Items.Add(CreateMouseHookMenuItem());
 
         // WindowHook
         strip.Items.Add(CreateMenuItem("Window Hook", SettingsManager.IsWindowHookActive, ToggleWindowHook, "WindowHook"));
@@ -110,7 +114,14 @@ public partial class MainForm : MaterialForm
     {
         var menuItem = CreateMenuItem("Keyboard Hook", SettingsManager.IsKeyboardHookActive, ToggleKeyboardHook, "KeyboardHookMenu");
 
-        AddProfilesToMenuItem(menuItem);
+        AddKeyboardProfilesToMenuItem(menuItem);
+        return menuItem;
+    }
+    private ToolStripMenuItem CreateMouseHookMenuItem()
+    {
+        var menuItem = CreateMenuItem("Mouse Hook", SettingsManager.IsMouseHookActive, ToggleMouseHook, "MouseHookMenu");
+
+        AddMouseProfilesToMenuItem(menuItem);
         return menuItem;
     }
     private void UpdateKeyboardHookMenu()
@@ -118,11 +129,18 @@ public partial class MainForm : MaterialForm
         var menuItem = GetMenuItemByKey("KeyboardHookMenu") as ToolStripMenuItem;
 
         menuItem!.DropDownItems.Clear();
-        AddProfilesToMenuItem(menuItem);
+        AddKeyboardProfilesToMenuItem(menuItem);
     }
-    private void AddProfilesToMenuItem(ToolStripMenuItem menuItem)
+    private void UpdateMouseHookMenu()
     {
-        foreach (var profile in _hotKeyProfiles)
+        var menuItem = GetMenuItemByKey("MouseHookMenu") as ToolStripMenuItem;
+
+        menuItem!.DropDownItems.Clear();
+        AddMouseProfilesToMenuItem(menuItem);
+    }
+    private void AddKeyboardProfilesToMenuItem(ToolStripMenuItem menuItem)
+    {
+        foreach (var profile in _hotKeyProfiles.Where(p => !p.IsMouse))
         {
             var profileMenuItem = CreateMenuItem(profile.Name ?? string.Empty, profile.IsEnabled, eventHandler: KeyboardHookProfileItemClick);
             profileMenuItem.Tag = profile;
@@ -130,7 +148,20 @@ public partial class MainForm : MaterialForm
         }
 
         // if the hook is active and there not a single profile enabled, deactivate the hook
-        if (SettingsManager.IsKeyboardHookActive && !_hotKeyProfiles.Any(p => p.IsEnabled))
+        if (SettingsManager.IsKeyboardHookActive && !_hotKeyProfiles.Any(p => p.IsEnabled && !p.IsMouse))
+            menuItem.PerformClick();
+    }
+    private void AddMouseProfilesToMenuItem(ToolStripMenuItem menuItem)
+    {
+        foreach (var profile in _hotKeyProfiles.Where(p => p.IsMouse))
+        {
+            var profileMenuItem = CreateMenuItem(profile.Name ?? string.Empty, profile.IsEnabled, eventHandler: MouseHookProfileItemClick);
+            profileMenuItem.Tag = profile;
+            menuItem.DropDownItems.Add(profileMenuItem);
+        }
+
+        // if the hook is active and there not a single profile enabled, deactivate the hook
+        if (SettingsManager.IsMouseHookActive && !_hotKeyProfiles.Any(p => p.IsEnabled && p.IsMouse))
             menuItem.PerformClick();
     }
     private static ToolStripMenuItem CreateMenuItem(string text, bool isChecked = false, EventHandler? eventHandler = null,
@@ -161,6 +192,7 @@ public partial class MainForm : MaterialForm
         _hotKeyProfiles.FindAll(p => p.HotKeys == null || p.HotKeys.Length == 0).ForEach(RemoveProfile);
 
         UpdateKeyboardHookMenu();
+        UpdateMouseHookMenu();
 
         SettingsManager.HotKeyProfiles = JsonSerializer.Serialize(_hotKeyProfiles);
     }
@@ -180,8 +212,8 @@ public partial class MainForm : MaterialForm
     {
         _hotKeyProfiles.Add(profile ??= new HotKeyProfile());
 
-        // We have to stop the main keyboard hook when we edit a profile key bindings (ControlStartedKeyboardHook, ControlStoppedKeyboardHook)
-        flpProfiles.Controls.Add(new HotKeyProfileControl(profile, RemoveProfile, ControlStartedKeyboardHook, ControlStoppedKeyboardHook));
+        // We have to stop the main keyboard/mouse hook when we edit a profile key bindings (ControlStartedKeybindingHook, ControlStoppedKeybindingHook)
+        flpProfiles.Controls.Add(new HotKeyProfileControl(profile, RemoveProfile, ControlStartedKeybindingHook, ControlStoppedKeybindingHook));
     }
     private void ClearProfiles()
     {
@@ -214,15 +246,21 @@ public partial class MainForm : MaterialForm
         }
     }
 
-    private void ControlStartedKeyboardHook()
+    private void ControlStartedKeybindingHook()
     {
-        if (!SettingsManager.IsKeyboardHookActive) return;
-        _hookManager.StopKeyboardHook();
+        if (SettingsManager.IsKeyboardHookActive)
+            _hookManager.StopKeyboardHook();
+
+        if (SettingsManager.IsMouseHookActive)
+            _hookManager.StopMouseHook();
     }
-    private void ControlStoppedKeyboardHook()
+    private void ControlStoppedKeybindingHook()
     {
-        if (!SettingsManager.IsKeyboardHookActive) return;
-        _hookManager.StartKeyboardHook();
+        if (SettingsManager.IsKeyboardHookActive)
+            _hookManager.StartKeyboardHook();
+
+        if (SettingsManager.IsMouseHookActive)
+            _hookManager.StartMouseHook();
     }
     private void KeyboardHookProfileItemClick(object? sender, EventArgs _)
     {
@@ -240,11 +278,28 @@ public partial class MainForm : MaterialForm
         if (!parent.Checked)
             ToggleKeyboardHook(parent, EventArgs.Empty);
     }
+    private void MouseHookProfileItemClick(object? sender, EventArgs _)
+    {
+        if (sender is not ToolStripMenuItem item || item.OwnerItem is not ToolStripMenuItem parent) return;
+
+        // Toggle the HotKeyProfileControl's Enabled state.
+        if (item.Tag is HotKeyProfile profile)
+        {
+            var control = FindControlByProfile(profile);
+            if (control != null) control.IsEnabled = item.Checked;
+        }
+
+        // Uncheck parent if all sub items are unchecked.
+        parent.Checked = parent.DropDownItems.OfType<ToolStripMenuItem>().Any(c => c.Checked);
+        if (!parent.Checked)
+            ToggleMouseHook(parent, EventArgs.Empty);
+    }
     private void ToggleKeyboardHook(object? sender, EventArgs _)
     {
         if (sender is not ToolStripMenuItem item) return;
 
-        if (item.Checked && _hotKeyProfiles.Count == 0)
+        var keyboardOnly = _hotKeyProfiles.Where(p => !p.IsMouse).ToList();
+        if (item.Checked && keyboardOnly.Count == 0)
         {
             item.Checked = false;
             _hookManager.StopKeyboardHook();
@@ -259,13 +314,41 @@ public partial class MainForm : MaterialForm
         if (item.Checked)
         {
             // If all sub items are not checked, click the first item.
-            if (_hotKeyProfiles.TrueForAll(h => !h.IsEnabled))
+            if (keyboardOnly.TrueForAll(h => !h.IsEnabled))
                 item.DropDownItems[0].PerformClick();
 
             _hookManager.StartKeyboardHook();
         }
         else
             _hookManager.StopKeyboardHook();
+    }
+    private void ToggleMouseHook(object? sender, EventArgs _)
+    {
+        if (sender is not ToolStripMenuItem item) return;
+
+        var mouseOnly = _hotKeyProfiles.Where(p => p.IsMouse).ToList();
+        if (item.Checked && mouseOnly.Count == 0)
+        {
+            item.Checked = false;
+            _hookManager.StopMouseHook();
+            return;
+        }
+
+        SettingsManager.IsMouseHookActive = item.Checked;
+
+        foreach (ToolStripItem subItem in item.DropDownItems)
+            subItem.Enabled = item.Checked;
+
+        if (item.Checked)
+        {
+            // If all sub items are not checked, click the first item.
+            if (mouseOnly.TrueForAll(h => !h.IsEnabled))
+                item.DropDownItems[0].PerformClick();
+
+            _hookManager.StartMouseHook();
+        }
+        else
+            _hookManager.StopMouseHook();
     }
     private void ToggleWindowHook(object? sender, EventArgs _)
     {
@@ -311,7 +394,10 @@ public partial class MainForm : MaterialForm
         openFile.Write(bytes, 0, bytes.Length);
     }
     private void BtnSave_Click(object _, EventArgs __) => UpdateMenuAndSaveProfiles();
-    private void CbSaveProfilesOnExit_CheckedChanged(object _, EventArgs __) => SettingsManager.SaveProfilesOnExit = cbSaveProfilesOnExit.Checked;
+    private void CbSaveProfilesOnExit_CheckedChanged(object _, EventArgs __)
+    {
+        SettingsManager.SaveProfilesOnExit = cbSaveProfilesOnExit.Checked;
+    }
     private void FlpProfiles_Resize(object _, EventArgs __)
     {
         foreach (Control c in flpProfiles.Controls)

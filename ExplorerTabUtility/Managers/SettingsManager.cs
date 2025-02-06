@@ -2,6 +2,15 @@
 
 public static class SettingsManager
 {
+    public static bool IsMouseHookActive
+    {
+        get => Properties.Settings.Default.MouseHook;
+        set
+        {
+            Properties.Settings.Default.MouseHook = value;
+            SaveSettings();
+        }
+    }
     public static bool IsKeyboardHookActive
     {
         get => Properties.Settings.Default.KeyboardHook;

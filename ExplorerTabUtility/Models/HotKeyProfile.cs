@@ -11,6 +11,8 @@ public class HotKeyProfile
     public string? Path { get; set; }
     public bool IsHandled { get; set; } = true;
     public bool IsEnabled { get; set; } = true;
+    public bool IsMouse { get; set; } = false;
+    public bool IsDoubleClick { get; set; } = false;
     public int Delay { get; set; }
 
     public HotKeyProfile() { }

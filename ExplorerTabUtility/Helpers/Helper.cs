@@ -198,6 +198,14 @@ public static class Helper
     
     public static Icon? GetIcon() => Icon.ExtractAssociatedIcon(GetExecutablePath());
 
+    public static bool IsExplorerEmptySpace(Point point)
+    {
+        var hr = WinApi.AccessibleObjectFromPoint(point, out var accObj, out var childId);
+        if (hr != 0 || childId is not 0) return false;
+
+        var role = accObj.get_accRole(0);
+        return role is 0x21; //IAccessible.Role:list (ROLE_SYSTEM_LIST 0x21)
+    }
     public static bool IsFileExplorerTab(nint tab)
     {
         return tab != 0 && WinApi.IsWindowHasClassName(tab, "ShellTabWindowClass");
