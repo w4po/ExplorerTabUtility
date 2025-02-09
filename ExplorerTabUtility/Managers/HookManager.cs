@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Drawing;
-using System.Collections.Generic;
 using WindowsInput;
 using ExplorerTabUtility.Helpers;
 using ExplorerTabUtility.Models;
 using ExplorerTabUtility.Hooks;
+using System.Threading;
 
 namespace ExplorerTabUtility.Managers;
 
@@ -13,18 +13,21 @@ public sealed class HookManager
     private readonly Mouse _mouseHook;
     private readonly Keyboard _keyboardHook;
     private readonly ExplorerWatcher _windowHook;
-    public bool IsMouseHookStarted => _mouseHook.IsHookActive;
-    public bool IsKeyboardHookStarted => _keyboardHook.IsHookActive;
-    public bool IsWindowHookStarted => _windowHook.IsHookActive;
+    private readonly SynchronizationContext _syncContext;
     public event Action? OnVisibilityToggled;
     public event Action? OnWindowHookToggled;
     public event Action? OnReuseTabsToggled;
 
-    public HookManager(IReadOnlyCollection<HotKeyProfile> hotKeyProfiles)
+    public HookManager(ProfileManager profileManager)
     {
+        _syncContext = SynchronizationContext.Current!;
+
         _windowHook = new ExplorerWatcher();
-        _mouseHook = new Mouse(hotKeyProfiles);
-        _keyboardHook = new Keyboard(hotKeyProfiles);
+        _mouseHook = new Mouse(profileManager.GetProfiles());
+        _keyboardHook = new Keyboard(profileManager.GetProfiles());
+
+        profileManager.KeybindingsHookStarted += KeybindingStarted;
+        profileManager.KeybindingsHookStopped += KeybindingStopped;
         _keyboardHook.OnHotKeyProfileTriggered += OnHotKeyProfileTriggered;
         _mouseHook.OnHotKeyProfileTriggered += OnHotKeyProfileTriggered;
     }
@@ -41,16 +44,54 @@ public sealed class HookManager
     {
         switch (e.Profile.Action)
         {
-            case HotKeyAction.Open: await _windowHook.Open(e.Profile.Path, e.ForegroundWindow, e.Profile.Delay); break;
-            case HotKeyAction.Duplicate: _windowHook.DuplicateActiveTab(e.ForegroundWindow); break;
-            case HotKeyAction.ReopenClosed: _windowHook.ReopenClosedTab(e.ForegroundWindow); break;
-            case HotKeyAction.SetTargetWindow: _windowHook.SetTargetWindow(e.ForegroundWindow); break;
-            case HotKeyAction.ToggleVisibility: OnVisibilityToggled?.Invoke();  break;
-            case HotKeyAction.ToggleWinHook: OnWindowHookToggled?.Invoke();  break;
-            case HotKeyAction.ToggleReuseTabs: OnReuseTabsToggled?.Invoke();  break;
-            case HotKeyAction.NavigateBack: NavigateBack(e.ForegroundWindow, e.MousePosition); break;
-            default: throw new ArgumentOutOfRangeException(nameof(e.Profile), e.Profile.Action, @"Invalid profile action");
+            case HotKeyAction.Open:
+                await _windowHook.Open(e.Profile.Path, e.ForegroundWindow, e.Profile.Delay);
+                break;
+
+            case HotKeyAction.Duplicate:
+                _windowHook.DuplicateActiveTab(e.ForegroundWindow);
+                break;
+
+            case HotKeyAction.ReopenClosed:
+                _windowHook.ReopenClosedTab(e.ForegroundWindow);
+                break;
+
+            case HotKeyAction.SetTargetWindow:
+                _windowHook.SetTargetWindow(e.ForegroundWindow);
+                break;
+
+            case HotKeyAction.NavigateBack:
+                NavigateBack(e.ForegroundWindow, e.MousePosition);
+                break;
+
+            case HotKeyAction.ToggleReuseTabs:
+                _syncContext.Post(_ => OnReuseTabsToggled?.Invoke(), null); 
+                break;
+
+            case HotKeyAction.ToggleWinHook:
+                _syncContext.Post(_ => OnWindowHookToggled?.Invoke(), null); 
+                break;
+
+            case HotKeyAction.ToggleVisibility:
+                _syncContext.Post(_ => OnVisibilityToggled?.Invoke(), null); 
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException(
+                    nameof(e.Profile.Action),
+                    e.Profile.Action,
+                    @"Invalid profile action");
         }
+    }
+    private void KeybindingStarted()
+    {
+        StopMouseHook();
+        StopKeyboardHook();
+    }
+    private void KeybindingStopped()
+    {
+        if (SettingsManager.IsMouseHookActive) StartMouseHook();
+        if (SettingsManager.IsKeyboardHookActive) StartKeyboardHook();
     }
     private void NavigateBack(nint foregroundWindow,Point? mousePosition)
     {
