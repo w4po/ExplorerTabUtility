@@ -154,7 +154,21 @@ public class ExplorerWatcher : IHook
             return;
         }
 
-        OpenNewTab(windowHandle, NormalizeLocation(location!));
+        var normalizedPath = NormalizeLocation(location);
+        if (_windowEntryDict.Count > 0)
+        {
+            OpenNewTab(windowHandle, normalizedPath);
+            return;
+        }
+
+        try
+        {
+            Process.Start(normalizedPath);
+        }
+        catch
+        {
+            //
+        }
     }
     public void OpenNewTab(nint windowHandle, string location)
     {
