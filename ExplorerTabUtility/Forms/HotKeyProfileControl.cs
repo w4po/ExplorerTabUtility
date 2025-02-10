@@ -74,6 +74,7 @@ public partial class HotKeyProfileControl : UserControl
         txtPath.Text = _profile.Path ?? string.Empty;
         sDelay.Value = _profile.Delay;
         cbHandled.Checked = _profile.IsHandled;
+        cbOpenAsTab.Checked = _profile.IsAsTab;
     }
 
     // Event handlers
@@ -99,6 +100,7 @@ public partial class HotKeyProfileControl : UserControl
     private void CbAction_SelectedIndexChanged(object? _, EventArgs __) => UpdateAction();
     private void TxtPath_TextChanged(object? _, EventArgs __) => _profile.Path = txtPath.Text;
     private void CbHandled_CheckedChanged(object? _, EventArgs __) => _profile.IsHandled = cbHandled.Checked;
+    private void CbOpenAsTab_CheckedChanged(object? _, EventArgs __) => _profile.IsAsTab = cbOpenAsTab.Checked;
     private void SDelay_ValueChanged(object? _, int newValue) => _profile.Delay = newValue;
     private void BtnCollapse_Click(object? _, EventArgs __) => IsCollapsed = !_isCollapsed;
     private void BtnDelete_Click(object? _, EventArgs __) => _removeAction?.Invoke(_profile);
@@ -243,14 +245,22 @@ public partial class HotKeyProfileControl : UserControl
         var selectedAction = (HotKeyAction)(cbAction.SelectedItem ?? 0);
         _profile.Action = selectedAction;
 
-        if (selectedAction is HotKeyAction.Open)
+        switch (selectedAction)
         {
-            txtPath.Enabled = true;
-            txtPath.Text = _profile.Path ?? string.Empty;
-        }
-        else
-        {
-            txtPath.Enabled = false;
+            case HotKeyAction.Open:
+                txtPath.Enabled = true;
+                cbOpenAsTab.Enabled = true;
+                txtPath.Text = _profile.Path ?? string.Empty;
+                break;
+            case HotKeyAction.Duplicate:
+            case HotKeyAction.ReopenClosed:
+                txtPath.Enabled = false;
+                cbOpenAsTab.Enabled = true;
+                break;
+            default:
+                txtPath.Enabled = false;
+                cbOpenAsTab.Enabled = false;
+                break;
         }
     }
     private static HotKeyAction[] GetAllowedActions(HotkeyScope scope)

@@ -30,6 +30,8 @@ partial class HotKeyProfileControl
     {
         components = new System.ComponentModel.Container();
         pnlMain = new System.Windows.Forms.Panel();
+        btnDelete = new MaterialSkin.Controls.MaterialButton();
+        splitter9 = new System.Windows.Forms.Splitter();
         btnCollapse = new MaterialSkin.Controls.MaterialButton();
         splitter5 = new System.Windows.Forms.Splitter();
         cbAction = new MaterialSkin.Controls.MaterialComboBox();
@@ -42,7 +44,7 @@ partial class HotKeyProfileControl
         splitter1 = new System.Windows.Forms.Splitter();
         cbEnabled = new MaterialSkin.Controls.MaterialSwitch();
         pnlMore = new System.Windows.Forms.Panel();
-        btnDelete = new MaterialSkin.Controls.MaterialButton();
+        cbOpenAsTab = new MaterialSkin.Controls.MaterialSwitch();
         splitter8 = new System.Windows.Forms.Splitter();
         cbHandled = new MaterialSkin.Controls.MaterialSwitch();
         splitter7 = new System.Windows.Forms.Splitter();
@@ -57,6 +59,8 @@ partial class HotKeyProfileControl
         // pnlMain
         // 
         pnlMain.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+        pnlMain.Controls.Add(btnDelete);
+        pnlMain.Controls.Add(splitter9);
         pnlMain.Controls.Add(btnCollapse);
         pnlMain.Controls.Add(splitter5);
         pnlMain.Controls.Add(cbAction);
@@ -72,8 +76,42 @@ partial class HotKeyProfileControl
         pnlMain.Margin = new System.Windows.Forms.Padding(0);
         pnlMain.Name = "pnlMain";
         pnlMain.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
-        pnlMain.Size = new System.Drawing.Size(725, 37);
+        pnlMain.Size = new System.Drawing.Size(815, 37);
         pnlMain.TabIndex = 0;
+        // 
+        // btnDelete
+        // 
+        btnDelete.AutoSize = false;
+        btnDelete.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+        btnDelete.BackColor = System.Drawing.SystemColors.Control;
+        btnDelete.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
+        btnDelete.Depth = 0;
+        btnDelete.Dock = System.Windows.Forms.DockStyle.Left;
+        btnDelete.HighEmphasis = false;
+        btnDelete.Icon = null;
+        btnDelete.Location = new System.Drawing.Point(749, 0);
+        btnDelete.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+        btnDelete.MouseState = MaterialSkin.MouseState.HOVER;
+        btnDelete.Name = "btnDelete";
+        btnDelete.NoAccentTextColor = System.Drawing.Color.Empty;
+        btnDelete.Size = new System.Drawing.Size(63, 37);
+        btnDelete.TabIndex = 24;
+        btnDelete.Text = "Delete";
+        toolTip.SetToolTip(btnDelete, "Delete current profile.");
+        btnDelete.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
+        btnDelete.UseAccentColor = true;
+        btnDelete.UseVisualStyleBackColor = false;
+        btnDelete.Click += BtnDelete_Click;
+        // 
+        // splitter9
+        // 
+        splitter9.Location = new System.Drawing.Point(745, 0);
+        splitter9.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+        splitter9.MinSize = 80;
+        splitter9.Name = "splitter9";
+        splitter9.Size = new System.Drawing.Size(4, 37);
+        splitter9.TabIndex = 23;
+        splitter9.TabStop = false;
         // 
         // btnCollapse
         // 
@@ -84,7 +122,7 @@ partial class HotKeyProfileControl
         btnCollapse.Dock = System.Windows.Forms.DockStyle.Left;
         btnCollapse.HighEmphasis = true;
         btnCollapse.Icon = null;
-        btnCollapse.Location = new System.Drawing.Point(687, 0);
+        btnCollapse.Location = new System.Drawing.Point(709, 0);
         btnCollapse.Margin = new System.Windows.Forms.Padding(5, 7, 5, 7);
         btnCollapse.MouseState = MaterialSkin.MouseState.HOVER;
         btnCollapse.Name = "btnCollapse";
@@ -100,7 +138,7 @@ partial class HotKeyProfileControl
         // 
         // splitter5
         // 
-        splitter5.Location = new System.Drawing.Point(682, 0);
+        splitter5.Location = new System.Drawing.Point(704, 0);
         splitter5.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         splitter5.MinSize = 120;
         splitter5.Name = "splitter5";
@@ -130,7 +168,7 @@ partial class HotKeyProfileControl
         cbAction.MaxDropDownItems = 4;
         cbAction.MouseState = MaterialSkin.MouseState.OUT;
         cbAction.Name = "cbAction";
-        cbAction.Size = new System.Drawing.Size(153, 35);
+        cbAction.Size = new System.Drawing.Size(175, 35);
         cbAction.StartIndex = 0;
         cbAction.TabIndex = 3;
         toolTip.SetToolTip(cbAction, "What to do if the HotKeys got pressed.");
@@ -281,7 +319,7 @@ partial class HotKeyProfileControl
         // pnlMore
         // 
         pnlMore.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-        pnlMore.Controls.Add(btnDelete);
+        pnlMore.Controls.Add(cbOpenAsTab);
         pnlMore.Controls.Add(splitter8);
         pnlMore.Controls.Add(cbHandled);
         pnlMore.Controls.Add(splitter7);
@@ -292,31 +330,28 @@ partial class HotKeyProfileControl
         pnlMore.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
         pnlMore.Name = "pnlMore";
         pnlMore.Padding = new System.Windows.Forms.Padding(72, 0, 0, 0);
-        pnlMore.Size = new System.Drawing.Size(725, 37);
+        pnlMore.Size = new System.Drawing.Size(815, 37);
         pnlMore.TabIndex = 8;
         // 
-        // btnDelete
+        // cbOpenAsTab
         // 
-        btnDelete.AutoSize = false;
-        btnDelete.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-        btnDelete.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
-        btnDelete.Depth = 0;
-        btnDelete.Dock = System.Windows.Forms.DockStyle.Left;
-        btnDelete.HighEmphasis = true;
-        btnDelete.Icon = null;
-        btnDelete.Location = new System.Drawing.Point(650, 0);
-        btnDelete.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
-        btnDelete.MouseState = MaterialSkin.MouseState.HOVER;
-        btnDelete.Name = "btnDelete";
-        btnDelete.NoAccentTextColor = System.Drawing.Color.Empty;
-        btnDelete.Size = new System.Drawing.Size(63, 37);
-        btnDelete.TabIndex = 21;
-        btnDelete.Text = "Delete";
-        toolTip.SetToolTip(btnDelete, "Delete current profile.");
-        btnDelete.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Text;
-        btnDelete.UseAccentColor = true;
-        btnDelete.UseVisualStyleBackColor = true;
-        btnDelete.Click += BtnDelete_Click;
+        cbOpenAsTab.AutoSize = true;
+        cbOpenAsTab.Checked = true;
+        cbOpenAsTab.CheckState = System.Windows.Forms.CheckState.Checked;
+        cbOpenAsTab.Depth = 0;
+        cbOpenAsTab.Dock = System.Windows.Forms.DockStyle.Left;
+        cbOpenAsTab.Location = new System.Drawing.Point(650, 0);
+        cbOpenAsTab.Margin = new System.Windows.Forms.Padding(0);
+        cbOpenAsTab.MouseLocation = new System.Drawing.Point(-1, -1);
+        cbOpenAsTab.MouseState = MaterialSkin.MouseState.HOVER;
+        cbOpenAsTab.Name = "cbOpenAsTab";
+        cbOpenAsTab.Ripple = true;
+        cbOpenAsTab.Size = new System.Drawing.Size(86, 37);
+        cbOpenAsTab.TabIndex = 23;
+        cbOpenAsTab.Text = "Tab";
+        toolTip.SetToolTip(cbOpenAsTab, "Open as tab instead of a new window.");
+        cbOpenAsTab.UseVisualStyleBackColor = true;
+        cbOpenAsTab.CheckedChanged += CbOpenAsTab_CheckedChanged;
         // 
         // splitter8
         // 
@@ -421,7 +456,7 @@ partial class HotKeyProfileControl
         Controls.Add(pnlMain);
         Margin = new System.Windows.Forms.Padding(3, 3, 3, 10);
         Name = "HotKeyProfileControl";
-        Size = new System.Drawing.Size(725, 37);
+        Size = new System.Drawing.Size(815, 37);
         pnlMain.ResumeLayout(false);
         pnlMain.PerformLayout();
         pnlMore.ResumeLayout(false);
@@ -450,6 +485,8 @@ partial class HotKeyProfileControl
     private MaterialSkin.Controls.MaterialSwitch cbHandled;
     private System.Windows.Forms.Splitter splitter7;
     private System.Windows.Forms.ToolTip toolTip;
-    private MaterialSkin.Controls.MaterialButton btnDelete;
     private System.Windows.Forms.Splitter splitter8;
+    private System.Windows.Forms.Splitter splitter9;
+    private MaterialSkin.Controls.MaterialButton btnDelete;
+    private MaterialSkin.Controls.MaterialSwitch cbOpenAsTab;
 }

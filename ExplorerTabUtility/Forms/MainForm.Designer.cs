@@ -61,7 +61,7 @@ namespace ExplorerTabUtility.Forms
             flpProfiles.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             flpProfiles.Location = new System.Drawing.Point(7, 112);
             flpProfiles.Name = "flpProfiles";
-            flpProfiles.Size = new System.Drawing.Size(748, 283);
+            flpProfiles.Size = new System.Drawing.Size(838, 283);
             flpProfiles.TabIndex = 2;
             flpProfiles.WrapContents = false;
             flpProfiles.Resize += FlpProfiles_Resize;
@@ -160,7 +160,7 @@ namespace ExplorerTabUtility.Forms
             cbSaveProfilesOnExit.Checked = true;
             cbSaveProfilesOnExit.CheckState = System.Windows.Forms.CheckState.Checked;
             cbSaveProfilesOnExit.Depth = 0;
-            cbSaveProfilesOnExit.Location = new System.Drawing.Point(610, 68);
+            cbSaveProfilesOnExit.Location = new System.Drawing.Point(689, 68);
             cbSaveProfilesOnExit.Margin = new System.Windows.Forms.Padding(0);
             cbSaveProfilesOnExit.MouseLocation = new System.Drawing.Point(-1, -1);
             cbSaveProfilesOnExit.MouseState = MaterialSkin.MouseState.HOVER;
@@ -177,7 +177,7 @@ namespace ExplorerTabUtility.Forms
             // MainForm
             // 
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            ClientSize = new System.Drawing.Size(762, 402);
+            ClientSize = new System.Drawing.Size(852, 402);
             Controls.Add(cbSaveProfilesOnExit);
             Controls.Add(btnSave);
             Controls.Add(btnExport);
@@ -186,7 +186,7 @@ namespace ExplorerTabUtility.Forms
             Controls.Add(flpProfiles);
             Controls.Add(label1);
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
-            MinimumSize = new System.Drawing.Size(762, 225);
+            MinimumSize = new System.Drawing.Size(852, 225);
             Name = "MainForm";
             Padding = new System.Windows.Forms.Padding(3, 55, 3, 3);
             Text = "Settings";
