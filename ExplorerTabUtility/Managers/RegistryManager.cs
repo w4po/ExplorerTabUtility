@@ -38,6 +38,13 @@ public static class RegistryManager
             key.SetValue(Constants.AppName, executablePath);
         }
     }
+
+    public static int GetDefaultExplorerLaunchId()
+    {
+        using var key = OpenCurrentUserKey(Constants.ExplorerAdvancedKeyPath, false);
+        if (key == null) return 1;
+        return key.GetValue("LaunchTo") as int? ?? 1;
+    }
     
     private static RegistryKey? OpenCurrentUserKey(string name, bool writable) => Registry.CurrentUser.OpenSubKey(name, writable);
 }

@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using ExplorerTabUtility.Interop;
+using ExplorerTabUtility.Managers;
 using ExplorerTabUtility.WinAPI;
 
 namespace ExplorerTabUtility.Helpers;
@@ -35,7 +38,7 @@ public static class Helper
             return await action().ConfigureAwait(false);
         }, cancellationToken);
     }
-    
+
     public static T DoUntilNotDefault<T>(Func<T> action, int timeMs = 500, int sleepMs = 20, CancellationToken cancellationToken = default)
     {
         return DoUntilCondition(
@@ -195,7 +198,7 @@ public static class Helper
         if (val.CompareTo(max) > 0) return max;
         return val;
     }
-    
+
     public static Icon? GetIcon() => Icon.ExtractAssociatedIcon(GetExecutablePath());
 
     public static bool IsExplorerEmptySpace(Point point)
@@ -262,6 +265,42 @@ public static class Helper
     public static IEnumerable<nint> GetAllExplorerTabs(nint window)
     {
         return WinApi.FindAllWindowsEx("ShellTabWindowClass", window);
+    }
+
+    public static string NormalizeLocation(string location)
+    {
+        if (location.IndexOf('%') > -1)
+            location = Environment.ExpandEnvironmentVariables(location);
+
+        if (location.StartsWith("::", StringComparison.Ordinal))
+            location = $"shell:{location}";
+
+        else if (location.StartsWith("{", StringComparison.Ordinal))
+            location = $"shell:::{location}";
+
+        location = location.Trim(' ', '/', '\\', '\n', '\'', '"');
+
+        return location.Replace('/', '\\');
+    }
+    public static string GetDefaultExplorerLocation(ShellPathComparer? shellPathComparer = null)
+    {
+        var id = RegistryManager.GetDefaultExplorerLaunchId();
+        var location = id switch
+        {
+            2 => "shell:::{F874310E-B6B7-47DC-BC84-B9E6B38F5903}",// Home, Quick Access
+            3 => "shell:::{088E3905-0323-4B02-9826-5D99428E115F}",// Downloads
+            4 => "shell:::{018D5C66-4533-4307-9B53-224DE2ED1FE6}",// OneDrive
+            _ => "shell:::{20D04FE0-3AEA-1069-A2D8-08002B30309D}" // This PC
+        };
+
+        if (shellPathComparer == null)
+            return location;
+
+        var pidl = shellPathComparer.GetPidlFromPath(location);
+        var path = ShellPathComparer.GetPathFromPidl(pidl); //SIGDN_URL: Downloads -> file:///C:/Users/Username/Downloads
+        Marshal.FreeCoTaskMem(pidl);
+
+        return NormalizeLocation(path ?? location);
     }
 
     public static string GetExecutablePath()

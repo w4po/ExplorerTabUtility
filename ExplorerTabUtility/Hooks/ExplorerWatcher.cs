@@ -36,6 +36,8 @@ public class ExplorerWatcher : IHook
     private WinEventDelegate? _eventObjectShowHookCallback;
     private DShellWindowsEvents_WindowRegisteredEventHandler? _windowRegisteredHandler;
 
+
+    private string _defaultLocation = null!;
     private bool _reuseTabs = true;
     private bool _isForcingTabs;
     public bool IsHookActive => _isForcingTabs;
@@ -158,7 +160,7 @@ public class ExplorerWatcher : IHook
         if (delay > 0)
             await Task.Delay(delay).ConfigureAwait(false);
 
-        var normalizedPath = NormalizeLocation(location ?? string.Empty);
+        var normalizedPath = Helper.NormalizeLocation(location ?? string.Empty);
 
         if (!asTab)
         {
@@ -215,9 +217,9 @@ public class ExplorerWatcher : IHook
         WindowRecord? closedWindow;
         lock (_closedWindowsLock)
         {
-            if (_closedWindows.Count == 0) return;
-            closedWindow = _closedWindows[_closedWindows.Count - 1];
-            _closedWindows.RemoveAt(_closedWindows.Count - 1);
+            closedWindow = _closedWindows.LastOrDefault(w => w.Location != _defaultLocation);
+            if (closedWindow == null) return;
+            _closedWindows.Remove(closedWindow);
         }
 
         if (!asTab)
@@ -361,19 +363,18 @@ public class ExplorerWatcher : IHook
         {
             var location = GetLocation(window);
 
-            // Home, This PC
-            if (location is "shell:::{F874310E-B6B7-47DC-BC84-B9E6B38F5903}" or "shell:::{20D04FE0-3AEA-1069-A2D8-08002B30309D}")
+            var windowRecord = new WindowRecord(location, new IntPtr(window.HWND));
+            lock (_closedWindowsLock)
+                _closedWindows.Add(windowRecord);
+
+            // Home, This PC, etc
+            if (location == _defaultLocation)
             {
                 RemoveWindowAndUnhookEvents(window, windowInfo);
                 return;
             }
 
-            var windowRecord = new WindowRecord(location, new IntPtr(window.HWND));
-            lock (_closedWindowsLock)
-                _closedWindows.Add(windowRecord);
-
             windowRecord.SelectedItems = GetSelectedItems(window);
-
             RemoveWindowAndUnhookEvents(window, windowInfo);
         };
 
@@ -574,26 +575,11 @@ public class ExplorerWatcher : IHook
     private static string GetLocation(InternetExplorer window)
     {
         var path = window.LocationURL;
-        if (!string.IsNullOrWhiteSpace(path)) return NormalizeLocation(path);
+        if (!string.IsNullOrWhiteSpace(path)) return Helper.NormalizeLocation(path);
 
         // Recycle Bin, This PC, etc
         path = ((window.Document as ShellFolderView)!.Folder as Folder2)!.Self.Path;
-        return NormalizeLocation(path);
-    }
-    private static string NormalizeLocation(string location)
-    {
-        if (location.IndexOf('%') > -1)
-            location = Environment.ExpandEnvironmentVariables(location);
-
-        if (location.StartsWith("::", StringComparison.Ordinal))
-            location = $"shell:{location}";
-
-        else if (location.StartsWith("{", StringComparison.Ordinal))
-            location = $"shell:::{location}";
-
-        location = location.Trim(' ', '/', '\\', '\n', '\'', '"');
-
-        return location.Replace('/', '\\');
+        return Helper.NormalizeLocation(path);
     }
 
     private async Task MonitorExplorerProcess()
@@ -653,6 +639,8 @@ public class ExplorerWatcher : IHook
         _shellPathComparer = new ShellPathComparer();
         _staTaskScheduler = new StaTaskScheduler();
         _shellWindows = new ShellWindows();
+
+        _defaultLocation = Helper.GetDefaultExplorerLocation(_shellPathComparer);
 
         // Hook the global "WindowRegistered" event
         _windowRegisteredHandler = OnShellWindowRegistered;
