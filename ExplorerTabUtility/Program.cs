@@ -17,7 +17,10 @@ internal class Program
         using var mutex = new Mutex(false, Constants.MutexId);
         if (!mutex.WaitOne(0, false))
         {
-            MessageBox.Show(@"Another instance is already running.\nCheck in System Tray Icons.", Constants.AppName);
+            MessageBox.Show("""
+                            Another instance is already running.
+                            Check in System Tray Icons.
+                            """, Constants.AppName);
             return;
         }
 

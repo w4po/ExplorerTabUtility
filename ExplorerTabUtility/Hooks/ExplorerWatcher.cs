@@ -307,11 +307,13 @@ public class ExplorerWatcher : IHook
         {
             if (showAgain)
             {
-                WinApi.SetWindowTransparency(hWnd, 255);
-
                 // OnWindowShown might fire after ShellWindowRegistered and hide it again.
-                await Task.Delay(1500).ConfigureAwait(false);
-                WinApi.SetWindowTransparency(hWnd, 255);
+                var start = Environment.TickCount;
+                while (Environment.TickCount - start < 2500)
+                {
+                    WinApi.SetWindowTransparency(hWnd, 255);
+                    await Task.Delay(300).ConfigureAwait(false);
+                }
             }
         }
     }
