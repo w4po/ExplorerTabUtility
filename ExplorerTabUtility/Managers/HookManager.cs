@@ -56,6 +56,10 @@ public sealed class HookManager
                 _windowHook.ReopenClosedTab(e.Profile.IsAsTab, e.ForegroundWindow);
                 break;
 
+            case HotKeyAction.DetachTab:
+                _windowHook.DetachCurrentTab(e.ForegroundWindow);
+                break;
+
             case HotKeyAction.SetTargetWindow:
                 _windowHook.SetTargetWindow(e.ForegroundWindow);
                 break;

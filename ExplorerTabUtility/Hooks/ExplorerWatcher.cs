@@ -234,6 +234,29 @@ public class ExplorerWatcher : IHook
 
         _ = OpenTabNavigateWithSelection(closedWindow, windowHandle);
     }
+    public void DetachCurrentTab(nint windowHandle)
+    {
+        if (Helper.GetAllExplorerTabs(windowHandle).Take(2).Count() < 2)
+            return;
+
+        var activeTabHandle = GetActiveTabHandle(windowHandle);
+        if (activeTabHandle == 0) return;
+
+        var window = GetWindowByTabHandle(activeTabHandle);
+        if (window == null) return;
+
+        var location = GetLocation(window);
+        var selectedItems = GetSelectedItems(window);
+        var windowRecord = new WindowRecord(location, windowHandle, selectedItems);
+
+        // Send 0xA021 magic command (CTRL + W)
+        WinApi.SendMessage(activeTabHandle, WinApi.WM_COMMAND, 0xA021, 1);
+
+        lock (_closedWindowsLock)
+            _closedWindows.Add(windowRecord);
+
+        OpenNewWindow(location);
+    }
     public void SetTargetWindow(nint windowHandle)
     {
         if (Helper.IsFileExplorerWindow(windowHandle))

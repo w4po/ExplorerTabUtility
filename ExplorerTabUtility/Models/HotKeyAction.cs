@@ -9,5 +9,6 @@ public enum HotKeyAction
     ToggleWinHook,
     ToggleReuseTabs,
     ToggleVisibility,
-    NavigateBack
+    NavigateBack,
+    DetachTab
 }
