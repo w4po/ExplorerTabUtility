@@ -42,6 +42,9 @@ public static class WinApi
     public static extern nint FindWindowEx(nint parentHandle, nint childAfter, string className, string? windowTitle);
 
     [DllImport("user32.dll")]
+    public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
+
+    [DllImport("user32.dll")]
     public static extern bool ShowWindow(nint handle, int nCmdShow);
 
     [DllImport("user32.dll")]
@@ -114,7 +117,11 @@ public static class WinApi
             ShowWindow(window, SW_SHOWNOACTIVATE);
         }
 
-        //SetForeground
+        if (SetForegroundWindow(window)) return;
+
+        keybd_event(0, 0, 0, 0);    // Simulate a key press (0 NoneKey)
+        keybd_event(0, 0, 0x2, 0);  // Simulate a key release
+
         SetForegroundWindow(window);
     }
 
