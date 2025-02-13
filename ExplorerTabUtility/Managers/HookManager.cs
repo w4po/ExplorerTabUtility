@@ -70,6 +70,10 @@ public sealed class HookManager
                 NavigateBack(e.ForegroundWindow, e.MousePosition);
                 break;
 
+            case HotKeyAction.NavigateUp:
+                NavigateUp(e.ForegroundWindow, e.MousePosition);
+                break;
+
             case HotKeyAction.ToggleReuseTabs:
                 _syncContext.Post(_ => OnReuseTabsToggled?.Invoke(), null);
                 break;
@@ -114,6 +118,15 @@ public sealed class HookManager
             _windowHook.NavigateBack(foregroundWindow);
         else if (Helper.IsExplorerEmptySpace(position))
             KeyboardSimulator.ModifiedKeyStroke(VirtualKey.Alt, VirtualKey.Left);
+    }
+    private void NavigateUp(nint foregroundWindow, Point? mousePosition)
+    {
+        if (foregroundWindow == 0) return;
+
+        if (mousePosition is not { } position)
+            KeyboardSimulator.ModifiedKeyStroke(VirtualKey.Alt, VirtualKey.Up);
+        else if (Helper.IsExplorerEmptySpace(position))
+            KeyboardSimulator.ModifiedKeyStroke(VirtualKey.Alt, VirtualKey.Up);
     }
 
     private async Task SnapForegroundWindow(HotKeyAction direction, int delay = 0)

@@ -10,6 +10,7 @@ public enum HotKeyAction
     ToggleReuseTabs,
     ToggleVisibility,
     NavigateBack,
+    NavigateUp,
     DetachTab,
     SnapRight,
     SnapLeft,
