@@ -1,4 +1,6 @@
-﻿namespace ExplorerTabUtility.Managers;
+﻿using System.Drawing;
+
+namespace ExplorerTabUtility.Managers;
 
 public static class SettingsManager
 {
@@ -44,6 +46,15 @@ public static class SettingsManager
         set
         {
             Properties.Settings.Default.HotKeyProfiles = value;
+            SaveSettings();
+        }
+    }
+    public static Size FormSize
+    {
+        get => Properties.Settings.Default.FormSize;
+        set
+        {
+            Properties.Settings.Default.FormSize = value;
             SaveSettings();
         }
     }

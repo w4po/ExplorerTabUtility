@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ExplorerTabUtility.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
@@ -19,6 +19,9 @@
     </Setting>
     <Setting Name="SaveProfilesOnExit" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="FormSize" Type="System.Drawing.Size" Scope="User">
+      <Value Profile="(Default)">852, 402</Value>
     </Setting>
   </Settings>
 </SettingsFile>

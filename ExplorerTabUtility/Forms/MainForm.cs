@@ -19,6 +19,8 @@ public partial class MainForm : MaterialForm
         InitializeComponent();
         SetupMaterialSkin();
 
+        Size = SettingsManager.FormSize;
+
         _profileManager = new ProfileManager(flpProfiles);
         _hookManager = new HookManager(_profileManager);
         _notifyIconManager = new SystemTrayIcon(_profileManager, _hookManager, ShowForm);
@@ -137,6 +139,8 @@ public partial class MainForm : MaterialForm
 
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
+        SettingsManager.FormSize = Size;
+
         if (e.CloseReason == CloseReason.UserClosing)
         {
             e.Cancel = true;
