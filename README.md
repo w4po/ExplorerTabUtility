@@ -43,27 +43,64 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
 <details>
 <summary>🖨️ Duplicate Current Tab</summary>
 
+- Quickly duplicate the current tab/window
+- Choose whether to duplicate as a tab or new window (toggle `Tab` option)
+- Preserves the current location and selected items
+
 ![Duplicate current tab](Assets/DuplicateTab.gif)
 </details>
 
 <details>
 <summary>♻️ Reopen Closed Tabs</summary>
 
+- Reopen previously closed tabs/windows
+- Choose whether to reopen as a tab or new window (toggle `Tab` option)
+- Restores the exact location and selected items
+
 ![Reopen closed tabs](Assets/ReopenClosedTab.gif)
+</details>
+
+<details>
+<summary>📋 Detach & Snap Windows</summary>
+
+- Detach current tab to a new window
+- Snap windows to screen edges (right/left/top/bottom)
+- Chain multiple actions with a single hotkey
+- Example setup (CTRL + Q):
+  1. First profile: Detach current tab
+  2. Second profile: Snap original window to the left
+  3. Third profile: Snap new window to the right (with customizable delay)
+- Customize delays to match your system's performance
+
+![Detach & Snap](Assets/DetachSnap.gif)
+</details>
+
+<details>
+<summary>⬅️ Navigate Back</summary>
+
+- Navigate back in File Explorer using:
+  - Keyboard shortcuts (customizable)
+  - Mouse clicks on any empty space in the folder
+- Perfect for quick navigation between directories
+
 </details>
 
 <details>
 <summary>📁 Custom Path Navigation</summary>
 
 - Assign hotkeys to quickly open your favorite locations
-- Supports multiple path formats:
+- Choose whether to open as a tab or new window (toggle `Tab` option)
+- Supports multiple formats:
   - Standard paths: `C:\Users\Documents`
   - Environment variables: `%USERPROFILE%\Downloads`
   - Windows CLSID paths: `{A8CDFF1C-4878-43be-B5FD-F8091C1C60D0}` (Special Folders)
-- Perfect for frequently accessed directories
+  - Programs and files: `C:\file.txt`
+  - URLs: `https://github.com/w4po/ExplorerTabUtility` (opens in default browser)
+- Perfect for frequently accessed locations
 - Instant access to system folders using CLSIDs
 
 ![Open custom path](Assets/OpenCustomPath.gif)
+![Open custom URL](Assets/OpenCustomUrl.gif)
 </details>
 
 <details>
@@ -193,6 +230,44 @@ Each profile contains the following settings:
 - Advanced threading with STA scheduler
 - Concurrent collections for thread safety
 </details>
+
+## Antivirus Detection
+
+> [!WARNING]
+> The utility might be flagged by antivirus software as suspicious. This is a **false positive** caused by our use of:
+> - COM interactions (for File Explorer tab management)
+> - Low-level keyboard & mouse hooks (for hotkey support)
+>
+> The tool is completely open source, and you can:
+> - Review the source code in this repository
+> - Build it yourself using Visual Studio
+> - Verify its safety and functionality
+
+### Adding to Windows Defender Exclusions
+
+If Windows Defender is blocking the utility, you can add it to the exclusions list:
+
+1. Open Windows Security
+2. Go to `Virus & threat protection`
+3. Click `Manage settings` under `Virus & threat protection settings`
+4. Scroll down to `Exclusions` and click `Add or remove exclusions`
+5. Click `Add an exclusion` and select `Folder`
+6. Browse to the Explorer Tab Utility folder location
+
+Alternatively, you can use PowerShell (Run as Administrator):
+```powershell
+Add-MpPreference -ExclusionPath "PATH_TO_UTILITY_FOLDER"
+```
+
+## Uninstallation
+
+The utility is portable and can be removed by simply deleting its folder. However:
+
+- If you enabled the `Add to startup` option, make sure to disable it first before deletion
+- If you installed via winget, run:
+  ```powershell
+  winget uninstall w4po.ExplorerTabUtility
+  ```
 
 ## ℹ️ Notes
 
