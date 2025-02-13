@@ -20,7 +20,7 @@ public sealed class Mouse : IHook
     public Mouse(IReadOnlyCollection<HotKeyProfile> hotkeyProfiles)
     {
         _hotkeyProfiles = hotkeyProfiles;
-        _lowLevelMouseHook = new LowLevelMouseHook();
+        _lowLevelMouseHook = new LowLevelMouseHook { AddKeyboardKeys = true };
         _lowLevelMouseHook.Down += LowLevelMouseHook_Down;
     }
 
