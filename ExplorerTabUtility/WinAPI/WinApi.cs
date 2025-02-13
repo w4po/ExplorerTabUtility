@@ -41,8 +41,14 @@ public static class WinApi
     [DllImport("user32.dll", SetLastError = true)]
     public static extern nint FindWindowEx(nint parentHandle, nint childAfter, string className, string? windowTitle);
 
-    [DllImport("user32.dll")]
-    public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
+    [DllImport("user32.dll", ExactSpelling = true, EntryPoint = "MapVirtualKeyW")]
+    public static extern uint MapVirtualKey(uint uCode, uint uMapType);
+
+    [DllImport("user32.dll", ExactSpelling = true)]
+    public static extern short GetAsyncKeyState(int vKey);
+
+    [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+    public static extern uint SendInput(uint nInputs, [MarshalAs(UnmanagedType.LPArray), In] INPUT[] pInputs, int cbSize);
 
     [DllImport("user32.dll")]
     public static extern bool ShowWindow(nint handle, int nCmdShow);
@@ -119,8 +125,8 @@ public static class WinApi
 
         if (SetForegroundWindow(window)) return;
 
-        keybd_event(0, 0, 0, 0);    // Simulate a key press (0 NoneKey)
-        keybd_event(0, 0, 0x2, 0);  // Simulate a key release
+        // Simulate a key press to bypass the SetForegroundWindow restriction
+        KeyboardSimulator.SendKeyPress(VirtualKey.None);
 
         SetForegroundWindow(window);
     }

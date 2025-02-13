@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
-using WindowsInput;
+using System.Threading;
+using System.Threading.Tasks;
 using ExplorerTabUtility.Helpers;
 using ExplorerTabUtility.Models;
 using ExplorerTabUtility.Hooks;
-using System.Threading;
+using ExplorerTabUtility.WinAPI;
 
 namespace ExplorerTabUtility.Managers;
 
@@ -69,15 +71,22 @@ public sealed class HookManager
                 break;
 
             case HotKeyAction.ToggleReuseTabs:
-                _syncContext.Post(_ => OnReuseTabsToggled?.Invoke(), null); 
+                _syncContext.Post(_ => OnReuseTabsToggled?.Invoke(), null);
                 break;
 
             case HotKeyAction.ToggleWinHook:
-                _syncContext.Post(_ => OnWindowHookToggled?.Invoke(), null); 
+                _syncContext.Post(_ => OnWindowHookToggled?.Invoke(), null);
                 break;
 
             case HotKeyAction.ToggleVisibility:
-                _syncContext.Post(_ => OnVisibilityToggled?.Invoke(), null); 
+                _syncContext.Post(_ => OnVisibilityToggled?.Invoke(), null);
+                break;
+
+            case HotKeyAction.SnapRight:
+            case HotKeyAction.SnapLeft:
+            case HotKeyAction.SnapUp:
+            case HotKeyAction.SnapDown:
+                await SnapForegroundWindow(e.Profile.Action, e.Profile.Delay);
                 break;
 
             default:
@@ -97,14 +106,60 @@ public sealed class HookManager
         if (SettingsManager.IsMouseHookActive) StartMouseHook();
         if (SettingsManager.IsKeyboardHookActive) StartKeyboardHook();
     }
-    private void NavigateBack(nint foregroundWindow,Point? mousePosition)
+    private void NavigateBack(nint foregroundWindow, Point? mousePosition)
     {
         if (foregroundWindow == 0) return;
 
         if (mousePosition is not { } position)
             _windowHook.NavigateBack(foregroundWindow);
         else if (Helper.IsExplorerEmptySpace(position))
-            Keyboard.Simulator.ModifiedKeyStroke(VirtualKeyCode.MENU, VirtualKeyCode.LEFT);
+            KeyboardSimulator.ModifiedKeyStroke(VirtualKey.Alt, VirtualKey.Left);
+    }
+
+    private async Task SnapForegroundWindow(HotKeyAction direction, int delay = 0)
+    {
+        var snapKey = GetSnapKey(direction);
+        if (snapKey == VirtualKey.None) return;
+
+        if (delay > 0)
+            await Task.Delay(delay).ConfigureAwait(false);
+
+        var inputs = new List<INPUT>();
+        // Remove any currently pressed modifiers (Ctrl, Shift, Alt, Win)
+        inputs.AddUpEventsForCurrentlyPressedModifiers();
+
+        // Press Windows key
+        inputs.AddKeyDown(VirtualKey.LWin);
+
+        // For up and down press Alt key
+        if (snapKey is VirtualKey.Up or VirtualKey.Down)
+            inputs.AddKeyDown(VirtualKey.Alt);
+
+        // Press the snap key
+        inputs.AddKeyPress(snapKey);
+
+        // For up and down release Alt key
+        if (snapKey is VirtualKey.Up or VirtualKey.Down)
+            inputs.AddKeyUp(VirtualKey.Alt);
+
+        // Release Windows key
+        inputs.AddKeyUp(VirtualKey.LWin);
+
+        // Re-add any currently pressed modifiers
+        inputs.AddDownEventsForCurrentlyPressedModifiers();
+
+        KeyboardSimulator.SendInputs(inputs.ToArray());
+    }
+    private static VirtualKey GetSnapKey(HotKeyAction direction)
+    {
+        return direction switch
+        {
+            HotKeyAction.SnapRight => VirtualKey.Right,
+            HotKeyAction.SnapLeft => VirtualKey.Left,
+            HotKeyAction.SnapUp => VirtualKey.Up,
+            HotKeyAction.SnapDown => VirtualKey.Down,
+            _ => VirtualKey.None
+        };
     }
 
     private static void ChangeHookStatus(IHook hook, bool isActive)

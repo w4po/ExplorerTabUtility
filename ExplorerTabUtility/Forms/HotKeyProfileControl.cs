@@ -272,7 +272,11 @@ public partial class HotKeyProfileControl : UserControl
                 HotKeyAction.Open,
                 HotKeyAction.ToggleWinHook,
                 HotKeyAction.ToggleReuseTabs,
-                HotKeyAction.ToggleVisibility
+                HotKeyAction.ToggleVisibility,
+                HotKeyAction.SnapRight,
+                HotKeyAction.SnapLeft,
+                HotKeyAction.SnapUp,
+                HotKeyAction.SnapDown
             ],
             _ => Enum.GetValues(typeof(HotKeyAction))
                 .OfType<HotKeyAction>()

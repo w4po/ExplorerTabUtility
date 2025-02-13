@@ -4,14 +4,11 @@ using System.Collections.Generic;
 using H.Hooks;
 using ExplorerTabUtility.Models;
 using ExplorerTabUtility.Helpers;
-using WindowsInput;
 
 namespace ExplorerTabUtility.Hooks;
 
 public sealed class Keyboard : IHook
 {
-    public static readonly IKeyboardSimulator Simulator = new InputSimulator().Keyboard;
-    
     private readonly LowLevelKeyboardHook _lowLevelKeyboardHook;
     private readonly IReadOnlyCollection<HotKeyProfile> _hotkeyProfiles;
     public bool IsHookActive => _lowLevelKeyboardHook.IsStarted;
