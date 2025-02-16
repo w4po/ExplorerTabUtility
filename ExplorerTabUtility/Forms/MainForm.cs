@@ -104,12 +104,7 @@ public partial class MainForm : MaterialForm
         _hookManager.Dispose();
     }
 
-    private void ShowForm()
-    {
-        WinApi.ShowWindow(Handle, WinApi.SW_SHOWNOACTIVATE);
-        WinApi.SetForegroundWindow(Handle);
-    }
-
+    private void ShowForm() => WinApi.RestoreWindowToForeground(Handle);
     private void ToggleFormVisibility()
     {
         Invoke(() =>

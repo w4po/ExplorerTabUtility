@@ -116,17 +116,13 @@ public static class WinApi
     /// <param name="window">The handle to the window that needs to be restored to the foreground.</param>
     public static void RestoreWindowToForeground(nint window)
     {
-        //If Minimized
-        if (IsIconic(window))
-        {
-            // Show the window but don't activate it (otherwise won't respond to hot-keys), SetForegroundWindow going to activate it. 
-            ShowWindow(window, SW_SHOWNOACTIVATE);
-        }
+        ShowWindow(window, SW_SHOWNOACTIVATE);
 
         if (SetForegroundWindow(window)) return;
 
         // Simulate a key press to bypass the SetForegroundWindow restriction
-        KeyboardSimulator.SendKeyPress(VirtualKey.None);
+        // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setforegroundwindow#remarks
+        KeyboardSimulator.SendKeyPress(VirtualKey.F24);
 
         SetForegroundWindow(window);
     }
