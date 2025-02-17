@@ -1,4 +1,4 @@
-﻿using Shell32;
+using Shell32;
 using SHDocVw;
 using System;
 using System.Linq;
@@ -25,17 +25,17 @@ public class ExplorerWatcher : IHook
     private ShellPathComparer _shellPathComparer = null!;
     private StaTaskScheduler _staTaskScheduler = null!;
     private CancellationTokenSource? _processMonitorCts;
-
+    private int _disposedFlag;
     private nint _mainWindowHandle;
     private readonly DualKeyDictionary<InternetExplorer, nint?, WindowInfo> _windowEntryDict = [];
     private readonly List<WindowRecord> _closedWindows = new();
     private readonly object _windowEntryDictLock = new(), _closedWindowsLock = new();
     private readonly SemaphoreSlim _toOpenWindowsLock = new(1);
+    private readonly SynchronizationContext _syncContext;
 
     private nint _eventObjectShowHookId;
     private WinEventDelegate? _eventObjectShowHookCallback;
     private DShellWindowsEvents_WindowRegisteredEventHandler? _windowRegisteredHandler;
-
 
     private string _defaultLocation = null!;
     private bool _reuseTabs = true;
@@ -48,7 +48,8 @@ public class ExplorerWatcher : IHook
             throw new InvalidOperationException("Only one instance of ExplorerWatcher is allowed at a time.");
         _created = true;
 
-        InitializeShellObjects();
+        _syncContext = SynchronizationContext.Current!;
+        _ = MonitorExplorerProcess();
     }
 
     public void StartHook()
@@ -610,17 +611,26 @@ public class ExplorerWatcher : IHook
 
     private async Task MonitorExplorerProcess()
     {
-        var cancellationToken = _processMonitorCts?.Token ?? CancellationToken.None;
+        _processMonitorCts = new CancellationTokenSource();
+
+        var currentSessionId = Process.GetCurrentProcess().SessionId;
+        var cancellationToken = _processMonitorCts.Token;
         Process[] explorerProcesses;
         do
         {
-            explorerProcesses = Process.GetProcessesByName("explorer");
-            if (explorerProcesses.Length > 0) break;
+            explorerProcesses = Process.GetProcessesByName("explorer")
+                .Where(p => p.SessionId == currentSessionId)
+                .ToArray();
+
+            if (explorerProcesses.Length > 0 || cancellationToken.IsCancellationRequested) break;
 
             await Task.Delay(1000).ConfigureAwait(false);
-            if (cancellationToken.IsCancellationRequested) return;
         }
         while (explorerProcesses.Length == 0);
+        if (cancellationToken.IsCancellationRequested) return;
+
+        _disposedFlag = 0;
+        _syncContext.Send(_ => InitializeShellObjects(), null);
 
         foreach (var process in explorerProcesses)
         {
@@ -630,12 +640,14 @@ public class ExplorerWatcher : IHook
                 process.Exited += (_, _) =>
                 {
                     if (cancellationToken.IsCancellationRequested) return;
-                    DisposeShellObjects();
 
-                    if (cancellationToken.IsCancellationRequested) return;
+                    if (Interlocked.CompareExchange(ref _disposedFlag, 1, 0) != 0) return;
+
+                    _syncContext.Send(_ => DisposeShellObjects(), null);
+
                     if (!_created) return;
 
-                    InitializeShellObjects();
+                    _ = MonitorExplorerProcess();
                 };
             }
             catch
@@ -658,10 +670,6 @@ public class ExplorerWatcher : IHook
     }
     private void InitializeShellObjects()
     {
-        CancelMonitorToken();
-        _processMonitorCts = new CancellationTokenSource();
-        Task.Run(MonitorExplorerProcess);
-
         _shellPathComparer = new ShellPathComparer();
         _staTaskScheduler = new StaTaskScheduler();
         _shellWindows = new ShellWindows();
@@ -692,6 +700,7 @@ public class ExplorerWatcher : IHook
     private void DisposeShellObjects()
     {
         CancelMonitorToken();
+
         // Unhook global event
         if (_windowRegisteredHandler != null)
         {

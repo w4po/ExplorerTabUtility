@@ -24,6 +24,17 @@ internal class Program
             return;
         }
 
-        Application.Run(new MainForm());
+        try
+        {
+            Application.Run(new MainForm());
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show($"""
+                             Error: {e.Message}
+                             
+                             {e.StackTrace}
+                             """, Constants.AppName);
+        }
     }
 }
