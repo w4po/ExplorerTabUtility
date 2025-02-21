@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+using System;
 using System.Linq;
 using System.Windows.Forms;
+using System.ComponentModel;
+using System.Collections.Generic;
 using ExplorerTabUtility.Models;
+using ExplorerTabUtility.Helpers;
 using H.Hooks;
 
 namespace ExplorerTabUtility.Forms;
@@ -78,6 +79,25 @@ public partial class HotKeyProfileControl : UserControl
     }
 
     // Event handlers
+    private void ComboBox_DropDownClosed(object? _, EventArgs __) => toolTip.Hide(cbAction);
+    private void ComboBox_DrawItem(object? sender, DrawItemEventArgs e)
+    {
+        if (e.Index < 0) return;
+
+        var cb = sender as ComboBox;
+        if (cb!.Items[e.Index] is not Enum item) return;
+
+        var text = Helper.GetEnumDescription(item);
+
+        // Show tooltip only if focused AND visible within ComboBox viewport
+        if (e.State.HasFlag(DrawItemState.Focus) &&
+            e.Bounds.Top >= 0 && e.Bounds.Bottom <= cb.DropDownHeight)
+        {
+            toolTip.Show(text, cb, e.Bounds.Right, e.Bounds.Bottom, 5000);
+        }
+        else
+            toolTip.Hide(cb);
+    }
     private void CbEnabled_CheckedChanged(object? _, EventArgs __) => UpdateControlsEnabledState();
     private void TxtName_TextChanged(object? _, EventArgs __) => _profile.Name = txtName.Text;
     private void CbScope_SelectedIndexChanged(object? _, EventArgs __)

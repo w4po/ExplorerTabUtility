@@ -153,7 +153,7 @@ partial class HotKeyProfileControl
         cbAction.Depth = 0;
         cbAction.Dock = System.Windows.Forms.DockStyle.Left;
         cbAction.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
-        cbAction.DropDownHeight = 118;
+        cbAction.DropDownHeight = 205;
         cbAction.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
         cbAction.DropDownWidth = 175;
         cbAction.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Pixel);
@@ -165,7 +165,7 @@ partial class HotKeyProfileControl
         cbAction.Items.AddRange(new object[] { "Open", "ReopenClosed", "Duplicate", "Write" });
         cbAction.Location = new System.Drawing.Point(529, 0);
         cbAction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-        cbAction.MaxDropDownItems = 4;
+        cbAction.MaxDropDownItems = 7;
         cbAction.MouseState = MaterialSkin.MouseState.OUT;
         cbAction.Name = "cbAction";
         cbAction.Size = new System.Drawing.Size(175, 35);
@@ -173,6 +173,8 @@ partial class HotKeyProfileControl
         cbAction.TabIndex = 3;
         toolTip.SetToolTip(cbAction, "What to do if the HotKeys got pressed.");
         cbAction.UseTallSize = false;
+        cbAction.DrawItem += ComboBox_DrawItem;
+        cbAction.DropDownClosed += ComboBox_DropDownClosed;
         cbAction.SelectedIndexChanged += CbAction_SelectedIndexChanged;
         // 
         // splitter4

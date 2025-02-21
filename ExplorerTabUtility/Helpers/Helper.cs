@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -200,6 +202,11 @@ public static class Helper
     }
 
     public static Icon? GetIcon() => Icon.ExtractAssociatedIcon(GetExecutablePath());
+    public static string GetEnumDescription(Enum value)
+    {
+        var fieldInfo = value.GetType().GetField(value.ToString());
+        return fieldInfo?.GetCustomAttribute<DescriptionAttribute>()?.Description ?? value.ToString();
+    }
 
     public static bool IsExplorerEmptySpace(Point point)
     {
