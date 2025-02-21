@@ -105,5 +105,17 @@ namespace ExplorerTabUtility.Properties {
                 this["FormSize"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsTrayIconHidden {
+            get {
+                return ((bool)(this["IsTrayIconHidden"]));
+            }
+            set {
+                this["IsTrayIconHidden"] = value;
+            }
+        }
     }
 }

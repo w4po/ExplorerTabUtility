@@ -37,8 +37,9 @@ public class SystemTrayIcon : IDisposable
         _hookManager.OnReuseTabsToggled += OnReuseTabsToggled;
     }
 
-    private void OnNotifyIconDoubleClick(object? _, MouseEventArgs e) => _showFormAction();
     public void UpdateMenuItems() => _notifyIcon.ContextMenuStrip = CreateContextMenuStrip();
+    public void SetTrayIconVisibility(bool visible) => _notifyIcon.Visible = visible;
+    private void OnNotifyIconDoubleClick(object? _, MouseEventArgs e) => _showFormAction();
     private void OnWindowHookToggled() => GetMenuItemByKey("WindowHook")!.PerformClick();
     private void OnReuseTabsToggled() => GetMenuItemByKey("ReuseTabs")!.PerformClick();
 

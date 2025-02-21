@@ -40,6 +40,13 @@ namespace ExplorerTabUtility.Forms
             btnSave = new MaterialSkin.Controls.MaterialButton();
             cbSaveProfilesOnExit = new MaterialSkin.Controls.MaterialCheckbox();
             toolTip = new System.Windows.Forms.ToolTip(components);
+            cbHideTrayIcon = new MaterialSkin.Controls.MaterialCheckbox();
+            materialTabControl1 = new MaterialSkin.Controls.MaterialTabControl();
+            tpShortcuts = new System.Windows.Forms.TabPage();
+            tpPreferences = new System.Windows.Forms.TabPage();
+            materialTabControl1.SuspendLayout();
+            tpShortcuts.SuspendLayout();
+            tpPreferences.SuspendLayout();
             SuspendLayout();
             // 
             // label1
@@ -59,9 +66,9 @@ namespace ExplorerTabUtility.Forms
             flpProfiles.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             flpProfiles.AutoScroll = true;
             flpProfiles.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            flpProfiles.Location = new System.Drawing.Point(7, 112);
+            flpProfiles.Location = new System.Drawing.Point(1, 46);
             flpProfiles.Name = "flpProfiles";
-            flpProfiles.Size = new System.Drawing.Size(838, 283);
+            flpProfiles.Size = new System.Drawing.Size(838, 280);
             flpProfiles.TabIndex = 2;
             flpProfiles.WrapContents = false;
             flpProfiles.Resize += FlpProfiles_Resize;
@@ -74,7 +81,7 @@ namespace ExplorerTabUtility.Forms
             btnNewProfile.Depth = 0;
             btnNewProfile.HighEmphasis = true;
             btnNewProfile.Icon = null;
-            btnNewProfile.Location = new System.Drawing.Point(12, 68);
+            btnNewProfile.Location = new System.Drawing.Point(6, 3);
             btnNewProfile.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             btnNewProfile.MouseState = MaterialSkin.MouseState.HOVER;
             btnNewProfile.Name = "btnNewProfile";
@@ -96,7 +103,7 @@ namespace ExplorerTabUtility.Forms
             btnImport.Depth = 0;
             btnImport.HighEmphasis = true;
             btnImport.Icon = null;
-            btnImport.Location = new System.Drawing.Point(94, 68);
+            btnImport.Location = new System.Drawing.Point(88, 3);
             btnImport.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             btnImport.MouseState = MaterialSkin.MouseState.HOVER;
             btnImport.Name = "btnImport";
@@ -118,7 +125,7 @@ namespace ExplorerTabUtility.Forms
             btnExport.Depth = 0;
             btnExport.HighEmphasis = true;
             btnExport.Icon = null;
-            btnExport.Location = new System.Drawing.Point(176, 68);
+            btnExport.Location = new System.Drawing.Point(170, 3);
             btnExport.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             btnExport.MouseState = MaterialSkin.MouseState.HOVER;
             btnExport.Name = "btnExport";
@@ -140,7 +147,7 @@ namespace ExplorerTabUtility.Forms
             btnSave.Depth = 0;
             btnSave.HighEmphasis = true;
             btnSave.Icon = null;
-            btnSave.Location = new System.Drawing.Point(258, 68);
+            btnSave.Location = new System.Drawing.Point(252, 3);
             btnSave.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             btnSave.MouseState = MaterialSkin.MouseState.HOVER;
             btnSave.Name = "btnSave";
@@ -160,7 +167,7 @@ namespace ExplorerTabUtility.Forms
             cbSaveProfilesOnExit.Checked = true;
             cbSaveProfilesOnExit.CheckState = System.Windows.Forms.CheckState.Checked;
             cbSaveProfilesOnExit.Depth = 0;
-            cbSaveProfilesOnExit.Location = new System.Drawing.Point(689, 68);
+            cbSaveProfilesOnExit.Location = new System.Drawing.Point(683, 3);
             cbSaveProfilesOnExit.Margin = new System.Windows.Forms.Padding(0);
             cbSaveProfilesOnExit.MouseLocation = new System.Drawing.Point(-1, -1);
             cbSaveProfilesOnExit.MouseState = MaterialSkin.MouseState.HOVER;
@@ -174,25 +181,87 @@ namespace ExplorerTabUtility.Forms
             cbSaveProfilesOnExit.UseVisualStyleBackColor = true;
             cbSaveProfilesOnExit.CheckedChanged += CbSaveProfilesOnExit_CheckedChanged;
             // 
+            // cbHideTrayIcon
+            // 
+            cbHideTrayIcon.AutoSize = true;
+            cbHideTrayIcon.Depth = 0;
+            cbHideTrayIcon.Location = new System.Drawing.Point(3, 3);
+            cbHideTrayIcon.Margin = new System.Windows.Forms.Padding(0);
+            cbHideTrayIcon.MouseLocation = new System.Drawing.Point(-1, -1);
+            cbHideTrayIcon.MouseState = MaterialSkin.MouseState.HOVER;
+            cbHideTrayIcon.Name = "cbHideTrayIcon";
+            cbHideTrayIcon.ReadOnly = false;
+            cbHideTrayIcon.Ripple = true;
+            cbHideTrayIcon.Size = new System.Drawing.Size(101, 37);
+            cbHideTrayIcon.TabIndex = 10;
+            cbHideTrayIcon.Text = "Hide icon";
+            toolTip.SetToolTip(cbHideTrayIcon, "Hide tray icon.");
+            cbHideTrayIcon.UseVisualStyleBackColor = true;
+            cbHideTrayIcon.CheckedChanged += CbHideTrayIcon_CheckedChanged;
+            // 
+            // materialTabControl1
+            // 
+            materialTabControl1.Controls.Add(tpShortcuts);
+            materialTabControl1.Controls.Add(tpPreferences);
+            materialTabControl1.Depth = 0;
+            materialTabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            materialTabControl1.Location = new System.Drawing.Point(0, 64);
+            materialTabControl1.MouseState = MaterialSkin.MouseState.HOVER;
+            materialTabControl1.Multiline = true;
+            materialTabControl1.Name = "materialTabControl1";
+            materialTabControl1.SelectedIndex = 0;
+            materialTabControl1.Size = new System.Drawing.Size(849, 335);
+            materialTabControl1.TabIndex = 10;
+            // 
+            // tpShortcuts
+            // 
+            tpShortcuts.Controls.Add(cbSaveProfilesOnExit);
+            tpShortcuts.Controls.Add(btnNewProfile);
+            tpShortcuts.Controls.Add(btnSave);
+            tpShortcuts.Controls.Add(flpProfiles);
+            tpShortcuts.Controls.Add(btnExport);
+            tpShortcuts.Controls.Add(btnImport);
+            tpShortcuts.Location = new System.Drawing.Point(4, 24);
+            tpShortcuts.Name = "tpShortcuts";
+            tpShortcuts.Padding = new System.Windows.Forms.Padding(3);
+            tpShortcuts.Size = new System.Drawing.Size(841, 307);
+            tpShortcuts.TabIndex = 0;
+            tpShortcuts.Text = "Shortcuts";
+            tpShortcuts.UseVisualStyleBackColor = true;
+            // 
+            // tpPreferences
+            // 
+            tpPreferences.Controls.Add(cbHideTrayIcon);
+            tpPreferences.Location = new System.Drawing.Point(4, 24);
+            tpPreferences.Name = "tpPreferences";
+            tpPreferences.Padding = new System.Windows.Forms.Padding(3);
+            tpPreferences.Size = new System.Drawing.Size(841, 307);
+            tpPreferences.TabIndex = 1;
+            tpPreferences.Text = "Preferences";
+            tpPreferences.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             ClientSize = new System.Drawing.Size(852, 402);
-            Controls.Add(cbSaveProfilesOnExit);
-            Controls.Add(btnSave);
-            Controls.Add(btnExport);
-            Controls.Add(btnImport);
-            Controls.Add(btnNewProfile);
-            Controls.Add(flpProfiles);
+            Controls.Add(materialTabControl1);
             Controls.Add(label1);
+            DrawerTabControl = materialTabControl1;
+            DrawerWidth = 160;
             Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             MinimumSize = new System.Drawing.Size(852, 225);
             Name = "MainForm";
-            Padding = new System.Windows.Forms.Padding(3, 55, 3, 3);
+            Padding = new System.Windows.Forms.Padding(0, 64, 3, 3);
             Text = "Settings";
             Deactivate += MainForm_Deactivate;
+            materialTabControl1.ResumeLayout(false);
+            tpShortcuts.ResumeLayout(false);
+            tpShortcuts.PerformLayout();
+            tpPreferences.ResumeLayout(false);
+            tpPreferences.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
+
         }
 
         #endregion
@@ -205,5 +274,9 @@ namespace ExplorerTabUtility.Forms
         private MaterialSkin.Controls.MaterialButton btnSave;
         private MaterialSkin.Controls.MaterialCheckbox cbSaveProfilesOnExit;
         private System.Windows.Forms.ToolTip toolTip;
+        private MaterialSkin.Controls.MaterialTabControl materialTabControl1;
+        private System.Windows.Forms.TabPage tpShortcuts;
+        private System.Windows.Forms.TabPage tpPreferences;
+        private MaterialSkin.Controls.MaterialCheckbox cbHideTrayIcon;
     }
 }

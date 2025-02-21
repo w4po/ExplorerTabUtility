@@ -67,6 +67,15 @@ public static class SettingsManager
             SaveSettings();
         }
     }
+    public static bool IsTrayIconHidden
+    {
+        get => Properties.Settings.Default.IsTrayIconHidden;
+        set
+        {
+            Properties.Settings.Default.IsTrayIconHidden = value;
+            SaveSettings();
+        }
+    }
     
     public static void SaveSettings() => Properties.Settings.Default.Save();
 }

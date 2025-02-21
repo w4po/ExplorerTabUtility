@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using MaterialSkin;
 using MaterialSkin.Controls;
 using ExplorerTabUtility.WinAPI;
 using ExplorerTabUtility.Managers;
 using ExplorerTabUtility.Helpers;
+using ExplorerTabUtility.Models;
 
 namespace ExplorerTabUtility.Forms;
 
@@ -13,6 +16,7 @@ public partial class MainForm : MaterialForm
     private readonly HookManager _hookManager;
     private readonly ProfileManager _profileManager;
     private readonly SystemTrayIcon _notifyIconManager;
+    private bool _isFirstShow = true;
 
     public MainForm()
     {
@@ -27,6 +31,9 @@ public partial class MainForm : MaterialForm
 
         SetupEventHandlers();
         StartHooks();
+
+        cbHideTrayIcon.Checked = SettingsManager.IsTrayIconHidden;
+        UpdateTrayIconVisibility(false);
     }
 
     private void SetupMaterialSkin()
@@ -64,6 +71,7 @@ public partial class MainForm : MaterialForm
         var jsonString = System.IO.File.ReadAllText(ofd.FileName);
         _profileManager.ImportProfiles(jsonString);
         _notifyIconManager.UpdateMenuItems();
+        UpdateTrayIconVisibility(false);
     }
 
     private void BtnExport_Click(object _, EventArgs __)
@@ -83,12 +91,15 @@ public partial class MainForm : MaterialForm
     {
         _profileManager.SaveProfiles();
         _notifyIconManager.UpdateMenuItems();
+        UpdateTrayIconVisibility(false);
     }
 
     private void CbSaveProfilesOnExit_CheckedChanged(object _, EventArgs __)
     {
         SettingsManager.SaveProfilesOnExit = cbSaveProfilesOnExit.Checked;
     }
+
+    private void CbHideTrayIcon_CheckedChanged(object sender, EventArgs e) => UpdateTrayIconVisibility(true);
 
     private void FlpProfiles_Resize(object _, EventArgs __)
     {
@@ -104,7 +115,42 @@ public partial class MainForm : MaterialForm
         _hookManager.Dispose();
     }
 
-    private void ShowForm() => WinApi.RestoreWindowToForeground(Handle);
+    private void UpdateTrayIconVisibility(bool showAlert)
+    {
+        // Check for valid toggle visibility profile
+        var profile = _profileManager
+            .GetProfiles()
+            .FirstOrDefault(p =>
+                p.IsEnabled &&
+                p.Action == HotKeyAction.ToggleVisibility &&
+                (p.IsMouse ? SettingsManager.IsMouseHookActive : SettingsManager.IsKeyboardHookActive));
+
+        var canToggleVisibility = profile != null;
+        if (showAlert && !SettingsManager.IsTrayIconHidden)
+        {
+            var message = canToggleVisibility
+                ? $"You can show the app again by pressing {profile!.HotKeys!.HotKeysToString(profile.IsDoubleClick)}"
+                : "Cannot hide tray icon if no hotkey is configured to toggle visibility.";
+
+            if (cbHideTrayIcon.Checked)
+                MessageBox.Show(this, message, Constants.AppName);
+        }
+
+
+        cbHideTrayIcon.Checked = cbHideTrayIcon.Checked && canToggleVisibility;
+        SettingsManager.IsTrayIconHidden = cbHideTrayIcon.Checked;
+        _notifyIconManager.SetTrayIconVisibility(!cbHideTrayIcon.Checked);
+    }
+    private void ShowForm()
+    {
+        WinApi.RestoreWindowToForeground(Handle);
+
+        if (!_isFirstShow) return;
+
+        _isFirstShow = false;
+        Task.Delay(800).ContinueWith(_ => Invoke(AddDrawerOverlayForm));
+    }
+
     private void ToggleFormVisibility()
     {
         Invoke(() =>
@@ -121,11 +167,12 @@ public partial class MainForm : MaterialForm
         if (WindowState == FormWindowState.Minimized)
         {
             Hide();
-            
+
             if (cbSaveProfilesOnExit.Checked)
             {
                 _profileManager.SaveProfiles();
                 _notifyIconManager.UpdateMenuItems();
+                UpdateTrayIconVisibility(false);
             }
         }
 
@@ -140,11 +187,12 @@ public partial class MainForm : MaterialForm
         {
             e.Cancel = true;
             Hide();
-            
+
             if (cbSaveProfilesOnExit.Checked)
             {
                 _profileManager.SaveProfiles();
                 _notifyIconManager.UpdateMenuItems();
+                UpdateTrayIconVisibility(false);
             }
         }
         base.OnFormClosing(e);
