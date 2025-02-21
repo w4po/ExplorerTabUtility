@@ -66,7 +66,7 @@ public partial class HotKeyProfileControl : UserControl
         txtName.Text = _profile.Name ?? string.Empty;
 
         if (_profile.HotKeys != null)
-            txtHotKeys.Text = KeysToString(_profile.HotKeys, _profile.IsDoubleClick);
+            txtHotKeys.Text = _profile.HotKeys.HotKeysToString(_profile.IsDoubleClick);
 
         SetComboBoxDataSourceQuietly(cbScope, Enum.GetValues(typeof(HotkeyScope)), CbScope_SelectedIndexChanged);
         SetComboBoxDataSourceQuietly(cbAction, GetAllowedActions(_profile.Scope), CbAction_SelectedIndexChanged);
@@ -172,7 +172,7 @@ public partial class HotKeyProfileControl : UserControl
         _profile.IsMouse = isMouse;
         _profile.IsDoubleClick = isDoubleClick;
 
-        Invoke(() => txtHotKeys.Text = KeysToString(keys, isDoubleClick));
+        Invoke(() => txtHotKeys.Text = keys.HotKeysToString(isDoubleClick));
     }
     private static bool IsAllowedKeys(IReadOnlyCollection<Key> keys)
     {
@@ -217,12 +217,6 @@ public partial class HotKeyProfileControl : UserControl
         _lastClickTime = now;
         _lastClickKey = currentKey;
         return isDoubleClick;
-    }
-    private string KeysToString(IEnumerable<Key> keys, bool isDoubleClick = false)
-    {
-        var text = string.Join(" + ", keys.Select(k => k.ToFixedString()));
-        if (isDoubleClick) text += "_DBL";
-        return text;
     }
 
     // Methods

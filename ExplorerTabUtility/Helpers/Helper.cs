@@ -1,16 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
+using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Reflection;
+using System.Diagnostics;
+using System.ComponentModel;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using ExplorerTabUtility.Interop;
 using ExplorerTabUtility.Managers;
 using ExplorerTabUtility.WinAPI;
+using H.Hooks;
 
 namespace ExplorerTabUtility.Helpers;
 
@@ -206,6 +207,54 @@ public static class Helper
     {
         var fieldInfo = value.GetType().GetField(value.ToString());
         return fieldInfo?.GetCustomAttribute<DescriptionAttribute>()?.Description ?? value.ToString();
+    }
+    public static string HotKeysToString(this IEnumerable<Key> keys, bool isDoubleClick = false)
+    {
+        var text = string.Join(" + ", keys.Select(k => k.ToDisplayString()));
+        if (isDoubleClick) text += "_DBL";
+        return text;
+    }
+    public static string ToDisplayString(this Key key)
+    {
+        return key switch
+        {
+            Key.Add => "+",
+            Key.Subtract => "-",
+            Key.Multiply => "*",
+            Key.Divide => "/",
+            Key.OemPlus => "+",
+            Key.OemMinus => "-",
+            Key.OemComma => ",",
+            Key.Decimal or Key.OemPeriod => "DOT",
+            Key.Oem1 => ";",
+            Key.Oem2 => "/",
+            Key.Oem3 => "Tilde",
+            Key.Oem4 => "[",
+            Key.Oem5 => "\\",
+            Key.Oem6 => "]",
+            Key.Oem7 => "Quote",
+            Key.Escape => "ESC",
+            Key.CapsLock => "CAPS",
+            Key.PageUp => "PgUp",
+            Key.PageDown => "PgDn",
+            Key.PrintScreen => "PrtSc",
+
+            >= Key.NumPad0 and <= Key.NumPad9 => key.ToString().Replace("NumPad", "Num"),
+            >= Key.D0 and <= Key.D9 => key.ToString().Replace("D", ""),
+
+            // Mouse buttons
+            Key.MouseLeft or Key.LButton => "LMB",
+            Key.MouseRight or Key.RButton => "RMB",
+            Key.MouseMiddle or Key.MButton => "MMB",
+            Key.MouseXButton1 => "X1",
+            Key.MouseXButton2 => "X2",
+
+            // Default case
+            _ => key.ToFixedString().Replace("Button", "")
+                .Replace("Mouse", "")
+                .Replace("Key", "")
+                .Trim()
+        };
     }
 
     public static bool IsExplorerEmptySpace(Point point)
