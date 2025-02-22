@@ -67,6 +67,15 @@ public static class SettingsManager
             SaveSettings();
         }
     }
+    public static bool IsFirstRun
+    {
+        get => Properties.Settings.Default.IsFirstRun;
+        set
+        {
+            Properties.Settings.Default.IsFirstRun = value;
+            SaveSettings();
+        }
+    }
     public static bool IsTrayIconHidden
     {
         get => Properties.Settings.Default.IsTrayIconHidden;

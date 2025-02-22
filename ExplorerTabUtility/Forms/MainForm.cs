@@ -208,6 +208,14 @@ public partial class MainForm : MaterialForm
     {
         if (!IsHandleCreated)
         {
+            // Show form on the very first run
+            if (SettingsManager.IsFirstRun)
+            {
+                base.SetVisibleCore(true);
+                SettingsManager.IsFirstRun = false;
+                return;
+            }
+
             value = false;
             CreateHandle();
         }
