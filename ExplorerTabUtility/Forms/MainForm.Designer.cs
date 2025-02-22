@@ -41,6 +41,7 @@ namespace ExplorerTabUtility.Forms
             cbSaveProfilesOnExit = new MaterialSkin.Controls.MaterialCheckbox();
             toolTip = new System.Windows.Forms.ToolTip(components);
             cbHideTrayIcon = new MaterialSkin.Controls.MaterialCheckbox();
+            cbThemeIssue = new MaterialSkin.Controls.MaterialCheckbox();
             materialTabControl1 = new MaterialSkin.Controls.MaterialTabControl();
             tpShortcuts = new System.Windows.Forms.TabPage();
             tpPreferences = new System.Windows.Forms.TabPage();
@@ -199,6 +200,24 @@ namespace ExplorerTabUtility.Forms
             cbHideTrayIcon.UseVisualStyleBackColor = true;
             cbHideTrayIcon.CheckedChanged += CbHideTrayIcon_CheckedChanged;
             // 
+            // cbThemeIssue
+            // 
+            cbThemeIssue.AutoSize = true;
+            cbThemeIssue.Depth = 0;
+            cbThemeIssue.Location = new System.Drawing.Point(3, 44);
+            cbThemeIssue.Margin = new System.Windows.Forms.Padding(0);
+            cbThemeIssue.MouseLocation = new System.Drawing.Point(-1, -1);
+            cbThemeIssue.MouseState = MaterialSkin.MouseState.HOVER;
+            cbThemeIssue.Name = "cbThemeIssue";
+            cbThemeIssue.ReadOnly = false;
+            cbThemeIssue.Ripple = true;
+            cbThemeIssue.Size = new System.Drawing.Size(143, 37);
+            cbThemeIssue.TabIndex = 11;
+            cbThemeIssue.Text = "Preserve theme";
+            toolTip.SetToolTip(cbThemeIssue, "Use alternative window hiding method that preserves your custom File-Explorer theme.\r\nEnable this if you have theme-related issues.");
+            cbThemeIssue.UseVisualStyleBackColor = true;
+            cbThemeIssue.CheckedChanged += CbThemeIssue_CheckedChanged;
+            // 
             // materialTabControl1
             // 
             materialTabControl1.Controls.Add(tpShortcuts);
@@ -231,6 +250,7 @@ namespace ExplorerTabUtility.Forms
             // 
             // tpPreferences
             // 
+            tpPreferences.Controls.Add(cbThemeIssue);
             tpPreferences.Controls.Add(cbHideTrayIcon);
             tpPreferences.Location = new System.Drawing.Point(4, 24);
             tpPreferences.Name = "tpPreferences";
@@ -278,5 +298,6 @@ namespace ExplorerTabUtility.Forms
         private System.Windows.Forms.TabPage tpShortcuts;
         private System.Windows.Forms.TabPage tpPreferences;
         private MaterialSkin.Controls.MaterialCheckbox cbHideTrayIcon;
+        private MaterialSkin.Controls.MaterialCheckbox cbThemeIssue;
     }
 }

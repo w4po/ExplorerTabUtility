@@ -32,6 +32,7 @@ public partial class MainForm : MaterialForm
         SetupEventHandlers();
         StartHooks();
 
+        cbThemeIssue.Checked = SettingsManager.HaveThemeIssue;
         cbHideTrayIcon.Checked = SettingsManager.IsTrayIconHidden;
         UpdateTrayIconVisibility(false);
     }
@@ -97,6 +98,11 @@ public partial class MainForm : MaterialForm
     private void CbSaveProfilesOnExit_CheckedChanged(object _, EventArgs __)
     {
         SettingsManager.SaveProfilesOnExit = cbSaveProfilesOnExit.Checked;
+    }
+
+    private void CbThemeIssue_CheckedChanged(object sender, EventArgs e)
+    {
+        SettingsManager.HaveThemeIssue = cbThemeIssue.Checked;
     }
 
     private void CbHideTrayIcon_CheckedChanged(object sender, EventArgs e) => UpdateTrayIconVisibility(true);

@@ -117,5 +117,17 @@ namespace ExplorerTabUtility.Properties {
                 this["IsTrayIconHidden"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HaveThemeIssue {
+            get {
+                return ((bool)(this["HaveThemeIssue"]));
+            }
+            set {
+                this["HaveThemeIssue"] = value;
+            }
+        }
     }
 }

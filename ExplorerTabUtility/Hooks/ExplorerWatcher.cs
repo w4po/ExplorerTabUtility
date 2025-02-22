@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using ExplorerTabUtility.Helpers;
 using ExplorerTabUtility.Interop;
+using ExplorerTabUtility.Managers;
 using ExplorerTabUtility.Models;
 using ExplorerTabUtility.WinAPI;
 
@@ -287,7 +288,7 @@ public class ExplorerWatcher : IHook
         if (!WinApi.IsWindowHasClassName(hWnd, "CabinetWClass")) return;
 
         if (_windowEntryDict.Count < 2) return;
-        WinApi.SetWindowTransparency(hWnd, 0);
+        Helper.HideWindow(hWnd, SettingsManager.HaveThemeIssue);
     }
     private InternetExplorer? GetRecentlyCreatedWindow(out WindowInfo? windowInfo)
     {
@@ -338,7 +339,7 @@ public class ExplorerWatcher : IHook
                                     Helper.GetAllExplorerTabs(hWnd).Take(2).Count() == 1;
 
             if (shouldReopenAsTab)
-                WinApi.SetWindowTransparency(hWnd, 0);
+                Helper.HideWindow(hWnd, SettingsManager.HaveThemeIssue);
 
             // Check if it is a detached tab
             var isRecentlyClosed = TryGetRecentlyClosedWindow(location, out var closedWindow);
@@ -373,13 +374,12 @@ public class ExplorerWatcher : IHook
         {
             if (showAgain)
             {
-                // OnWindowShown might fire after ShellWindowRegistered and hide it again.
-                var start = Environment.TickCount;
-                while (Environment.TickCount - start < 2500)
-                {
-                    WinApi.SetWindowTransparency(hWnd, 255);
-                    await Task.Delay(300).ConfigureAwait(false);
-                }
+                Helper.ShowWindow(hWnd, removeCache: false);
+                if (!SettingsManager.HaveThemeIssue)
+                    Helper.UpdateWindowLayered(hWnd, remove: true);
+
+                // OnWindowShown might fire after ShellWindowRegistered and hide it again, keep the cache, wait a bit, then remove it.
+                _ = Task.Delay(3000).ContinueWith(t => Helper.HiddenWindows.TryRemove(hWnd, out _));
             }
         }
     }

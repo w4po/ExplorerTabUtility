@@ -76,6 +76,15 @@ public static class SettingsManager
             SaveSettings();
         }
     }
+    public static bool HaveThemeIssue
+    {
+        get => Properties.Settings.Default.HaveThemeIssue;
+        set
+        {
+            Properties.Settings.Default.HaveThemeIssue = value;
+            SaveSettings();
+        }
+    }
     
     public static void SaveSettings() => Properties.Settings.Default.Save();
 }

@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Diagnostics;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using ExplorerTabUtility.Interop;
 using ExplorerTabUtility.Managers;
@@ -17,6 +18,8 @@ namespace ExplorerTabUtility.Helpers;
 
 public static class Helper
 {
+    public static readonly ConcurrentDictionary<nint, RECT?> HiddenWindows = new();
+
     public static Task DoDelayedBackgroundAsync(Action action, int delayMs = 2_000, CancellationToken cancellationToken = default)
     {
         return Task.Run(async () =>
@@ -321,6 +324,57 @@ public static class Helper
     public static IEnumerable<nint> GetAllExplorerTabs(nint window)
     {
         return WinApi.FindAllWindowsEx("ShellTabWindowClass", window);
+    }
+
+    public static void UpdateWindowLayered(nint hWnd, bool remove)
+    {
+        var exStyle = WinApi.GetWindowLong(hWnd, WinApi.GWL_EXSTYLE);
+        var isLayered = (exStyle & WinApi.WS_EX_LAYERED) != 0;
+        
+        if (remove && isLayered) // Remove
+            WinApi.SetWindowLong(hWnd, WinApi.GWL_EXSTYLE, exStyle & ~WinApi.WS_EX_LAYERED);
+        
+        if (!remove && !isLayered) // Add
+            WinApi.SetWindowLong(hWnd, WinApi.GWL_EXSTYLE, exStyle | WinApi.WS_EX_LAYERED);
+    }
+    public static void HideWindow(nint hWnd, bool keepTheme = false)
+    {
+        HiddenWindows.GetOrAdd(hWnd, static (hWnd, keepTheme) =>
+        {
+            if (keepTheme)
+            {
+                WinApi.GetWindowRect(hWnd, out var originalPos);
+                HiddenWindows[hWnd] = originalPos;
+
+                // Move it off-screen
+                const uint flags = WinApi.SWP_HIDEWINDOW | WinApi.SWP_NOSIZE | WinApi.SWP_NOZORDER | WinApi.SWP_NOACTIVATE | WinApi.SWP_FRAMECHANGED;
+                WinApi.SetWindowPos(hWnd, 0, -32_000, -32_000, 0, 0, flags);
+                return originalPos;
+            }
+
+            // Set the transparency (alpha value) of the window (0 = transparent, 255 = opaque)
+            UpdateWindowLayered(hWnd, remove: false);
+            WinApi.SetLayeredWindowAttributes(hWnd, 0, 0, WinApi.LWA_ALPHA);
+            return null;
+        }, keepTheme);
+    }
+    public static bool ShowWindow(nint hWnd, bool removeCache)
+    {
+        if (!HiddenWindows.TryGetValue(hWnd, out var originalPos))
+            return false;
+
+        if (removeCache)
+            HiddenWindows.TryRemove(hWnd, out _);
+
+        if (originalPos != null) // keep theme
+        {
+            const uint flags = WinApi.SWP_SHOWWINDOW | WinApi.SWP_NOSIZE | WinApi.SWP_NOZORDER | WinApi.SWP_NOACTIVATE | WinApi.SWP_FRAMECHANGED;
+            WinApi.SetWindowPos(hWnd, 0, originalPos.Value.Left, originalPos.Value.Top, 0, 0, flags);
+            return true;
+        }
+
+        WinApi.SetLayeredWindowAttributes(hWnd, 0, 255, WinApi.LWA_ALPHA);
+        return true;
     }
 
     public static string NormalizeLocation(string location)

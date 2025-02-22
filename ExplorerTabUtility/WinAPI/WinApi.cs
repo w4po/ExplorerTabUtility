@@ -20,6 +20,13 @@ public static class WinApi
 
     public const int SW_SHOWNOACTIVATE = 4; // Show window but not activated
 
+    public const uint SWP_NOSIZE = 0x0001;
+    public const uint SWP_NOZORDER = 0x0004;
+    public const uint SWP_NOACTIVATE = 0x0010;
+    public const uint SWP_FRAMECHANGED = 0x0020;
+    public const uint SWP_SHOWWINDOW = 0x0040;
+    public const uint SWP_HIDEWINDOW = 0x0080;
+
     public const int GWL_EXSTYLE = -20; // Extended window style.
     public const int WS_EX_LAYERED = 0x80000; // Layered window.
     public const int LWA_ALPHA = 0x2; // Determine the opacity of a layered window
@@ -50,6 +57,9 @@ public static class WinApi
     [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
     public static extern uint SendInput(uint nInputs, [MarshalAs(UnmanagedType.LPArray), In] INPUT[] pInputs, int cbSize);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool SetWindowPos(nint hWnd, nint hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
     [DllImport("user32.dll")]
     public static extern bool ShowWindow(nint handle, int nCmdShow);
 
@@ -59,6 +69,9 @@ public static class WinApi
     [DllImport("user32.dll", SetLastError = true)]
     public static extern bool SetForegroundWindow(nint hWnd);
 
+    [DllImport("user32.dll")]
+    public static extern bool GetWindowRect(nint hWnd, out RECT lpRect);
+
     [DllImport("user32.dll", SetLastError = true)]
     public static extern int GetWindowLong(nint hWnd, int nIndex);
 
@@ -67,12 +80,6 @@ public static class WinApi
 
     [DllImport("user32.dll")]
     public static extern bool SetLayeredWindowAttributes(nint hWnd, uint crKey, byte bAlpha, uint dwFlags);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    public static extern bool GetLayeredWindowAttributes(nint hwnd, out uint pcrKey, out byte pbAlpha, out uint pdwFlags);
-
-    [DllImport("user32.dll")]
-    public static extern bool IsIconic(nint handle);
 
     [DllImport("user32.dll")]
     public static extern uint RealGetWindowClass(nint hwnd, StringBuilder pszType, uint cchType);
@@ -95,7 +102,7 @@ public static class WinApi
 
     [DllImport("oleacc.dll")]
     public static extern nint AccessibleObjectFromPoint(Point pt, [Out, MarshalAs(UnmanagedType.Interface)] out IAccessible accObj, [Out] out object ChildID);
-    
+
     public static IEnumerable<nint> FindAllWindowsEx(string className, nint parent = 0, string? windowTitle = null)
     {
         nint handle = 0;
@@ -125,54 +132,6 @@ public static class WinApi
         KeyboardSimulator.SendKeyPress(VirtualKey.F24);
 
         SetForegroundWindow(window);
-    }
-
-    private static void EnsureWindowIsLayered(nint hWnd)
-    {
-        var exStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
-        if ((exStyle & WS_EX_LAYERED) != 0) return;
-
-        SetWindowLong(hWnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
-    }
-
-    /// <summary>
-    /// Sets the transparency of the specified window.
-    /// </summary>
-    /// <param name="hWnd">A handle to the window to set the transparency for.</param>
-    /// <param name="alpha">The transparency value to set for the window.
-    /// A value of 0 makes the window completely transparent, and a value of 255 makes the window opaque.</param>
-    public static void SetWindowTransparency(nint hWnd, byte alpha = 128)
-    {
-        if (hWnd == 0) return;
-
-        // Clamp the alpha value between 0 and 255
-        alpha = alpha.Clamp(byte.MinValue, byte.MaxValue);
-
-        // Ensure the window is layered
-        EnsureWindowIsLayered(hWnd);
-
-        // Set the transparency (alpha value) of the window (0 = transparent, 255 = opaque)
-        SetLayeredWindowAttributes(hWnd, 0, alpha, LWA_ALPHA);
-    }
-
-    /// <summary>
-    /// Retrieves the alpha transparency value of the specified window.
-    /// </summary>
-    /// <param name="hWnd">Handle to the window.</param>
-    /// <returns>Alpha value (0-255) if successful; otherwise, null.</returns>
-    public static byte? GetWindowTransparency(nint hWnd)
-    {
-        // Ensure the window is layered
-        EnsureWindowIsLayered(hWnd);
-
-        var success = GetLayeredWindowAttributes(hWnd, out _, out var pbAlpha, out var dwFlags);
-        if (!success) return null;
-
-        if ((dwFlags & LWA_ALPHA) != 0)
-            return pbAlpha;
-
-        // The window doesn't use alpha blending
-        return null;
     }
 
     public static string GetWindowClassName(nint hWnd, int maxClassNameLength = 254)
