@@ -42,6 +42,7 @@ namespace ExplorerTabUtility.Forms
             toolTip = new System.Windows.Forms.ToolTip(components);
             cbHideTrayIcon = new MaterialSkin.Controls.MaterialCheckbox();
             cbThemeIssue = new MaterialSkin.Controls.MaterialCheckbox();
+            cbAutoUpdate = new MaterialSkin.Controls.MaterialCheckbox();
             materialTabControl1 = new MaterialSkin.Controls.MaterialTabControl();
             tpShortcuts = new System.Windows.Forms.TabPage();
             tpPreferences = new System.Windows.Forms.TabPage();
@@ -218,6 +219,24 @@ namespace ExplorerTabUtility.Forms
             cbThemeIssue.UseVisualStyleBackColor = true;
             cbThemeIssue.CheckedChanged += CbThemeIssue_CheckedChanged;
             // 
+            // cbAutoUpdate
+            // 
+            cbAutoUpdate.AutoSize = true;
+            cbAutoUpdate.Depth = 0;
+            cbAutoUpdate.Location = new System.Drawing.Point(3, 85);
+            cbAutoUpdate.Margin = new System.Windows.Forms.Padding(0);
+            cbAutoUpdate.MouseLocation = new System.Drawing.Point(-1, -1);
+            cbAutoUpdate.MouseState = MaterialSkin.MouseState.HOVER;
+            cbAutoUpdate.Name = "cbAutoUpdate";
+            cbAutoUpdate.ReadOnly = false;
+            cbAutoUpdate.Ripple = true;
+            cbAutoUpdate.Size = new System.Drawing.Size(121, 37);
+            cbAutoUpdate.TabIndex = 12;
+            cbAutoUpdate.Text = "Auto update";
+            toolTip.SetToolTip(cbAutoUpdate, "Automatically check for updates on startup.");
+            cbAutoUpdate.UseVisualStyleBackColor = true;
+            cbAutoUpdate.CheckedChanged += CbAutoUpdate_CheckedChanged;
+            // 
             // materialTabControl1
             // 
             materialTabControl1.Controls.Add(tpShortcuts);
@@ -250,6 +269,7 @@ namespace ExplorerTabUtility.Forms
             // 
             // tpPreferences
             // 
+            tpPreferences.Controls.Add(cbAutoUpdate);
             tpPreferences.Controls.Add(cbThemeIssue);
             tpPreferences.Controls.Add(cbHideTrayIcon);
             tpPreferences.Location = new System.Drawing.Point(4, 24);
@@ -299,5 +319,6 @@ namespace ExplorerTabUtility.Forms
         private System.Windows.Forms.TabPage tpPreferences;
         private MaterialSkin.Controls.MaterialCheckbox cbHideTrayIcon;
         private MaterialSkin.Controls.MaterialCheckbox cbThemeIssue;
+        private MaterialSkin.Controls.MaterialCheckbox cbAutoUpdate;
     }
 }

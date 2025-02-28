@@ -32,9 +32,13 @@ public partial class MainForm : MaterialForm
         SetupEventHandlers();
         StartHooks();
 
+        cbAutoUpdate.Checked = SettingsManager.AutoUpdate;
         cbThemeIssue.Checked = SettingsManager.HaveThemeIssue;
         cbHideTrayIcon.Checked = SettingsManager.IsTrayIconHidden;
         UpdateTrayIconVisibility(false);
+
+        if (SettingsManager.AutoUpdate)
+            UpdateManager.CheckForUpdates();
     }
 
     private void SetupMaterialSkin()
@@ -99,12 +103,8 @@ public partial class MainForm : MaterialForm
     {
         SettingsManager.SaveProfilesOnExit = cbSaveProfilesOnExit.Checked;
     }
-
-    private void CbThemeIssue_CheckedChanged(object sender, EventArgs e)
-    {
-        SettingsManager.HaveThemeIssue = cbThemeIssue.Checked;
-    }
-
+    private void CbAutoUpdate_CheckedChanged(object sender, EventArgs e) => SettingsManager.AutoUpdate = cbAutoUpdate.Checked;
+    private void CbThemeIssue_CheckedChanged(object sender, EventArgs e) => SettingsManager.HaveThemeIssue = cbThemeIssue.Checked;
     private void CbHideTrayIcon_CheckedChanged(object sender, EventArgs e) => UpdateTrayIconVisibility(true);
 
     private void FlpProfiles_Resize(object _, EventArgs __)

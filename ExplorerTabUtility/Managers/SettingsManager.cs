@@ -94,6 +94,15 @@ public static class SettingsManager
             SaveSettings();
         }
     }
+    public static bool AutoUpdate
+    {
+        get => Properties.Settings.Default.AutoUpdate;
+        set
+        {
+            Properties.Settings.Default.AutoUpdate = value;
+            SaveSettings();
+        }
+    }
     
     public static void SaveSettings() => Properties.Settings.Default.Save();
 }

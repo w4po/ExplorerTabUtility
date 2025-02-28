@@ -6,15 +6,17 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>True</UseWindowsForms>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
-	<Version>2.1.0</Version>
+	<Version>2.2.0</Version>
 	<LangVersion>latest</LangVersion>
     <Title>Explorer Tab Utility</Title>
     <Authors>w4po</Authors>
     <Company>$(AssemblyName)</Company>
     <Description>Explorer Tab Utility: Force new windows to tabs. Streamline navigation!</Description>
-    <Copyright>Copyright © 2023 @w4po</Copyright>
+    <Copyright>Copyright © 2025 @w4po</Copyright>
     <PackageProjectUrl>https://github.com/w4po/ExplorerTabUtility</PackageProjectUrl>
     <RepositoryUrl>https://github.com/w4po/ExplorerTabUtility</RepositoryUrl>
+    <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'net481'">
@@ -52,6 +54,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <PackageReference Include="Autoupdater.NET.Extended.Markdown" Version="1.9.5.2" />
     <PackageReference Include="H.Hooks" Version="1.7.0" />
     <PackageReference Include="MaterialSkin.2" Version="2.3.1" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.3" />

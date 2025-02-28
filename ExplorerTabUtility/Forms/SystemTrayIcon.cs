@@ -54,6 +54,7 @@ public class SystemTrayIcon : IDisposable
             CreateHookMenuItem("Reuse Tabs", SettingsManager.ReuseTabs, ToggleReuseTabs, "ReuseTabs"),
             new ToolStripSeparator(),
             CreateMenuItem("Add to startup", RegistryManager.IsInStartup(), static (_, _) => RegistryManager.ToggleStartup()),
+            CreateMenuItem("Check for updates", false, (_, _) => UpdateManager.CheckForUpdates(), checkOnClick: false),
             CreateMenuItem("Settings", false, (_, _) => _showFormAction(), checkOnClick: false),
             new ToolStripSeparator(),
             CreateMenuItem("Exit", false, static (_, _) => Application.Exit())
