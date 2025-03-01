@@ -76,9 +76,9 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
 </details>
 
 <details>
-<summary>⬅️ Navigate Back</summary>
+<summary>⬅️ Navigate Back & Up</summary>
 
-- Navigate back in File Explorer using:
+- Navigate back/up in File Explorer using:
   - Keyboard shortcuts (customizable)
   - Mouse clicks on any empty space in the folder
 - Perfect for quick navigation between directories
@@ -134,6 +134,12 @@ winget install w4po.ExplorerTabUtility
 - **WindowHook**: Enable/disable new windows being converted to tabs
 - **ReuseTabs**: Enable/disable reusing existing tabs instead of creating new ones
 - **Startup**: Configure automatic startup with Windows
+- **Settings Persistence**:
+  * Your settings are stored in a JSON file located in your AppData folder:
+  ```
+  %APPDATA%\ExplorerTabUtility\settings.json
+  ```
+  If you need to reset to default settings, simply delete the settings.json file.
 </details>
 
 <details>
