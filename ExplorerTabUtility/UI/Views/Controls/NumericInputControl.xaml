@@ -1,0 +1,115 @@
+<UserControl x:Class="ExplorerTabUtility.UI.Views.Controls.NumericInputControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:behaviors="clr-namespace:ExplorerTabUtility.UI.Behaviors"
+             Margin="4"
+             mc:Ignorable="d"
+             d:DesignWidth="100">
+
+    <UserControl.Resources>
+        <!-- Style for the increment/decrement buttons -->
+        <Style x:Key="ArrowButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style for arrow path -->
+        <Style x:Key="ArrowPathStyle" TargetType="Path">
+            <Setter Property="Fill" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Stretch" Value="Uniform" />
+            <Setter Property="Width" Value="9" />
+            <Setter Property="Height" Value="9" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource AncestorType=Button}}" Value="False">
+                    <Setter Property="Fill" Value="{StaticResource TextSecondaryBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Border x:Name="MainBorder"
+                behaviors:HoverBrightness.IsEnabled="True"
+                Background="{StaticResource ControlBackgroundBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                CornerRadius="2">
+            <Grid>
+                <!-- Text Input -->
+                <TextBox x:Name="TxtValue"
+                         Style="{StaticResource CustomTextBoxStyle}"
+                         Margin="0"
+                         Padding="4,4,45,4"
+                         Background="Transparent"
+                         VerticalContentAlignment="Center"
+                         HorizontalContentAlignment="Center"
+                         PreviewTextInput="TxtValue_PreviewTextInput"
+                         PreviewKeyDown="TxtValue_PreviewKeyDown"
+                         TextChanged="TxtValue_TextChanged" />
+
+                <!-- Suffix Label Overlay -->
+                <TextBlock x:Name="SuffixLabel"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Opacity="0.5"
+                           Margin="0,0,23,0"
+                           IsHitTestVisible="False"
+                           Foreground="{StaticResource TextSecondaryBrush}" />
+
+                <!-- Up/Down Buttons -->
+                <StackPanel Orientation="Vertical"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Right"
+                            Width="20">
+                    <Button x:Name="BtnIncrement"
+                            Style="{StaticResource ArrowButtonStyle}"
+                            behaviors:HoverBrightness.IsEnabled="True"
+                            Focusable="False"
+                            Height="12"
+                            Margin="0,1,0,0">
+                        <Path Data="M7,15L12,10L17,15H7Z"
+                              Style="{StaticResource ArrowPathStyle}" />
+                    </Button>
+                    <Button x:Name="BtnDecrement"
+                            Style="{StaticResource ArrowButtonStyle}"
+                            behaviors:HoverBrightness.IsEnabled="True"
+                            Focusable="False"
+                            Height="12"
+                            Margin="0,0,0,1">
+                        <Path Data="M7,10L12,15L17,10H7Z"
+                              Style="{StaticResource ArrowPathStyle}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Style.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+        </Border>
+    </Grid>
+</UserControl>

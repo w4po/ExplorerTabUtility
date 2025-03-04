@@ -6,7 +6,7 @@ using ExplorerTabUtility.Helpers;
 using ExplorerTabUtility.Managers;
 using ExplorerTabUtility.Models;
 
-namespace ExplorerTabUtility.Forms;
+namespace ExplorerTabUtility.UI;
 
 public class SystemTrayIcon : IDisposable
 {
@@ -25,7 +25,7 @@ public class SystemTrayIcon : IDisposable
         {
             Icon = Helper.GetIcon(),
             Text = Constants.NotifyIconText,
-            ContextMenuStrip = CreateContextMenuStrip(firstRun:true),
+            ContextMenuStrip = CreateContextMenuStrip(firstRun: true),
             Visible = true
         };
         _notifyIcon.MouseDoubleClick += OnNotifyIconDoubleClick;
@@ -57,7 +57,7 @@ public class SystemTrayIcon : IDisposable
             CreateMenuItem("Check for updates", false, (_, _) => UpdateManager.CheckForUpdates(), checkOnClick: false),
             CreateMenuItem("Settings", false, (_, _) => _showFormAction(), checkOnClick: false),
             new ToolStripSeparator(),
-            CreateMenuItem("Exit", false, static (_, _) => Application.Exit())
+            CreateMenuItem("Exit", false, static (_, _) => System.Windows.Application.Current.Shutdown())
         ]);
         return menuStrip;
     }

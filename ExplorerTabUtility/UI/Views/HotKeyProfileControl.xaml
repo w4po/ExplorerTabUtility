@@ -1,0 +1,119 @@
+<UserControl x:Class="ExplorerTabUtility.UI.Views.HotKeyProfileControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:ExplorerTabUtility.UI.Views.Controls"
+             mc:Ignorable="d"
+             TextBlock.Foreground="{StaticResource TextPrimaryBrush}"
+             TextElement.Foreground="{StaticResource TextPrimaryBrush}"
+             d:DesignHeight="125" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </UserControl.Resources>
+
+    <Border Style="{StaticResource ProfileCardStyle}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Main Row -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Enabled Toggle -->
+                <ToggleButton x:Name="CbEnabled" Grid.Column="0" Style="{StaticResource ToggleButtonStyle}"
+                              ToolTip="Enable or disable this profile" />
+
+                <!-- Name -->
+                <TextBox x:Name="TxtName" Grid.Column="1" Tag="Name" Style="{StaticResource CustomTextBoxStyle}"
+                         ToolTip="Name of the profile" />
+
+                <!-- Hotkeys -->
+                <TextBox x:Name="TxtHotKeys" Grid.Column="3" Tag="Hotkeys" Style="{StaticResource CustomTextBoxStyle}"
+                         ToolTip="Keyboard or mouse keys to listen for. Click to record a new key combination." />
+
+                <!-- Scope -->
+                <ComboBox x:Name="CbScope" Grid.Column="5" Style="{StaticResource CustomComboBoxStyle}"
+                          ToolTip="Scope of the hotkeys: Global (anywhere) or only when File Explorer is focused" />
+
+                <!-- Action -->
+                <ComboBox x:Name="CbAction" Grid.Column="6" Style="{StaticResource CustomComboBoxStyle}" Width="150"
+                          ToolTip="Action to perform when the hotkeys are pressed" />
+
+                <!-- Expander button -->
+                <ToggleButton x:Name="ExpanderToggle" Grid.Column="7" Margin="4, 0" Style="{StaticResource ToggleButtonArrowStyle}"
+                              ToolTip="Show more options" />
+
+                <!-- Delete Button -->
+                <Button x:Name="BtnDelete" Grid.Column="8" ToolTip="Delete this profile">
+                    <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
+                          Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Stretch="Uniform" Width="16"
+                          Height="16" />
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource IconButtonStyle}">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+
+            <!-- Expanded Details -->
+            <Grid x:Name="ExpandedPanel" Grid.Row="1" Margin="0, 6, 0, 0"
+                  Visibility="{Binding ElementName=ExpanderToggle, Path=IsChecked, Mode=TwoWay, Converter={StaticResource BoolToVis}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Path -->
+                <TextBox Grid.Column="0" x:Name="TxtPath" Tag="Path" Style="{StaticResource CustomTextBoxStyle}"
+                         ContextMenu="{StaticResource TextBoxCustomContextMenu}"
+                         ToolTip="Folder path to open when the hotkeys are pressed" />
+
+                <!-- Delay -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="6"
+                            ToolTip="Delay in milliseconds before performing the action">
+                    <TextBlock Text="Delay" VerticalAlignment="Center" Margin="0,0,6,0" />
+
+                    <controls:NumericInputControl x:Name="NDelay"
+                                                  Margin="0"
+                                                  MinWidth="100"
+                                                  Minimum="0"
+                                                  Maximum="10000"
+                                                  Step="100"
+                                                  Suffix="ms"
+                                                  StringFormat="{}{0:N0}" />
+                </StackPanel>
+
+                <!-- Handled -->
+                <ToggleButton Grid.Column="2" x:Name="CbHandled" Content="Handled" Style="{StaticResource ToggleButtonStyle}" Margin="5,0"
+                              ToolTip="Prevent further processing of the hotkeys in other applications" />
+
+                <!-- Open as Tab -->
+                <ToggleButton Grid.Column="3" x:Name="CbOpenAsTab" Content="Tab" Style="{StaticResource ToggleButtonStyle}" Margin="5,0"
+                              ToolTip="Open as tab instead of a new window" />
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

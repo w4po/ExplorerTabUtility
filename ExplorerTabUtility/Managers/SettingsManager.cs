@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Drawing;
+using System.Windows;
 using System.Text.Json;
 using ExplorerTabUtility.Helpers;
 
@@ -9,16 +9,17 @@ namespace ExplorerTabUtility.Managers;
 public static class SettingsManager
 {
     private static readonly AppSettings Settings;
+
     private static readonly string SettingsFilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         Constants.AppName,
         Constants.SettingsFileName);
-    
+
     static SettingsManager()
     {
         var directory = Path.GetDirectoryName(SettingsFilePath);
         Directory.CreateDirectory(directory!);
-            
+
         if (!File.Exists(SettingsFilePath))
         {
             Settings = new AppSettings();
@@ -35,7 +36,7 @@ public static class SettingsManager
             Settings = new AppSettings();
         }
     }
-    
+
     public static bool IsMouseHookActive
     {
         get => Settings.MouseHook;
@@ -45,7 +46,7 @@ public static class SettingsManager
             SaveSettings();
         }
     }
-    
+
     public static bool IsKeyboardHookActive
     {
         get => Settings.KeyboardHook;
@@ -55,7 +56,7 @@ public static class SettingsManager
             SaveSettings();
         }
     }
-    
+
     public static bool IsWindowHookActive
     {
         get => Settings.WindowHook;
@@ -65,7 +66,7 @@ public static class SettingsManager
             SaveSettings();
         }
     }
-    
+
     public static bool ReuseTabs
     {
         get => Settings.ReuseTabs;
@@ -75,7 +76,7 @@ public static class SettingsManager
             SaveSettings();
         }
     }
-    
+
     public static string HotKeyProfiles
     {
         get => Settings.HotKeyProfiles;
@@ -85,7 +86,7 @@ public static class SettingsManager
             SaveSettings();
         }
     }
-    
+
     public static Size FormSize
     {
         get => Settings.FormSize;
@@ -95,7 +96,7 @@ public static class SettingsManager
             SaveSettings();
         }
     }
-    
+
     public static bool SaveProfilesOnExit
     {
         get => Settings.SaveProfilesOnExit;
@@ -105,7 +106,7 @@ public static class SettingsManager
             SaveSettings();
         }
     }
-    
+
     public static bool IsFirstRun
     {
         get => Settings.IsFirstRun;
@@ -115,7 +116,7 @@ public static class SettingsManager
             SaveSettings();
         }
     }
-    
+
     public static bool IsTrayIconHidden
     {
         get => Settings.IsTrayIconHidden;
@@ -125,7 +126,7 @@ public static class SettingsManager
             SaveSettings();
         }
     }
-    
+
     public static bool HaveThemeIssue
     {
         get => Settings.HaveThemeIssue;
@@ -135,7 +136,7 @@ public static class SettingsManager
             SaveSettings();
         }
     }
-    
+
     public static bool AutoUpdate
     {
         get => Settings.AutoUpdate;
@@ -145,7 +146,7 @@ public static class SettingsManager
             SaveSettings();
         }
     }
-    
+
     public static void SaveSettings()
     {
         try

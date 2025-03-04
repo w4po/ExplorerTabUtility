@@ -1,64 +1,52 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net9.0-windows;net481</TargetFrameworks>
-    <Nullable>enable</Nullable>
-    <UseWindowsForms>True</UseWindowsForms>
-    <ApplicationIcon>Icon.ico</ApplicationIcon>
-	<Version>2.2.0</Version>
-	<LangVersion>latest</LangVersion>
-    <Title>Explorer Tab Utility</Title>
-    <Authors>w4po</Authors>
-    <Company>$(AssemblyName)</Company>
-    <Description>Explorer Tab Utility: Force new windows to tabs. Streamline navigation!</Description>
-    <Copyright>Copyright © 2025 @w4po</Copyright>
-    <PackageProjectUrl>https://github.com/w4po/ExplorerTabUtility</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/w4po/ExplorerTabUtility</RepositoryUrl>
-    <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFrameworks>net9.0-windows;net481</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <UseWPF>True</UseWPF>
+        <ApplicationIcon>Icon.ico</ApplicationIcon>
+        <Version>2.2.0</Version>
+        <LangVersion>latest</LangVersion>
+        <Title>Explorer Tab Utility</Title>
+        <Authors>w4po</Authors>
+        <Company>$(AssemblyName)</Company>
+        <Description>Explorer Tab Utility: Force new windows to tabs. Streamline navigation!</Description>
+        <Copyright>Copyright © 2025 w4po</Copyright>
+        <PackageProjectUrl>https://github.com/w4po/ExplorerTabUtility</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/w4po/ExplorerTabUtility</RepositoryUrl>
+        <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+        <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net481'">
-    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-  </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Autoupdater.NET.Extended.Markdown" Version="1.9.5.2"/>
+        <PackageReference Include="H.Hooks" Version="1.7.0"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net481'">
-    <Reference Include="System.Web" />
-    <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net481'">
+        <PackageReference Include="System.Text.Json" Version="9.0.3"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <COMReference Include="SHDocVw">
-      <WrapperTool>tlbimp</WrapperTool>
-      <VersionMinor>1</VersionMinor>
-      <VersionMajor>1</VersionMajor>
-      <Guid>eab22ac0-30c1-11cf-a7eb-0000c05bae0b</Guid>
-      <Lcid>0</Lcid>
-      <Isolated>false</Isolated>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </COMReference>
-    <COMReference Include="Shell32">
-      <WrapperTool>tlbimp</WrapperTool>
-      <VersionMinor>0</VersionMinor>
-      <VersionMajor>1</VersionMajor>
-      <Guid>50a7e9b0-70ef-11d1-b75a-00a0c90564fe</Guid>
-      <Lcid>0</Lcid>
-      <Isolated>false</Isolated>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </COMReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Icon.ico" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="Autoupdater.NET.Extended.Markdown" Version="1.9.5.2" />
-    <PackageReference Include="H.Hooks" Version="1.7.0" />
-    <PackageReference Include="MaterialSkin.2" Version="2.3.1" />
-    <PackageReference Include="System.Drawing.Common" Version="5.0.3" />
-    <PackageReference Include="System.Text.Json" Version="9.0.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <COMReference Include="SHDocVw">
+            <WrapperTool>tlbimp</WrapperTool>
+            <VersionMinor>1</VersionMinor>
+            <VersionMajor>1</VersionMajor>
+            <Guid>eab22ac0-30c1-11cf-a7eb-0000c05bae0b</Guid>
+            <Lcid>0</Lcid>
+            <Isolated>false</Isolated>
+            <EmbedInteropTypes>true</EmbedInteropTypes>
+        </COMReference>
+        <COMReference Include="Shell32">
+            <WrapperTool>tlbimp</WrapperTool>
+            <VersionMinor>0</VersionMinor>
+            <VersionMajor>1</VersionMajor>
+            <Guid>50a7e9b0-70ef-11d1-b75a-00a0c90564fe</Guid>
+            <Lcid>0</Lcid>
+            <Isolated>false</Isolated>
+            <EmbedInteropTypes>true</EmbedInteropTypes>
+        </COMReference>
+    </ItemGroup>
 
 </Project>

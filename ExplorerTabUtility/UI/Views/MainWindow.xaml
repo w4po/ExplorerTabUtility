@@ -1,0 +1,219 @@
+<Window x:Class="ExplorerTabUtility.UI.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Explorer Tab Utility"
+        Width="850" Height="600"
+        MinWidth="700" MinHeight="175"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="CanResizeWithGrip"
+        WindowStyle="None"
+        TextBlock.Foreground="{StaticResource TextPrimaryBrush}"
+        TextElement.Foreground="{StaticResource TextPrimaryBrush}">
+
+    <Border Background="{StaticResource BackgroundGradientBrush}"
+            BorderBrush="{StaticResource BorderGradientBrush}"
+            CornerRadius="5"
+            BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Title Bar -->
+            <Border x:Name="TitleBar" Grid.Row="0" Background="{StaticResource TitleBarBrush}" CornerRadius="4, 4, 0, 0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Menu Button -->
+                    <ToggleButton x:Name="DrawerButton" Grid.Column="0" Style="{StaticResource ToggleButtonIconStyle}" Margin="6,0,0,0"
+                                  Content="&#x2630;" Focusable="False" ToolTip="Open application menu" />
+
+                    <!-- Window Title -->
+                    <TextBlock Grid.Column="1" Text="Explorer Tab Utility" VerticalAlignment="Center" Margin="8,0"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               FontWeight="SemiBold"
+                               FontSize="14" />
+
+                    <!-- Window Controls -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button x:Name="MinimizeButton" Style="{StaticResource IconButtonStyle}" Content="&#x2212;" Focusable="False" />
+                        <Button x:Name="MaximizeButton" Focusable="False">
+                            <Button.Style>
+                                <Style BasedOn="{StaticResource IconButtonStyle}" TargetType="Button">
+                                    <Setter Property="Content" Value="&#x2610;" />
+                                    <Style.Triggers>
+                                        <DataTrigger
+                                            Binding="{Binding WindowState, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                            Value="Maximized">
+                                            <Setter Property="Content" Value="&#x2750;" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button x:Name="CloseButton" Style="{StaticResource IconButtonStyle}" Content="&#x2715;" Focusable="False"
+                                Margin="0,0,8,0" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Main Content -->
+            <Grid Grid.Row="1">
+                <!-- Custom Drawer Implementation -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Menu Drawer -->
+                    <Border Grid.Column="0"
+                            Background="{StaticResource CardGradientBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="0,0,1,0"
+                            CornerRadius="0,4,4,0"
+                            Width="0">
+                        <DockPanel>
+                            <ListBox x:Name="NavigationList" DockPanel.Dock="Top" SelectedIndex="0"
+                                     Style="{StaticResource NavigationListBoxStyle}">
+                                <ListBoxItem ToolTip="Configure keyboard and mouse shortcuts">
+                                    <TextBlock Text="&#x1F5F2; Shortcuts" VerticalAlignment="Center" />
+                                </ListBoxItem>
+                                <ListBoxItem ToolTip="Configure application settings">
+                                    <TextBlock Text="&#x26ED; Preferences" VerticalAlignment="Center" />
+                                </ListBoxItem>
+                            </ListBox>
+                        </DockPanel>
+
+                        <Border.Effect>
+                            <DropShadowEffect ShadowDepth="2" BlurRadius="4" Opacity="0.3" Color="{StaticResource ShadowColor}" />
+                        </Border.Effect>
+
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsChecked, ElementName=DrawerButton}" Value="True">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2"
+                                                                     BeginTime="0:0:0.1" />
+                                                    <DoubleAnimation Storyboard.TargetProperty="Width" To="165" Duration="0:0:0.3">
+                                                        <DoubleAnimation.EasingFunction>
+                                                            <CubicEase EasingMode="EaseOut" />
+                                                        </DoubleAnimation.EasingFunction>
+                                                    </DoubleAnimation>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2" />
+                                                    <DoubleAnimation Storyboard.TargetProperty="Width" To="0" Duration="0:0:0.3">
+                                                        <DoubleAnimation.EasingFunction>
+                                                            <CubicEase EasingMode="EaseIn" />
+                                                        </DoubleAnimation.EasingFunction>
+                                                    </DoubleAnimation>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                    </Border>
+
+                    <!-- Main Content -->
+                    <Grid Grid.Column="1">
+                        <!-- Tab Control -->
+                        <TabControl Style="{StaticResource CustomTabControlStyle}" Margin="0"
+                                    SelectedIndex="{Binding SelectedIndex, ElementName=NavigationList}">
+                            <TabControl.Triggers>
+                                <EventTrigger RoutedEvent="TabControl.SelectionChanged">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <BooleanAnimationUsingKeyFrames Storyboard.TargetName="DrawerButton"
+                                                                            Storyboard.TargetProperty="IsChecked">
+                                                <DiscreteBooleanKeyFrame KeyTime="0:0:0" Value="False" />
+                                            </BooleanAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </TabControl.Triggers>
+                            <TabControl.Effect>
+                                <DropShadowEffect ShadowDepth="1" BlurRadius="3" Opacity="0.2"
+                                                  Color="{StaticResource ShadowColor}" />
+                            </TabControl.Effect>
+                            <!-- Shortcuts Tab -->
+                            <TabItem Header="Shortcuts" Visibility="Collapsed">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Toolbar -->
+                                    <DockPanel Grid.Row="0" Margin="16,8" LastChildFill="False">
+                                        <!-- Action Buttons -->
+                                        <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                                            <Button x:Name="BtnNewProfile" Content="NEW" Style="{StaticResource FlatButtonStyle}"
+                                                    ToolTip="Create a new profile" />
+                                            <Button x:Name="BtnImport" Content="IMPORT" Style="{StaticResource FlatButtonStyle}"
+                                                    ToolTip="Import profiles from a file" />
+                                            <Button x:Name="BtnExport" Content="EXPORT" Style="{StaticResource FlatButtonStyle}"
+                                                    ToolTip="Export profiles to a file" />
+                                            <Button x:Name="BtnSave" Content="SAVE" Style="{StaticResource FlatButtonStyle}"
+                                                    ToolTip="Persist all profile changes" />
+                                        </StackPanel>
+
+                                        <!-- Save on Exit Toggle -->
+                                        <CheckBox DockPanel.Dock="Right" x:Name="CbSaveProfilesOnExit"
+                                                  Content="Save on exit" Style="{StaticResource CustomCheckBoxStyle}"
+                                                  ToolTip="Automatically save profiles when closing the window" />
+                                    </DockPanel>
+
+                                    <!-- Profiles Panel -->
+                                    <ScrollViewer Grid.Row="1" Margin="16,8,4,4"
+                                                  VerticalScrollBarVisibility="Visible"
+                                                  Style="{StaticResource CustomScrollViewerStyle}">
+                                        <StackPanel x:Name="ProfilesPanel" />
+                                    </ScrollViewer>
+                                </Grid>
+                            </TabItem>
+
+                            <!-- Preferences Tab -->
+                            <TabItem Header="Preferences" Visibility="Collapsed">
+                                <StackPanel Margin="16, 8">
+                                    <GroupBox Header="Application Settings"
+                                              Style="{StaticResource CustomGroupBoxStyle}">
+                                        <StackPanel Margin="8">
+                                            <CheckBox x:Name="CbAutoUpdate" Content="Auto update"
+                                                      Style="{StaticResource CustomCheckBoxStyle}"
+                                                      ToolTip="Automatically check for updates on startup" />
+                                            <CheckBox x:Name="CbThemeIssue" Content="I have theme issues"
+                                                      Style="{StaticResource CustomCheckBoxStyle}"
+                                                      ToolTip="Use alternative window hiding method that preserves your custom File-Explorer theme.&#x0a;Enable this if you have theme-related issues" />
+                                            <CheckBox x:Name="CbHideTrayIcon" Content="Hide tray icon"
+                                                      Style="{StaticResource CustomCheckBoxStyle}"
+                                                      ToolTip="Hide the system tray icon" />
+                                        </StackPanel>
+                                    </GroupBox>
+                                </StackPanel>
+                            </TabItem>
+                        </TabControl>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

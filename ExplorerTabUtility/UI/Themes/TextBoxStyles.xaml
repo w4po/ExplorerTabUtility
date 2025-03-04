@@ -1,0 +1,226 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:behaviors="clr-namespace:ExplorerTabUtility.UI.Behaviors">
+
+    <!-- TextBox Context Menu Style -->
+    <Style x:Key="TextBoxContextMenuStyle" TargetType="ContextMenu">
+        <Setter Property="Background" Value="{StaticResource DropdownBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
+                        <ItemsPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- MenuItem Style for Context Menu -->
+    <Style x:Key="TextBoxContextMenuItemStyle" TargetType="MenuItem">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}" />
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="PART_Border"
+                            Background="{TemplateBinding Background}"
+                            BorderThickness="0"
+                            CornerRadius="3">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Icon" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Shortcut" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Icon -->
+                            <ContentPresenter x:Name="Icon"
+                                              Grid.Column="0"
+                                              ContentSource="Icon"
+                                              Width="16"
+                                              Height="16"
+                                              Margin="6,0,6,0"
+                                              VerticalAlignment="Center" />
+
+                            <!-- Header -->
+                            <ContentPresenter Grid.Column="1"
+                                              ContentSource="Header"
+                                              Margin="{TemplateBinding Padding}"
+                                              VerticalAlignment="Center" />
+
+                            <!-- InputGestureText -->
+                            <TextBlock Grid.Column="2"
+                                       Text="{TemplateBinding InputGestureText}"
+                                       Margin="8,0,8,0"
+                                       Foreground="{StaticResource TextTertiaryBrush}"
+                                       VerticalAlignment="Center" />
+
+                            <!-- Submenu Arrow -->
+                            <Path x:Name="Arrow"
+                                  Grid.Column="3"
+                                  Data="M0,0 L4,4 L0,8 Z"
+                                  Fill="{StaticResource TextTertiaryBrush}"
+                                  Margin="8,0,8,0"
+                                  VerticalAlignment="Center"
+                                  Visibility="Collapsed" />
+
+                            <!-- Submenu Popup -->
+                            <Popup Grid.Column="0" x:Name="PART_Popup"
+                                   AllowsTransparency="True"
+                                   Placement="Right"
+                                   PlacementTarget="{Binding ElementName=PART_Border}"
+                                   IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}">
+                                <Border Background="{StaticResource DropdownBackgroundBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4">
+                                    <ItemsPresenter Margin="2" />
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Role" Value="TopLevelHeader">
+                            <Setter TargetName="PART_Popup" Property="Placement" Value="Bottom" />
+                        </Trigger>
+                        <Trigger Property="HasItems" Value="True">
+                            <Setter TargetName="Arrow" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="PART_Border" Property="Background" Value="{StaticResource ControlHoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.6" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Separator Style for Context Menu -->
+    <Style x:Key="TextBoxContextMenuSeparatorStyle" TargetType="Separator">
+        <Setter Property="Margin" Value="6,3" />
+        <Setter Property="Background" Value="{StaticResource BorderBrush}" />
+        <Setter Property="Height" Value="1" />
+    </Style>
+
+    <!-- Context Menu Icons -->
+    <Geometry x:Key="CutIconGeometry">M26.53,22.15,16.69,16l9.84-6.15a1,1,0,1,0-1.06-1.7L14.8,14.82,11.73,12.9A4,4,0,0,0,13,10a4,4,0,1,0-4,4,4.07,4.07,0,0,0,.61-.06L12.91,16l-3.3,2.06A4.07,4.07,0,0,0,9,18a4,4,0,1,0,4,4,4,4,0,0,0-1.27-2.9l3.07-1.92,10.67,6.67a1,1,0,0,0,1.38-.32A1,1,0,0,0,26.53,22.15ZM7,10a2,2,0,1,1,2,2A2,2,0,0,1,7,10ZM9,24a2,2,0,1,1,2-2A2,2,0,0,1,9,24Z</Geometry>
+
+    <Geometry x:Key="CopyIconGeometry">M28,10V28H10V10H28m0-2H10a2,2,0,0,0-2,2V28a2,2,0,0,0,2,2H28a2,2,0,0,0,2-2V10a2,2,0,0,0-2-2Z M4,18H2V4A2,2,0,0,1,4,2H18V4H4Z</Geometry>
+
+    <Geometry x:Key="PasteIconGeometry">M16 2C16.5523 2 17 2.44772 17 3V5H19C20.1046 5 21 5.89543 21 7V21C21 22.1046 20.1046 23 19 23H5C3.89543 23 3 22.1046 3 21V7C3 5.89543 3.89543 5 5 5H7V3C7 2.44772 7.44772 2 8 2H16ZM15 4H9V5H15V4ZM19 7H5V21H19V7Z</Geometry>
+
+    <Geometry x:Key="SelectAllIconGeometry">M28 28H4V4H28V28zM26 6H6V26H26V6zm-2 6-2-2-8 8-3-3-2 2 5 5L24 12z</Geometry>
+
+    <!-- Reusable TextBox Context Menu Resource -->
+    <ContextMenu x:Key="TextBoxCustomContextMenu" Style="{StaticResource TextBoxContextMenuStyle}">
+        <ContextMenu.Resources>
+            <Style TargetType="MenuItem" BasedOn="{StaticResource TextBoxContextMenuItemStyle}" />
+            <Style TargetType="Separator" BasedOn="{StaticResource TextBoxContextMenuSeparatorStyle}" />
+        </ContextMenu.Resources>
+
+        <MenuItem Command="ApplicationCommands.Cut">
+            <MenuItem.Icon>
+                <Path Data="{StaticResource CutIconGeometry}"
+                      Fill="{StaticResource TextPrimaryBrush}"
+                      Stretch="Uniform" />
+            </MenuItem.Icon>
+        </MenuItem>
+
+        <MenuItem Command="ApplicationCommands.Copy">
+            <MenuItem.Icon>
+                <Path Data="{StaticResource CopyIconGeometry}"
+                      Fill="{StaticResource TextPrimaryBrush}"
+                      Stretch="Uniform" />
+            </MenuItem.Icon>
+        </MenuItem>
+
+        <MenuItem Command="ApplicationCommands.Paste">
+            <MenuItem.Icon>
+                <Path Data="{StaticResource PasteIconGeometry}"
+                      Fill="{StaticResource TextPrimaryBrush}"
+                      Stretch="Uniform" />
+            </MenuItem.Icon>
+        </MenuItem>
+
+        <Separator />
+
+        <MenuItem Command="ApplicationCommands.SelectAll">
+            <MenuItem.Icon>
+                <Path Data="{StaticResource SelectAllIconGeometry}"
+                      Fill="{StaticResource TextPrimaryBrush}"
+                      Stretch="Uniform" />
+            </MenuItem.Icon>
+        </MenuItem>
+    </ContextMenu>
+
+    <!-- TextBox Style -->
+    <Style x:Key="CustomTextBoxStyle" TargetType="TextBox">
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}" />
+        <Setter Property="FontWeight" Value="{StaticResource DefaultFontWeight}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Margin" Value="4" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="Cursor" Value="IBeam" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="ContextMenu">
+            <Setter.Value>
+                <ContextMenu Visibility="Collapsed" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="border"
+                            behaviors:HoverBrightness.IsEnabled="True"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4">
+                        <Grid>
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0" VerticalAlignment="Center" />
+                            <TextBlock x:Name="HintText"
+                                       Text="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="{TemplateBinding Padding}"
+                                       VerticalAlignment="Center"
+                                       Opacity="0.4"
+                                       Visibility="Collapsed" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Text" Value="">
+                            <Setter TargetName="HintText" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                            <Setter Property="Opacity" Value="0.7" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>
