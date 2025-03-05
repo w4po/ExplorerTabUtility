@@ -176,7 +176,7 @@ public partial class MainWindow : Window
                 ? $"You can show the app again by pressing {profile!.HotKeys!.HotKeysToString(profile.IsDoubleClick)}"
                 : "Cannot hide tray icon if no hotkey is configured to toggle visibility.";
 
-            MessageBox.Show(this, message, Constants.AppName);
+            CustomMessageBox.Show(this, message, Constants.AppName);
         }
 
         var newCheckedState = canToggleVisibility && isChecked;

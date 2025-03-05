@@ -24,10 +24,10 @@ public partial class App : Application
             return;
         }
 
-        MessageBox.Show("""
-                        Another instance is already running.
-                        Check in System Tray Icons.
-                        """, Constants.AppName);
+        CustomMessageBox.Show("""
+                              Another instance is already running.
+                              Check in System Tray Icons.
+                              """, Constants.AppName, icon: MessageBoxImage.Information);
         Shutdown();
     }
 
