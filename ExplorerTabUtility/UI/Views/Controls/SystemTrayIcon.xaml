@@ -1,0 +1,131 @@
+<UserControl x:Class="ExplorerTabUtility.UI.Views.Controls.SystemTrayIcon"
+             xmlns:managers="clr-namespace:ExplorerTabUtility.Managers"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tb="http://www.hardcodet.net/taskbar"
+             x:Name="ThisObject">
+
+    <tb:TaskbarIcon x:Name="TrayIcon"
+                    Visibility="Visible"
+                    DataContext="{Binding ElementName=ThisObject}"
+                    TrayMouseDoubleClick="OnNotifyIconDoubleClick">
+
+        <tb:TaskbarIcon.ContextMenu>
+            <ContextMenu>
+                <!-- Keyboard Hook -->
+                <MenuItem Name="KeyboardHookMenu"
+                          IsCheckable="False"
+                          IsChecked="{Binding Source={x:Static managers:SettingsManager.IsKeyboardHookActive}, Mode=OneTime}"
+                          ToolTip="Enable or disable keyboard shortcuts">
+                    <MenuItem.Header>
+                        <Grid>
+                            <CheckBox Command="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Command}"
+                                      CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=CommandParameter}"
+                                      Background="Transparent"
+                                      Opacity="0"
+                                      Margin="-35,0,0,0"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch" />
+                            <TextBlock Text="Keyboard Hook" Background="Transparent" IsHitTestVisible="False" VerticalAlignment="Center" />
+                        </Grid>
+                    </MenuItem.Header>
+                    <MenuItem.Icon>
+                        <TextBlock Text="&#xE8AC;" FontSize="14" />
+                    </MenuItem.Icon>
+                    <!-- Submenu items for keyboard profiles (in code-behind) -->
+                </MenuItem>
+
+                <!-- Mouse Hook -->
+                <MenuItem Name="MouseHookMenu"
+                          IsCheckable="False"
+                          IsChecked="{Binding Source={x:Static managers:SettingsManager.IsMouseHookActive}, Mode=OneTime}"
+                          ToolTip="Enable or disable mouse shortcuts">
+                    <MenuItem.Header>
+                        <Grid>
+                            <CheckBox Command="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Command}"
+                                      CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=CommandParameter}"
+                                      Background="Transparent"
+                                      Opacity="0"
+                                      Margin="-35,0,0,0"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch" />
+                            <TextBlock Text="Mouse Hook" Background="Transparent" IsHitTestVisible="False" VerticalAlignment="Center" />
+                        </Grid>
+                    </MenuItem.Header>
+                    <MenuItem.Icon>
+                        <TextBlock Text="&#xE962;" FontSize="14" />
+                    </MenuItem.Icon>
+                    <!-- Submenu items for mouse profiles (in code-behind) -->
+                </MenuItem>
+
+                <!-- Window Hook -->
+                <MenuItem Header="Window Hook"
+                          Name="WindowHook"
+                          StaysOpenOnClick="True"
+                          IsCheckable="True"
+                          IsChecked="{Binding Source={x:Static managers:SettingsManager.IsWindowHookActive}, Mode=OneTime}"
+                          ToolTip="Toggle automatic redirection of new Explorer windows to tabs">
+                    <MenuItem.Icon>
+                        <TextBlock Text="&#xE8A7;" FontSize="14" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <!-- Reuse Tabs -->
+                <MenuItem Header="Reuse Tabs"
+                          Name="ReuseTabs"
+                          StaysOpenOnClick="True"
+                          IsCheckable="True"
+                          IsChecked="{Binding Source={x:Static managers:SettingsManager.ReuseTabs}, Mode=OneTime}"
+                          ToolTip="When enabled, navigates to existing tabs instead of opening duplicate tabs">
+                    <MenuItem.Icon>
+                        <TextBlock Text="&#xE8EE;" FontSize="14" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <Separator />
+
+                <!-- Add to startup -->
+                <MenuItem Header="Add to startup"
+                          Name="AddToStartup"
+                          StaysOpenOnClick="True"
+                          IsCheckable="True"
+                          IsChecked="{Binding Source={x:Static managers:RegistryManager.IsInStartup}, Mode=OneTime}"
+                          ToolTip="Automatically start Explorer Tab Utility when Windows starts">
+                    <MenuItem.Icon>
+                        <TextBlock Text="&#xE7F4;" FontSize="14" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <!-- Check for updates -->
+                <MenuItem x:Name="CheckForUpdates"
+                          Header="Check for updates"
+                          ToolTip="Check if a newer version of Explorer Tab Utility is available">
+                    <MenuItem.Icon>
+                        <TextBlock Text="&#xE896;" FontSize="14" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <!-- Settings -->
+                <MenuItem x:Name="OpenSettings"
+                          Header="Settings"
+                          ToolTip="Open the settings window to configure the application">
+                    <MenuItem.Icon>
+                        <TextBlock Text="&#xE713;" FontSize="14" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <Separator />
+
+                <!-- Exit -->
+                <MenuItem x:Name="ExitApplication"
+                          Header="Exit"
+                          ToolTip="Close Explorer Tab Utility and stop all hooks">
+                    <MenuItem.Icon>
+                        <TextBlock Text="&#xE7E8;" FontSize="14" Foreground="{StaticResource DangerBrush}" />
+                    </MenuItem.Icon>
+                </MenuItem>
+            </ContextMenu>
+        </tb:TaskbarIcon.ContextMenu>
+    </tb:TaskbarIcon>
+
+</UserControl>

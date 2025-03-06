@@ -8,6 +8,7 @@ using ExplorerTabUtility.WinAPI;
 using ExplorerTabUtility.Managers;
 using ExplorerTabUtility.Helpers;
 using ExplorerTabUtility.Models;
+using ExplorerTabUtility.UI.Views.Controls;
 
 namespace ExplorerTabUtility.UI.Views;
 
@@ -221,9 +222,6 @@ public partial class MainWindow : Window
     {
         _notifyIconManager.Dispose();
         _hookManager.Dispose();
-
-        if (CbSaveProfilesOnExit.IsChecked == true)
-            _profileManager.SaveProfiles();
     }
 
     private void TitleBar_MouseLeftButtonDown(object _, MouseButtonEventArgs e)

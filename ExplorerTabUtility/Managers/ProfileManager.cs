@@ -17,7 +17,6 @@ public class ProfileManager
     private readonly List<HotKeyProfile> _tempProfiles = [];
     private readonly Panel _profilePanel;
 
-    public event Action? ProfilesChanged;
     public event Action? KeybindingsHookStarted;
     public event Action? KeybindingsHookStopped;
 
@@ -113,7 +112,6 @@ public class ProfileManager
 
         // Save to settings
         SettingsManager.HotKeyProfiles = JsonSerializer.Serialize(_savedProfiles);
-        ProfilesChanged?.Invoke();
     }
 
     public void ImportProfiles(string jsonString)

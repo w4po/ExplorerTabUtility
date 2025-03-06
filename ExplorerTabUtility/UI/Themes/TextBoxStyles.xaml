@@ -49,10 +49,10 @@
                             <ContentPresenter x:Name="Icon"
                                               Grid.Column="0"
                                               ContentSource="Icon"
-                                              Width="16"
-                                              Height="16"
                                               Margin="6,0,6,0"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Center"
+                                              TextBlock.Foreground="{StaticResource TextPrimaryBrush}" />
 
                             <!-- Header -->
                             <ContentPresenter Grid.Column="1"
@@ -117,15 +117,6 @@
         <Setter Property="Height" Value="1" />
     </Style>
 
-    <!-- Context Menu Icons -->
-    <Geometry x:Key="CutIconGeometry">M26.53,22.15,16.69,16l9.84-6.15a1,1,0,1,0-1.06-1.7L14.8,14.82,11.73,12.9A4,4,0,0,0,13,10a4,4,0,1,0-4,4,4.07,4.07,0,0,0,.61-.06L12.91,16l-3.3,2.06A4.07,4.07,0,0,0,9,18a4,4,0,1,0,4,4,4,4,0,0,0-1.27-2.9l3.07-1.92,10.67,6.67a1,1,0,0,0,1.38-.32A1,1,0,0,0,26.53,22.15ZM7,10a2,2,0,1,1,2,2A2,2,0,0,1,7,10ZM9,24a2,2,0,1,1,2-2A2,2,0,0,1,9,24Z</Geometry>
-
-    <Geometry x:Key="CopyIconGeometry">M28,10V28H10V10H28m0-2H10a2,2,0,0,0-2,2V28a2,2,0,0,0,2,2H28a2,2,0,0,0,2-2V10a2,2,0,0,0-2-2Z M4,18H2V4A2,2,0,0,1,4,2H18V4H4Z</Geometry>
-
-    <Geometry x:Key="PasteIconGeometry">M16 2C16.5523 2 17 2.44772 17 3V5H19C20.1046 5 21 5.89543 21 7V21C21 22.1046 20.1046 23 19 23H5C3.89543 23 3 22.1046 3 21V7C3 5.89543 3.89543 5 5 5H7V3C7 2.44772 7.44772 2 8 2H16ZM15 4H9V5H15V4ZM19 7H5V21H19V7Z</Geometry>
-
-    <Geometry x:Key="SelectAllIconGeometry">M28 28H4V4H28V28zM26 6H6V26H26V6zm-2 6-2-2-8 8-3-3-2 2 5 5L24 12z</Geometry>
-
     <!-- Reusable TextBox Context Menu Resource -->
     <ContextMenu x:Key="TextBoxCustomContextMenu" Style="{StaticResource TextBoxContextMenuStyle}">
         <ContextMenu.Resources>
@@ -135,25 +126,19 @@
 
         <MenuItem Command="ApplicationCommands.Cut">
             <MenuItem.Icon>
-                <Path Data="{StaticResource CutIconGeometry}"
-                      Fill="{StaticResource TextPrimaryBrush}"
-                      Stretch="Uniform" />
+                <TextBlock Text="&#xE8C6;" FontSize="14" />
             </MenuItem.Icon>
         </MenuItem>
 
         <MenuItem Command="ApplicationCommands.Copy">
             <MenuItem.Icon>
-                <Path Data="{StaticResource CopyIconGeometry}"
-                      Fill="{StaticResource TextPrimaryBrush}"
-                      Stretch="Uniform" />
+                <TextBlock Text="&#xE8C8;" FontSize="14" />
             </MenuItem.Icon>
         </MenuItem>
 
         <MenuItem Command="ApplicationCommands.Paste">
             <MenuItem.Icon>
-                <Path Data="{StaticResource PasteIconGeometry}"
-                      Fill="{StaticResource TextPrimaryBrush}"
-                      Stretch="Uniform" />
+                <TextBlock Text="&#xE77F;" FontSize="14" />
             </MenuItem.Icon>
         </MenuItem>
 
@@ -161,9 +146,7 @@
 
         <MenuItem Command="ApplicationCommands.SelectAll">
             <MenuItem.Icon>
-                <Path Data="{StaticResource SelectAllIconGeometry}"
-                      Fill="{StaticResource TextPrimaryBrush}"
-                      Stretch="Uniform" />
+                <TextBlock Text="&#xE8B3;" FontSize="14" />
             </MenuItem.Icon>
         </MenuItem>
     </ContextMenu>
