@@ -1,0 +1,209 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:behaviors="clr-namespace:ExplorerTabUtility.UI.Behaviors">
+
+    <!-- TextBox Context Menu Style -->
+    <Style x:Key="TextBoxContextMenuStyle" TargetType="ContextMenu">
+        <Setter Property="Background" Value="{StaticResource DropdownBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
+                        <ItemsPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- MenuItem Style for Context Menu -->
+    <Style x:Key="TextBoxContextMenuItemStyle" TargetType="MenuItem">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}" />
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="PART_Border"
+                            Background="{TemplateBinding Background}"
+                            BorderThickness="0"
+                            CornerRadius="3">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Icon" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Shortcut" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Icon -->
+                            <ContentPresenter x:Name="Icon"
+                                              Grid.Column="0"
+                                              ContentSource="Icon"
+                                              Margin="6,0,6,0"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Center"
+                                              TextBlock.Foreground="{StaticResource TextPrimaryBrush}" />
+
+                            <!-- Header -->
+                            <ContentPresenter Grid.Column="1"
+                                              ContentSource="Header"
+                                              Margin="{TemplateBinding Padding}"
+                                              VerticalAlignment="Center" />
+
+                            <!-- InputGestureText -->
+                            <TextBlock Grid.Column="2"
+                                       Text="{TemplateBinding InputGestureText}"
+                                       Margin="8,0,8,0"
+                                       Foreground="{StaticResource TextTertiaryBrush}"
+                                       VerticalAlignment="Center" />
+
+                            <!-- Submenu Arrow -->
+                            <Path x:Name="Arrow"
+                                  Grid.Column="3"
+                                  Data="M0,0 L4,4 L0,8 Z"
+                                  Fill="{StaticResource TextTertiaryBrush}"
+                                  Margin="8,0,8,0"
+                                  VerticalAlignment="Center"
+                                  Visibility="Collapsed" />
+
+                            <!-- Submenu Popup -->
+                            <Popup Grid.Column="0" x:Name="PART_Popup"
+                                   AllowsTransparency="True"
+                                   Placement="Right"
+                                   PlacementTarget="{Binding ElementName=PART_Border}"
+                                   IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}">
+                                <Border Background="{StaticResource DropdownBackgroundBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4">
+                                    <ItemsPresenter Margin="2" />
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Role" Value="TopLevelHeader">
+                            <Setter TargetName="PART_Popup" Property="Placement" Value="Bottom" />
+                        </Trigger>
+                        <Trigger Property="HasItems" Value="True">
+                            <Setter TargetName="Arrow" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="PART_Border" Property="Background" Value="{StaticResource ControlHoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.6" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Separator Style for Context Menu -->
+    <Style x:Key="TextBoxContextMenuSeparatorStyle" TargetType="Separator">
+        <Setter Property="Margin" Value="6,3" />
+        <Setter Property="Background" Value="{StaticResource BorderBrush}" />
+        <Setter Property="Height" Value="1" />
+    </Style>
+
+    <!-- Reusable TextBox Context Menu Resource -->
+    <ContextMenu x:Key="TextBoxCustomContextMenu" Style="{StaticResource TextBoxContextMenuStyle}">
+        <ContextMenu.Resources>
+            <Style TargetType="MenuItem" BasedOn="{StaticResource TextBoxContextMenuItemStyle}" />
+            <Style TargetType="Separator" BasedOn="{StaticResource TextBoxContextMenuSeparatorStyle}" />
+        </ContextMenu.Resources>
+
+        <MenuItem Command="ApplicationCommands.Cut">
+            <MenuItem.Icon>
+                <TextBlock Text="&#xE8C6;" FontSize="14" />
+            </MenuItem.Icon>
+        </MenuItem>
+
+        <MenuItem Command="ApplicationCommands.Copy">
+            <MenuItem.Icon>
+                <TextBlock Text="&#xE8C8;" FontSize="14" />
+            </MenuItem.Icon>
+        </MenuItem>
+
+        <MenuItem Command="ApplicationCommands.Paste">
+            <MenuItem.Icon>
+                <TextBlock Text="&#xE77F;" FontSize="14" />
+            </MenuItem.Icon>
+        </MenuItem>
+
+        <Separator />
+
+        <MenuItem Command="ApplicationCommands.SelectAll">
+            <MenuItem.Icon>
+                <TextBlock Text="&#xE8B3;" FontSize="14" />
+            </MenuItem.Icon>
+        </MenuItem>
+    </ContextMenu>
+
+    <!-- TextBox Style -->
+    <Style x:Key="CustomTextBoxStyle" TargetType="TextBox">
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}" />
+        <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}" />
+        <Setter Property="FontWeight" Value="{StaticResource DefaultFontWeight}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Margin" Value="4" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="Cursor" Value="IBeam" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="ContextMenu">
+            <Setter.Value>
+                <ContextMenu Visibility="Collapsed" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="border"
+                            behaviors:HoverBrightness.IsEnabled="True"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4">
+                        <Grid>
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0" VerticalAlignment="Center" />
+                            <TextBlock x:Name="HintText"
+                                       Text="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="{TemplateBinding Padding}"
+                                       VerticalAlignment="Center"
+                                       Opacity="0.4"
+                                       Visibility="Collapsed" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Text" Value="">
+                            <Setter TargetName="HintText" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                            <Setter Property="Opacity" Value="0.7" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

@@ -1,0 +1,13 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/ExplorerTabUtility;component/UI/Themes/BorderStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/ExplorerTabUtility;component/UI/Themes/ButtonStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/ExplorerTabUtility;component/UI/Themes/CheckBoxStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/ExplorerTabUtility;component/UI/Themes/ComboBoxStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/ExplorerTabUtility;component/UI/Themes/GroupBoxStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/ExplorerTabUtility;component/UI/Themes/TextBoxStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/ExplorerTabUtility;component/UI/Themes/TabControlStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/ExplorerTabUtility;component/UI/Themes/ScrollViewerStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/ExplorerTabUtility;component/UI/Themes/ListBoxStyles.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

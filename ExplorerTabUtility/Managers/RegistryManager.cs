@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Win32;
 using ExplorerTabUtility.Helpers;
 
@@ -6,18 +6,21 @@ namespace ExplorerTabUtility.Managers;
 
 public static class RegistryManager
 {
-    public static bool IsInStartup()
+    public static bool IsInStartup
     {
-        var executablePath = Helper.GetExecutablePath();
-        if (string.IsNullOrWhiteSpace(executablePath)) return false;
+        get
+        {
+            var executablePath = Helper.GetExecutablePath();
+            if (string.IsNullOrWhiteSpace(executablePath)) return false;
 
-        using var key = OpenCurrentUserKey(Constants.RunRegistryKeyPath, false);
-        if (key == null) return false;
+            using var key = OpenCurrentUserKey(Constants.RunRegistryKeyPath, false);
+            if (key == null) return false;
 
-        var value = key.GetValue(Constants.AppName) as string;
-        return string.Equals(value, executablePath, StringComparison.OrdinalIgnoreCase);
+            var value = key.GetValue(Constants.AppName) as string;
+            return string.Equals(value, executablePath, StringComparison.OrdinalIgnoreCase);
+        }
     }
-    
+
     public static void ToggleStartup()
     {
         var executablePath = Helper.GetExecutablePath();
@@ -45,6 +48,6 @@ public static class RegistryManager
         if (key == null) return 1;
         return key.GetValue("LaunchTo") as int? ?? 1;
     }
-    
+
     private static RegistryKey? OpenCurrentUserKey(string name, bool writable) => Registry.CurrentUser.OpenSubKey(name, writable);
 }

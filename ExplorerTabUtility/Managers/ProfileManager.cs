@@ -1,11 +1,10 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Text.Json;
-using System.Windows.Forms;
+using System.Windows.Controls;
 using System.Collections.Generic;
 using ExplorerTabUtility.Models;
-using ExplorerTabUtility.Forms;
-using ExplorerTabUtility.WinAPI;
+using ExplorerTabUtility.UI.Views;
 
 namespace ExplorerTabUtility.Managers;
 
@@ -13,20 +12,20 @@ public class ProfileManager
 {
     // Saved state (persistent)
     private readonly List<HotKeyProfile> _savedProfiles = [];
+
     // Temporary state (for editing)
     private readonly List<HotKeyProfile> _tempProfiles = [];
-    private readonly FlowLayoutPanel _profilePanel;
+    private readonly Panel _profilePanel;
 
-    public event Action? ProfilesChanged;
     public event Action? KeybindingsHookStarted;
     public event Action? KeybindingsHookStopped;
 
-    public ProfileManager(FlowLayoutPanel profilePanel)
+    public ProfileManager(Panel profilePanel)
     {
         _profilePanel = profilePanel;
 
         LoadSavedProfiles();
-        RefreshFlowPanel();
+        RefreshPanel();
     }
 
     private void LoadSavedProfiles()
@@ -56,7 +55,7 @@ public class ProfileManager
     {
         var newProfile = profile?.Clone() ?? new HotKeyProfile();
         _tempProfiles.Add(newProfile);
-        _profilePanel.Controls.Add(new HotKeyProfileControl(newProfile, RemoveProfile, KeybindingHookStarted, KeybindingHookStopped));
+        _profilePanel.Children.Add(new HotKeyProfileControl(newProfile, RemoveProfile, KeybindingHookStarted, KeybindingHookStopped));
     }
 
     private void RemoveProfile(HotKeyProfile profile)
@@ -64,23 +63,19 @@ public class ProfileManager
         _tempProfiles.Remove(profile);
         var control = FindControlByProfile(profile);
         if (control != null)
-            _profilePanel.Controls.Remove(control);
+            _profilePanel.Children.Remove(control);
     }
 
-    private void RefreshFlowPanel()
+    private void RefreshPanel()
     {
-        _profilePanel.SuspendLayout();
-        _profilePanel.SuspendDrawing();
-        _profilePanel.Controls.Clear();
+        _profilePanel.Children.Clear();
 
         foreach (var profile in _tempProfiles)
         {
-            _profilePanel.Controls.Add(new HotKeyProfileControl(profile, RemoveProfile, KeybindingHookStarted, KeybindingHookStopped));
+            _profilePanel.Children.Add(new HotKeyProfileControl(profile, RemoveProfile, KeybindingHookStarted, KeybindingHookStopped));
         }
-
-        _profilePanel.ResumeDrawing();
-        _profilePanel.ResumeLayout();
     }
+
     private void KeybindingHookStarted() => KeybindingsHookStarted?.Invoke();
     private void KeybindingHookStopped() => KeybindingsHookStopped?.Invoke();
 
@@ -93,7 +88,7 @@ public class ProfileManager
         // Find and update in temp profiles (for panel)
         var tempProfile = _tempProfiles.FirstOrDefault(p => p.Id == profile.Id);
         if (tempProfile == null) return;
-        
+
         tempProfile.IsEnabled = enabled;
         var control = FindControlByProfile(tempProfile);
         if (control != null) control.IsEnabled = enabled;
@@ -117,7 +112,6 @@ public class ProfileManager
 
         // Save to settings
         SettingsManager.HotKeyProfiles = JsonSerializer.Serialize(_savedProfiles);
-        ProfilesChanged?.Invoke();
     }
 
     public void ImportProfiles(string jsonString)
@@ -133,7 +127,7 @@ public class ProfileManager
                 _tempProfiles.Add(profile.Clone());
             }
 
-            RefreshFlowPanel();
+            RefreshPanel();
         }
         catch
         {
@@ -145,7 +139,7 @@ public class ProfileManager
 
     private HotKeyProfileControl? FindControlByProfile(HotKeyProfile profile)
     {
-        return _profilePanel.Controls
+        return _profilePanel.Children
             .OfType<HotKeyProfileControl>()
             .FirstOrDefault(c => c.Tag?.Equals(profile) == true);
     }

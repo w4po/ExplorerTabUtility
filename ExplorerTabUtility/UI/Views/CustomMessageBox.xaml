@@ -1,0 +1,140 @@
+<Window x:Class="ExplorerTabUtility.UI.Views.CustomMessageBox"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Topmost="True">
+
+    <Window.Resources>
+        <!-- Custom MessageBox Button Style -->
+        <Style TargetType="Button">
+            <Setter Property="MinWidth" Value="80" />
+            <Setter Property="MinHeight" Value="30" />
+            <Setter Property="Margin" Value="5,0" />
+            <Setter Property="Padding" Value="15,5" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{StaticResource ControlBackgroundBrush}"
+                                BorderBrush="{StaticResource BorderGradientBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <DropShadowEffect Color="{StaticResource ShadowColor}"
+                                                  BlurRadius="5"
+                                                  ShadowDepth="2"
+                                                  Opacity="0.2"
+                                                  Direction="270" />
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource ControlHoverBrush}" />
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{StaticResource PrimaryLightBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource PrimaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{StaticResource PrimaryLightBrush}" />
+                                <Setter TargetName="ButtonBorder" Property="BorderThickness" Value="1.5" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.7" />
+                            </Trigger>
+                            <Trigger Property="IsDefault" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                                <Setter TargetName="ButtonBorder" Property="BorderThickness" Value="1.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="{StaticResource CardGradientBrush}"
+            BorderBrush="{StaticResource BorderGradientBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
+        <Border.Effect>
+            <DropShadowEffect Color="{StaticResource ShadowColor}"
+                              BlurRadius="15"
+                              ShadowDepth="5"
+                              Opacity="0.4"
+                              Direction="270" />
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Title Bar -->
+            <Border Grid.Row="0"
+                    Background="{StaticResource TitleBarBrush}"
+                    CornerRadius="8,8,0,0"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <TextBlock x:Name="WindowTitle"
+                           Text="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}"
+                           Foreground="{StaticResource TextPrimaryBrush}"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           Margin="10" />
+            </Border>
+
+            <!-- Content Area -->
+            <Grid Grid.Row="1" Margin="20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Icon -->
+                <Path x:Name="IconPath"
+                      Width="32"
+                      Height="32"
+                      Margin="0,0,15,0"
+                      Stretch="Uniform"
+                      VerticalAlignment="Top"
+                      HorizontalAlignment="Center"
+                      Visibility="Collapsed" />
+
+                <!-- Message -->
+                <TextBlock Grid.Column="1"
+                           x:Name="MessageText"
+                           Foreground="{StaticResource TextPrimaryBrush}"
+                           TextWrapping="Wrap"
+                           MaxWidth="400"
+                           TextAlignment="Left"
+                           VerticalAlignment="Center" />
+            </Grid>
+
+            <!-- Button Area -->
+            <Border Grid.Row="2"
+                    Background="#22000000"
+                    CornerRadius="0,0,8,8"
+                    Padding="20,10">
+                <StackPanel x:Name="ButtonPanel"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center" />
+            </Border>
+        </Grid>
+    </Border>
+</Window>
