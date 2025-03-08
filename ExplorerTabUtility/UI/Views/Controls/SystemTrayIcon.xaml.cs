@@ -84,12 +84,20 @@ public partial class SystemTrayIcon : UserControl, IDisposable
         );
     }
 
-    private void ToggleWindowHook() =>
+    private void ToggleWindowHook()
+    {
         ToggleHookState(WindowHook,
             v => SettingsManager.IsWindowHookActive = v,
             _hookManager.StartWindowHook,
             _hookManager.StopWindowHook
         );
+
+        if (!WindowHook.IsChecked && ReuseTabs.IsChecked)
+        {
+            ReuseTabs.IsChecked = false;
+            ReuseTabs.Command.Execute(ReuseTabs.CommandParameter);
+        }
+    }
 
     private static void ToggleHookState(MenuItem parent, Action<bool> setSetting, Action startHook, Action stopHook)
     {
@@ -121,6 +129,12 @@ public partial class SystemTrayIcon : UserControl, IDisposable
     {
         SettingsManager.ReuseTabs = ReuseTabs.IsChecked;
         _hookManager.SetReuseTabs(ReuseTabs.IsChecked);
+
+        if (ReuseTabs.IsChecked && !WindowHook.IsChecked)
+        {
+            WindowHook.IsChecked = true;
+            WindowHook.Command.Execute(WindowHook.CommandParameter);
+        }
     }
 
     private void ToggleStartup()

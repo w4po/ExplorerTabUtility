@@ -15,7 +15,6 @@ public static class WinApi
 {
     public const int EVENT_OBJECT_SHOW = 0x8002;
 
-    public const int WM_SETREDRAW = 0xB; // Allow or prevent changes in a window from being redrawn
     public const int WM_COMMAND = 0x111; // Send a command
 
     public const int SW_SHOWNOACTIVATE = 4; // Show window but not activated
@@ -148,15 +147,5 @@ public static class WinApi
         var currentClassName = GetWindowClassName(hWnd, className.Length);
 
         return string.Equals(currentClassName, className, comparison);
-    }
-
-    public static void SuspendDrawing(this System.Windows.Forms.Control target)
-    {
-        SendMessage(target.Handle, WM_SETREDRAW, 0, 0);
-    }
-    public static void ResumeDrawing(this System.Windows.Forms.Control target, bool redraw = true)
-    {
-        SendMessage(target.Handle, WM_SETREDRAW, 1, 0);
-        if (redraw) target.Refresh();
     }
 }
