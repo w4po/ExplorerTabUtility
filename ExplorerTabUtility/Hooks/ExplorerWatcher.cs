@@ -176,7 +176,7 @@ public class ExplorerWatcher : IHook
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(normalizedPath))
+        if (string.IsNullOrWhiteSpace(normalizedPath) && !_reuseTabs)
         {
             RequestToOpenNewTab(windowHandle, bringToFront: true);
             return;
