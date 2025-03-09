@@ -132,7 +132,7 @@ public class ExplorerWatcher : IHook
         {
             // Simulate a key press to bypass the Foreground restriction
             // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setforegroundwindow#remarks
-            KeyboardSimulator.SendKeyPress(VirtualKey.F24);
+            KeyboardSimulator.SendKeyPress(VirtualKey.F23);
             Process.Start("explorer.exe", $"/n,\"{normalizedPath}\"");
         }
         catch

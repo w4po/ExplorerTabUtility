@@ -128,7 +128,7 @@ public static class WinApi
 
         // Simulate a key press to bypass the SetForegroundWindow restriction
         // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setforegroundwindow#remarks
-        KeyboardSimulator.SendKeyPress(VirtualKey.F24);
+        KeyboardSimulator.SendKeyPress(VirtualKey.F23);
 
         SetForegroundWindow(window);
     }
