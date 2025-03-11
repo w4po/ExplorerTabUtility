@@ -174,8 +174,8 @@
                                         </StackPanel>
 
                                         <!-- Save on Exit Toggle -->
-                                        <CheckBox DockPanel.Dock="Right" x:Name="CbSaveProfilesOnExit"
-                                                  Content="Save on exit" Style="{StaticResource CustomCheckBoxStyle}"
+                                        <CheckBox DockPanel.Dock="Right" x:Name="CbAutoSaveProfiles"
+                                                  Content="Auto save" Style="{StaticResource CustomCheckBoxStyle}"
                                                   ToolTip="Automatically save profiles when closing the window" />
                                     </DockPanel>
 

@@ -38,7 +38,7 @@ public partial class MainWindow : Window
         CbAutoUpdate.IsChecked = SettingsManager.AutoUpdate;
         CbThemeIssue.IsChecked = SettingsManager.HaveThemeIssue;
         CbHideTrayIcon.IsChecked = SettingsManager.IsTrayIconHidden;
-        CbSaveProfilesOnExit.IsChecked = SettingsManager.SaveProfilesOnExit;
+        CbAutoSaveProfiles.IsChecked = SettingsManager.SaveProfilesOnExit;
         UpdateTrayIconVisibility(false);
 
         if (SettingsManager.AutoUpdate)
@@ -61,8 +61,8 @@ public partial class MainWindow : Window
         BtnImport.Click += BtnImport_Click;
         BtnExport.Click += BtnExport_Click;
         BtnSave.Click += BtnSave_Click;
-        CbSaveProfilesOnExit.Checked += CbSaveProfilesOnExit_CheckedChanged;
-        CbSaveProfilesOnExit.Unchecked += CbSaveProfilesOnExit_CheckedChanged;
+        CbAutoSaveProfiles.Checked += CbAutoSaveProfiles_CheckedChanged;
+        CbAutoSaveProfiles.Unchecked += CbAutoSaveProfiles_CheckedChanged;
         CbAutoUpdate.Checked += CbAutoUpdate_CheckedChanged;
         CbAutoUpdate.Unchecked += CbAutoUpdate_CheckedChanged;
         CbThemeIssue.Checked += CbThemeIssue_CheckedChanged;
@@ -93,7 +93,7 @@ public partial class MainWindow : Window
     private void ToggleWindowVisibility()
     {
         if (Visibility == Visibility.Visible)
-            Dispatcher.BeginInvoke(Hide);
+            HideWindow();
         else
             ShowWindow();
     }
@@ -102,6 +102,17 @@ public partial class MainWindow : Window
     {
         Dispatcher.Invoke(Show);
         WinApi.RestoreWindowToForeground(_handle);
+    }
+
+    private void HideWindow(bool exit = false)
+    {
+        Dispatcher.BeginInvoke(Hide);
+
+        if (CbAutoSaveProfiles.IsChecked != true) return;
+
+        _profileManager.SaveProfiles();
+        _notifyIconManager.UpdateMenuItems(autoCheckParent: !exit);
+        UpdateTrayIconVisibility(false);
     }
 
     private void BtnNewProfile_Click(object? _, RoutedEventArgs __) => _profileManager.AddProfile();
@@ -143,9 +154,9 @@ public partial class MainWindow : Window
         UpdateTrayIconVisibility(false);
     }
 
-    private void CbSaveProfilesOnExit_CheckedChanged(object? _, RoutedEventArgs __)
+    private void CbAutoSaveProfiles_CheckedChanged(object? _, RoutedEventArgs __)
     {
-        SettingsManager.SaveProfilesOnExit = CbSaveProfilesOnExit.IsChecked ?? false;
+        SettingsManager.SaveProfilesOnExit = CbAutoSaveProfiles.IsChecked ?? false;
     }
 
     private void CbAutoUpdate_CheckedChanged(object? _, RoutedEventArgs __)
@@ -207,15 +218,9 @@ public partial class MainWindow : Window
 
     private void MainWindow_Closing(object? _, System.ComponentModel.CancelEventArgs e)
     {
+        // ALT + F4 / App exit
         e.Cancel = true;
-        Hide();
-
-        if (CbSaveProfilesOnExit.IsChecked == true)
-        {
-            _profileManager.SaveProfiles();
-            _notifyIconManager.UpdateMenuItems();
-            UpdateTrayIconVisibility(false);
-        }
+        HideWindow(exit: true);
     }
 
     private void OnApplicationExit(object _, ExitEventArgs __)
@@ -246,8 +251,8 @@ public partial class MainWindow : Window
     }
 
     private void MaximizeButton_Click(object? _, RoutedEventArgs __) => MaximizeRestore();
-    private void MinimizeButton_Click(object? _, RoutedEventArgs __) => Close();
-    private void CloseButton_Click(object? _, RoutedEventArgs __) => Close();
+    private void MinimizeButton_Click(object? _, RoutedEventArgs __) => HideWindow();
+    private void CloseButton_Click(object? _, RoutedEventArgs __) => HideWindow();
 
     private void MaximizeRestore()
     {

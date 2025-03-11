@@ -32,7 +32,7 @@ public partial class SystemTrayIcon : UserControl, IDisposable
         _showWindowAction = showWindowAction;
 
         // Populate submenus for keyboard & mouse profiles
-        UpdateMenuItems(firstRun: true);
+        UpdateMenuItems(autoCheckParent: false);
     }
 
     private void InitializeCommands()
@@ -53,10 +53,10 @@ public partial class SystemTrayIcon : UserControl, IDisposable
         ExitApplication.Command = new RelayCommand(_ => Application.Current.Shutdown());
     }
 
-    public void UpdateMenuItems(bool firstRun = false)
+    public void UpdateMenuItems(bool autoCheckParent = true)
     {
-        PopulateHookProfiles(KeyboardHookMenu, _profileManager.GetKeyboardProfiles(), firstRun);
-        PopulateHookProfiles(MouseHookMenu, _profileManager.GetMouseProfiles(), firstRun);
+        PopulateHookProfiles(KeyboardHookMenu, _profileManager.GetKeyboardProfiles(), autoCheckParent);
+        PopulateHookProfiles(MouseHookMenu, _profileManager.GetMouseProfiles(), autoCheckParent);
     }
 
     public void SetTrayIconVisibility(bool visible) => TrayIcon.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
@@ -143,7 +143,7 @@ public partial class SystemTrayIcon : UserControl, IDisposable
         AddToStartup.IsChecked = RegistryManager.IsInStartup;
     }
 
-    private void PopulateHookProfiles(MenuItem parent, IEnumerable<HotKeyProfile> profiles, bool firstRun = false)
+    private void PopulateHookProfiles(MenuItem parent, IEnumerable<HotKeyProfile> profiles, bool autoCheckParent = true)
     {
         parent.Items.Clear();
 
@@ -164,10 +164,12 @@ public partial class SystemTrayIcon : UserControl, IDisposable
             parent.Items.Add(profileItem);
         }
 
-        var hasEnabledProfiles = parent.Items.Cast<MenuItem>().Any(item => item.IsChecked);
-        if (!hasEnabledProfiles && parent.IsChecked)
-            parent.Command.Execute(parent.CommandParameter);
-        else if (hasEnabledProfiles && !parent.IsChecked && !firstRun)
+        var anyChecked = parent.Items.Cast<MenuItem>().Any(item => item.IsChecked);
+
+        // No subitems are checked, uncheck the parent.
+        // At least one subitem is checked, check the parent (if autoCheckParent)
+        var desiredParentChecked = anyChecked && (parent.IsChecked || autoCheckParent);
+        if (desiredParentChecked != parent.IsChecked)
             parent.Command.Execute(parent.CommandParameter);
     }
 
