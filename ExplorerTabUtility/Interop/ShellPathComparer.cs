@@ -48,6 +48,8 @@ public sealed class ShellPathComparer : IDisposable
     public bool CompareWithShGetName(nint pidl1, nint pidl2)
     {
         var fsPath1 = GetPathFromPidl(pidl1);
+        if (fsPath1 == null) return false;
+
         var fsPath2 = GetPathFromPidl(pidl2);
 
         return StringComparer.OrdinalIgnoreCase.Equals(fsPath1, fsPath2);
