@@ -469,7 +469,7 @@ public class ExplorerWatcher : IHook
             window.NavigateComplete2 += navigateHandler;
             try
             {
-                window.Navigate2(toOpenWindow.Location);
+                await Navigate(window, toOpenWindow.Location).ConfigureAwait(false);
             }
             catch
             {
@@ -536,8 +536,9 @@ public class ExplorerWatcher : IHook
             return Task.FromResult(handle);
 
         // Schedule the operation on STA
-        return Task.Factory.StartNew(() =>
+        return RunInStaThread(() =>
         {
+            // ReSharper disable once SuspiciousTypeConversion.Global
             if (window is not Interop.IServiceProvider sp) return 0;
 
             sp.QueryService(ref _shellBrowserGuid, ref _shellBrowserGuid, out var shellBrowser);
@@ -556,10 +557,7 @@ public class ExplorerWatcher : IHook
             {
                 Marshal.ReleaseComObject(shellBrowser);
             }
-        },
-        CancellationToken.None,
-        TaskCreationOptions.None,
-        _staTaskScheduler);
+        });
     }
     private static nint GetActiveTabHandle(nint windowHandle)
     {
@@ -607,6 +605,45 @@ public class ExplorerWatcher : IHook
         // Recycle Bin, This PC, etc
         path = ((window.Document as ShellFolderView)!.Folder as Folder2)!.Self.Path;
         return Helper.NormalizeLocation(path);
+    }
+    private async Task Navigate(InternetExplorer window, string path)
+    {
+        if (!path.Contains("#") && !path.Contains("%23"))
+        {
+            window.Navigate2(path);
+            return;
+        }
+
+        var folder = await RunInStaThread(() =>
+        {
+            Shell? shell = null;
+            Folder? folder;
+            try
+            {
+                shell = new Shell();
+                folder = shell.NameSpace(path);
+            }
+            finally
+            {
+                if (shell != null)
+                    Marshal.ReleaseComObject(shell);
+            }
+            return folder;
+        }).ConfigureAwait(false);
+
+        try
+        {
+            window.Navigate2(folder);
+        }
+        finally
+        {
+            if (folder != null)
+                Marshal.ReleaseComObject(folder);
+        }
+    }
+    private Task<T?> RunInStaThread<T>(Func<T?> action, TaskCreationOptions tco = default, CancellationToken ct = default)
+    {
+        return Task.Factory.StartNew(action, ct, tco, _staTaskScheduler);
     }
 
     private async Task MonitorExplorerProcess()
