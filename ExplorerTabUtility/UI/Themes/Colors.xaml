@@ -2,18 +2,21 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- Colors -->
-    <Color x:Key="PrimaryColor">#2196F3</Color>
-    <Color x:Key="PrimaryLightColor">#64B5F6</Color>
-    <Color x:Key="TextPrimaryColor">#FFFFFF</Color>
-    <Color x:Key="TextSecondaryColor">#E0E0E0</Color>
-    <Color x:Key="TextTertiaryColor">#B0B0B0</Color>
-    <Color x:Key="TextAccentColor">#81D4FA</Color>
-    <Color x:Key="BorderColor">#3D3C3F</Color>
-    <Color x:Key="ControlBackgroundColor">#3C3C3C</Color>
-    <Color x:Key="ControlHoverColor">#4F4F4F</Color>
-    <Color x:Key="DangerColor">#F44336</Color>
-    <Color x:Key="DropdownBackgroundColor">#424242</Color>
-    <Color x:Key="ShadowColor">#212121</Color>
+    <Color x:Key="PrimaryColor">#00838F</Color>
+    <Color x:Key="PrimaryLightColor">#0097A7</Color>
+    <Color x:Key="TextPrimaryColor">#C8D1D9</Color>
+    <Color x:Key="TextSecondaryColor">#A9B2BC</Color>
+    <Color x:Key="TextTertiaryColor">#8A939E</Color>
+    <Color x:Key="TextAccentColor">#4DD0E1</Color>
+    <Color x:Key="BorderColor">#393E46</Color>
+    <Color x:Key="ControlBackgroundColor">#282E38</Color>
+    <Color x:Key="ControlHoverColor">#36424A</Color>
+    <Color x:Key="DangerColor">#E53935</Color>
+    <Color x:Key="DropdownBackgroundColor">#2A2F37</Color>
+    <Color x:Key="ShadowColor">#121212</Color>
+    <Color x:Key="SuccessColor">#43A047</Color>
+    <Color x:Key="WarningColor">#FFA000</Color>
+    <Color x:Key="AccentColor">#00838F</Color>
 
     <!-- Brushes -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
@@ -25,28 +28,36 @@
     <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
     <SolidColorBrush x:Key="ControlBackgroundBrush" Color="{StaticResource ControlBackgroundColor}" />
     <SolidColorBrush x:Key="ControlHoverBrush" Color="{StaticResource ControlHoverColor}" />
-    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
     <SolidColorBrush x:Key="DropdownBackgroundBrush" Color="{StaticResource DropdownBackgroundColor}" />
+    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}" />
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
 
     <!-- Gradients -->
     <LinearGradientBrush x:Key="BackgroundGradientBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#FB2A2F40" Offset="0" />
-        <GradientStop Color="#EE272C3D" Offset="1" />
+        <GradientStop Color="#FF1A1F26" Offset="0" />
+        <GradientStop Color="#FF222831" Offset="1" />
     </LinearGradientBrush>
 
     <LinearGradientBrush x:Key="TitleBarBrush" StartPoint="0,0" EndPoint="1,0">
-        <GradientStop Color="#E50868B0" Offset="0" />
-        <GradientStop Color="#E55A78D8" Offset="1" />
+        <GradientStop Color="#E5222831" Offset="0" />
+        <GradientStop Color="#E5393E46" Offset="1" />
     </LinearGradientBrush>
 
-    <LinearGradientBrush x:Key="BorderGradientBrush" StartPoint="0,0" EndPoint="1,0">
-        <GradientStop Color="#994A6CD4" Offset="0.2" />
-        <GradientStop Color="#996B8EFF" Offset="0.8" />
+    <LinearGradientBrush x:Key="BorderGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#33222831" Offset="0.0" />
+        <GradientStop Color="#99006064" Offset="0.3" />
+        <GradientStop Color="#BB00838F" Offset="0.5" />
+        <GradientStop Color="#99006064" Offset="0.7" />
+        <GradientStop Color="#33222831" Offset="1.0" />
     </LinearGradientBrush>
 
-    <LinearGradientBrush x:Key="CardGradientBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#E5383838" Offset="0" />
-        <GradientStop Color="#CD323232" Offset="1" />
+    <LinearGradientBrush x:Key="CardGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#FF2D3239" Offset="0.0" />
+        <GradientStop Color="#FF343B44" Offset="0.3" />
+        <GradientStop Color="#FF3C434C" Offset="0.7" />
+        <GradientStop Color="#FF414852" Offset="1.0" />
     </LinearGradientBrush>
 
 </ResourceDictionary>
