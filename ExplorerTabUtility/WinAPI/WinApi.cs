@@ -63,6 +63,9 @@ public static class WinApi
     public static extern bool ShowWindow(nint handle, int nCmdShow);
 
     [DllImport("user32.dll")]
+    public static extern bool IsIconic(nint handle);
+
+    [DllImport("user32.dll")]
     public static extern nint GetForegroundWindow();
 
     [DllImport("user32.dll", SetLastError = true)]
@@ -122,7 +125,12 @@ public static class WinApi
     /// <param name="window">The handle to the window that needs to be restored to the foreground.</param>
     public static void RestoreWindowToForeground(nint window)
     {
-        ShowWindow(window, SW_SHOWNOACTIVATE);
+        //If Minimized
+        if (IsIconic(window))
+        {
+            // Show the window but don't activate it, SetForegroundWindow is going to activate it. 
+            ShowWindow(window, SW_SHOWNOACTIVATE);
+        }
 
         if (SetForegroundWindow(window)) return;
 
