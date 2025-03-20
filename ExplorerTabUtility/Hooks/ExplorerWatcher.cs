@@ -126,28 +126,14 @@ public class ExplorerWatcher : IHook
         // Send 0xA221 magic command (CTRL + 1...n)
         WinApi.SendMessage(windowHandle, WinApi.WM_COMMAND, 0xA221, index + 1);
     }
-    public void OpenNewWindow(string? normalizedPath)
-    {
-        try
-        {
-            // Simulate a key press to bypass the Foreground restriction
-            // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setforegroundwindow#remarks
-            KeyboardSimulator.SendKeyPress(VirtualKey.F23);
-            Process.Start("explorer.exe", $"/n,\"{normalizedPath}\"");
-        }
-        catch
-        {
-            //
-        }
-    }
-    public void RequestToOpenNewTab(nint windowHandle, bool bringToFront = false)
+    public async Task RequestToOpenNewTab(nint windowHandle, bool bringToFront = false, bool lockToOpenWindows = true)
     {
         if (bringToFront && windowHandle == 0)
             windowHandle = GetMainWindowHWnd(0);
 
         if (windowHandle == 0)
         {
-            OpenNewWindow(null);
+            await OpenNewWindowWithSelection(new WindowRecord(string.Empty), lockToOpenWindows).ConfigureAwait(false);
             return;
         }
 
@@ -169,16 +155,13 @@ public class ExplorerWatcher : IHook
 
         if (!asTab)
         {
-            lock (_closedWindowsLock)
-                _closedWindows.Add(new WindowRecord(normalizedPath));
-
-            OpenNewWindow(normalizedPath);
+            await OpenNewWindowWithSelection(new WindowRecord(normalizedPath)).ConfigureAwait(false);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(normalizedPath) && !_reuseTabs)
         {
-            RequestToOpenNewTab(windowHandle, bringToFront: true);
+            await RequestToOpenNewTab(windowHandle, bringToFront: true).ConfigureAwait(false);
             return;
         }
 
@@ -188,13 +171,13 @@ public class ExplorerWatcher : IHook
             return;
         }
 
-        OpenNewWindow(normalizedPath);
+        await OpenNewWindowWithSelection(new WindowRecord(normalizedPath)).ConfigureAwait(false);
     }
     public void OpenNewTab(nint windowHandle, string location)
     {
         _ = OpenTabNavigateWithSelection(new WindowRecord(location, windowHandle), windowHandle);
     }
-    public void DuplicateActiveTab(nint windowHandle, bool asTab)
+    public async Task DuplicateActiveTab(nint windowHandle, bool asTab)
     {
         var activeTabHandle = GetActiveTabHandle(windowHandle);
         if (activeTabHandle == 0) return;
@@ -208,16 +191,13 @@ public class ExplorerWatcher : IHook
 
         if (!asTab)
         {
-            lock (_closedWindowsLock)
-                _closedWindows.Add(windowRecord);
-
-            OpenNewWindow(location);
+            await OpenNewWindowWithSelection(windowRecord).ConfigureAwait(false);
             return;
         }
 
-        _ = OpenTabNavigateWithSelection(windowRecord, windowHandle, isDuplicate: true);
+        await OpenTabNavigateWithSelection(windowRecord, windowHandle, isDuplicate: true).ConfigureAwait(false);
     }
-    public void ReopenClosedTab(bool asTab, nint windowHandle = 0)
+    public async Task ReopenClosedTab(bool asTab, nint windowHandle = 0)
     {
         WindowRecord? closedWindow;
         lock (_closedWindowsLock)
@@ -230,16 +210,13 @@ public class ExplorerWatcher : IHook
         if (!asTab)
         {
             closedWindow.CreatedAt = Environment.TickCount;
-            lock (_closedWindowsLock)
-                _closedWindows.Add(closedWindow);
-
-            OpenNewWindow(closedWindow.Location);
+            await OpenNewWindowWithSelection(closedWindow).ConfigureAwait(false);
             return;
         }
 
-        _ = OpenTabNavigateWithSelection(closedWindow, windowHandle);
+        await OpenTabNavigateWithSelection(closedWindow, windowHandle).ConfigureAwait(false);
     }
-    public void DetachCurrentTab(nint windowHandle)
+    public async Task DetachCurrentTab(nint windowHandle)
     {
         if (Helper.GetAllExplorerTabs(windowHandle).Take(2).Count() < 2)
             return;
@@ -257,10 +234,7 @@ public class ExplorerWatcher : IHook
         // Send 0xA021 magic command (CTRL + W)
         WinApi.SendMessage(activeTabHandle, WinApi.WM_COMMAND, 0xA021, 1);
 
-        lock (_closedWindowsLock)
-            _closedWindows.Add(windowRecord);
-
-        OpenNewWindow(location);
+        await OpenNewWindowWithSelection(windowRecord).ConfigureAwait(false);
     }
     public void SetTargetWindow(nint windowHandle)
     {
@@ -421,14 +395,64 @@ public class ExplorerWatcher : IHook
         Marshal.ReleaseComObject(window);
     }
 
-    private async Task OpenTabNavigateWithSelection(WindowRecord toOpenWindow, nint windowHandle = 0, bool isDuplicate = false)
+    private async Task OpenNewWindowWithSelection(WindowRecord windowToOpen, bool duplicate = true, bool lockToOpenWindows = true)
+    {
+        if (lockToOpenWindows)
+            await _toOpenWindowsLock.WaitAsync().ConfigureAwait(false);
+
+        try
+        {
+            lock (_closedWindowsLock)
+                _closedWindows.Add(windowToOpen);
+
+            var hasSelection = windowToOpen.SelectedItems?.Length > 0;
+
+            nint[]? currentWindows = null;
+            if (hasSelection)
+                currentWindows = Helper.GetAllExplorerWindows().ToArray();
+
+            Helper.BypassWinForegroundRestrictions();
+
+            var location = string.IsNullOrWhiteSpace(windowToOpen.Location) ? _defaultLocation : windowToOpen.Location;
+            await RunInStaThread(() =>
+            {
+                Shell? shell = null;
+                try
+                {
+                    shell = new Shell();
+                    shell.ShellExecute(location, "", "", duplicate ? "opennewwindow" : "open");
+                }
+                finally
+                {
+                    if (shell != null)
+                        Marshal.ReleaseComObject(shell);
+                }
+            }).ConfigureAwait(false);
+
+            if (!hasSelection) return;
+
+            var newWindowHandle = await Helper.ListenForNewExplorerWindowAsync(currentWindows ?? []).ConfigureAwait(false);
+            if (newWindowHandle == 0) return;
+
+            var window = _windowEntryDict.Keys.FirstOrDefault(w => w.HWND == newWindowHandle);
+            if (window == null) return;
+
+            SelectItems(window, windowToOpen.SelectedItems);
+        }
+        finally
+        {
+            if (lockToOpenWindows)
+                _toOpenWindowsLock.Release();
+        }
+    }
+    private async Task OpenTabNavigateWithSelection(WindowRecord windowToOpen, nint windowHandle = 0, bool isDuplicate = false)
     {
         await _toOpenWindowsLock.WaitAsync().ConfigureAwait(false);
         try
         {
             if (_reuseTabs && !isDuplicate && _windowEntryDict.Count > 0)
             {
-                var existingTab = SearchForTab(toOpenWindow.Location);
+                var existingTab = SearchForTab(windowToOpen.Location);
                 if (existingTab != 0)
                 {
                     windowHandle = WinApi.GetParent(existingTab);
@@ -441,13 +465,19 @@ public class ExplorerWatcher : IHook
             // Get the main window
             var mainWindowHWnd = Helper.IsFileExplorerWindow(windowHandle)
                 ? windowHandle
-                : GetMainWindowHWnd(toOpenWindow.Handle);
+                : GetMainWindowHWnd(windowToOpen.Handle);
+
+            if (mainWindowHWnd == 0)
+            {
+                await OpenNewWindowWithSelection(windowToOpen, lockToOpenWindows: false).ConfigureAwait(false);
+                return;
+            }
 
             // Store the current tabs
             var currentTabs = Helper.GetAllExplorerTabs(mainWindowHWnd).ToArray();
 
             // Request to open a new tab
-            RequestToOpenNewTab(mainWindowHWnd);
+            await RequestToOpenNewTab(mainWindowHWnd, lockToOpenWindows: false).ConfigureAwait(false);
 
             // Wait for the new tab
             var newTabHandle = await Helper.ListenForNewExplorerTabAsync(mainWindowHWnd, currentTabs).ConfigureAwait(false);
@@ -463,13 +493,13 @@ public class ExplorerWatcher : IHook
             {
                 window.NavigateComplete2 -= navigateHandler;
                 tcs.TrySetResult(true);
-                SelectItems(window, toOpenWindow.SelectedItems);
+                SelectItems(window, windowToOpen.SelectedItems);
             };
 
             window.NavigateComplete2 += navigateHandler;
             try
             {
-                await Navigate(window, toOpenWindow.Location).ConfigureAwait(false);
+                await Navigate(window, windowToOpen.Location).ConfigureAwait(false);
             }
             catch
             {
@@ -528,7 +558,9 @@ public class ExplorerWatcher : IHook
             .OrderByDescending(h => WinApi.FindAllWindowsEx("ShellTabWindowClass", h).Count()) // The one with the most tabs first
             .FirstOrDefault();
 
-        return _mainWindowHandle == 0 ? otherThan : _mainWindowHandle;
+        if (_mainWindowHandle != 0) return _mainWindowHandle;
+
+        return Helper.IsFileExplorerWindow(otherThan) ? otherThan : 0;
     }
     private Task<nint> GetTabHandle(InternetExplorer window)
     {
@@ -640,6 +672,10 @@ public class ExplorerWatcher : IHook
             if (folder != null)
                 Marshal.ReleaseComObject(folder);
         }
+    }
+    private Task RunInStaThread(Action action, TaskCreationOptions tco = default, CancellationToken ct = default)
+    {
+        return Task.Factory.StartNew(action, ct, tco, _staTaskScheduler);
     }
     private Task<T?> RunInStaThread<T>(Func<T?> action, TaskCreationOptions tco = default, CancellationToken ct = default)
     {

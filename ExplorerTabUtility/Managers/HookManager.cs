@@ -47,19 +47,19 @@ public sealed class HookManager
         switch (e.Profile.Action)
         {
             case HotKeyAction.Open:
-                await _windowHook.Open(e.Profile.Path, e.Profile.IsAsTab, e.ForegroundWindow, e.Profile.Delay);
+                await _windowHook.Open(e.Profile.Path, e.Profile.IsAsTab, e.ForegroundWindow, e.Profile.Delay).ConfigureAwait(false);
                 break;
 
             case HotKeyAction.Duplicate:
-                _windowHook.DuplicateActiveTab(e.ForegroundWindow, e.Profile.IsAsTab);
+                await _windowHook.DuplicateActiveTab(e.ForegroundWindow, e.Profile.IsAsTab).ConfigureAwait(false);
                 break;
 
             case HotKeyAction.ReopenClosed:
-                _windowHook.ReopenClosedTab(e.Profile.IsAsTab, e.ForegroundWindow);
+                await _windowHook.ReopenClosedTab(e.Profile.IsAsTab, e.ForegroundWindow).ConfigureAwait(false);
                 break;
 
             case HotKeyAction.DetachTab:
-                _windowHook.DetachCurrentTab(e.ForegroundWindow);
+                await _windowHook.DetachCurrentTab(e.ForegroundWindow).ConfigureAwait(false);
                 break;
 
             case HotKeyAction.SetTargetWindow:

@@ -283,11 +283,20 @@ public static class Helper
     }
     public static nint GetAnotherExplorerWindow(nint currentWindow)
     {
-        return currentWindow == default
+        return currentWindow == 0
             ? WinApi.FindWindow("CabinetWClass", null)
-            : WinApi.FindAllWindowsEx("CabinetWClass")
+            : GetAllExplorerWindows()
                 .FirstOrDefault(window => window != currentWindow);
     }
+    public static Task<nint> ListenForNewExplorerWindowAsync(IReadOnlyCollection<nint> currentWindows, int searchTimeMs = 1000)
+    {
+        return DoUntilNotDefaultAsync(() =>
+                GetAllExplorerWindows()
+                    .Except(currentWindows)
+                    .FirstOrDefault(),
+            searchTimeMs);
+    }
+
     public static nint ListenForNewExplorerTab(IReadOnlyCollection<nint> currentTabs, int searchTimeMs = 1000)
     {
         return DoUntilNotDefault(() =>
@@ -316,14 +325,18 @@ public static class Helper
     {
         var tabs = new List<nint>();
 
-        foreach (var window in WinApi.FindAllWindowsEx("CabinetWClass"))
-            tabs.AddRange(WinApi.FindAllWindowsEx("ShellTabWindowClass", window));
+        foreach (var window in GetAllExplorerWindows())
+            tabs.AddRange(GetAllExplorerTabs(window));
 
         return tabs;
     }
     public static IEnumerable<nint> GetAllExplorerTabs(nint window)
     {
         return WinApi.FindAllWindowsEx("ShellTabWindowClass", window);
+    }
+    public static IEnumerable<nint> GetAllExplorerWindows()
+    {
+        return WinApi.FindAllWindowsEx("CabinetWClass");
     }
 
     public static void UpdateWindowLayered(nint hWnd, bool remove)
@@ -375,6 +388,13 @@ public static class Helper
 
         WinApi.SetLayeredWindowAttributes(hWnd, 0, 255, WinApi.LWA_ALPHA);
         return true;
+    }
+
+    public static void BypassWinForegroundRestrictions()
+    {
+        // Simulate a key press to bypass the Foreground restriction
+        // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setforegroundwindow#remarks
+        KeyboardSimulator.SendKeyPress(VirtualKey.F23);
     }
 
     public static string NormalizeLocation(string location)
