@@ -1,12 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using ExplorerTabUtility.Helpers;
 using ExplorerTabUtility.Models;
 using ExplorerTabUtility.Hooks;
 using ExplorerTabUtility.WinAPI;
+using ExplorerTabUtility.UI.Views;
 
 namespace ExplorerTabUtility.Managers;
 
@@ -84,6 +85,10 @@ public sealed class HookManager
 
             case HotKeyAction.ToggleVisibility:
                 _syncContext.Post(_ => OnVisibilityToggled?.Invoke(), null);
+                break;
+
+            case HotKeyAction.TabSearch:
+                _syncContext.Post(_ => new TabSearchPopup(_windowHook).Show(), null);
                 break;
 
             case HotKeyAction.SnapRight:
