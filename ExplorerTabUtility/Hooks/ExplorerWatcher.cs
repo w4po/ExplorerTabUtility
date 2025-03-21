@@ -66,6 +66,34 @@ public class ExplorerWatcher : IHook
     }
     public void SetReuseTabs(bool reuseTabs) => _reuseTabs = reuseTabs;
 
+    public IReadOnlyCollection<WindowRecord> GetWindows()
+    {
+        var result = new List<WindowRecord>();
+        
+        // Add opened windows
+        lock (_windowEntryDictLock)
+            result.AddRange(
+                _windowEntryDict.Keys.Select(ie => new WindowRecord(GetLocation(ie), new IntPtr(ie.HWND), GetSelectedItems(ie), ie.LocationName)));
+        
+        // Add closed windows
+        lock (_closedWindowsLock)
+            result.AddRange(_closedWindows);
+        
+        return result.GroupBy(w => w.Location).Select(g => g.First()).ToList();
+    }
+
+    public async Task SwitchTo(string location, nint windowHandle = 0, string[]? selectedItems = null, bool asTab = true, bool duplicate = false)
+    {
+        var windowToOpen = new WindowRecord(location, windowHandle, selectedItems);
+        if (!asTab)
+        {
+            await OpenNewWindowWithSelection(windowToOpen).ConfigureAwait(false);
+            return;
+        }
+
+        await OpenTabNavigateWithSelection(windowToOpen, windowHandle, duplicate, true).ConfigureAwait(false);
+    }
+    
     public nint SearchForTab(string targetPath)
     {
         nint targetPidl = 0;
@@ -364,7 +392,7 @@ public class ExplorerWatcher : IHook
         {
             var location = GetLocation(window);
 
-            var windowRecord = new WindowRecord(location, new IntPtr(window.HWND));
+            var windowRecord = new WindowRecord(location, new IntPtr(window.HWND), name: window.LocationName);
             lock (_closedWindowsLock)
                 _closedWindows.Add(windowRecord);
 
@@ -445,12 +473,12 @@ public class ExplorerWatcher : IHook
                 _toOpenWindowsLock.Release();
         }
     }
-    private async Task OpenTabNavigateWithSelection(WindowRecord windowToOpen, nint windowHandle = 0, bool isDuplicate = false)
+    private async Task OpenTabNavigateWithSelection(WindowRecord windowToOpen, nint windowHandle = 0, bool isDuplicate = false, bool forceTabReuse = false)
     {
         await _toOpenWindowsLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            if (_reuseTabs && !isDuplicate && _windowEntryDict.Count > 0)
+            if ((_reuseTabs || forceTabReuse) && !isDuplicate && _windowEntryDict.Count > 0)
             {
                 var existingTab = SearchForTab(windowToOpen.Location);
                 if (existingTab != 0)

@@ -31,5 +31,7 @@ public enum HotKeyAction
     [Description("Snap the current window to the top.")]
     SnapUp,
     [Description("Snap the current window to the bottom.")]
-    SnapDown
+    SnapDown,
+    [Description("Open tab search popup to find and switch between tabs.")]
+    TabSearch
 }

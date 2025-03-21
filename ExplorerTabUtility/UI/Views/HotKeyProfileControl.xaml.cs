@@ -305,7 +305,8 @@ public partial class HotKeyProfileControl : UserControl
                 HotKeyAction.SnapRight,
                 HotKeyAction.SnapLeft,
                 HotKeyAction.SnapUp,
-                HotKeyAction.SnapDown
+                HotKeyAction.SnapDown,
+                HotKeyAction.TabSearch
             ],
             _ => Enum.GetValues(typeof(HotKeyAction))
                 .OfType<HotKeyAction>()
