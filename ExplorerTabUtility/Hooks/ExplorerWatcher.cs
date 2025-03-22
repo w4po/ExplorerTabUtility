@@ -306,6 +306,10 @@ public class ExplorerWatcher : IHook
 
                 windowInfo = new WindowInfo();
                 _windowEntryDict.Add(window, windowInfo);
+
+                if (_windowEntryDict.Count == 1)
+                    _mainWindowHandle = new IntPtr(window.HWND);
+
                 return window;
             }
         }
@@ -338,6 +342,7 @@ public class ExplorerWatcher : IHook
             // Check if this is a single tab window and there are other windows
             var shouldReopenAsTab = (_isForcingTabs || _reuseTabs) &&
                                     _windowEntryDict.Count > 1 &&
+                                    hWnd != _mainWindowHandle &&
                                     Helper.GetAllExplorerTabs(hWnd).Take(2).Count() == 1;
 
             if (shouldReopenAsTab)
@@ -354,7 +359,7 @@ public class ExplorerWatcher : IHook
             {
                 showAgain = false;
 
-                _ = OpenTabNavigateWithSelection(new WindowRecord(location, hWnd, GetSelectedItems(window)));
+                _ = OpenTabNavigateWithSelection(new WindowRecord(location, hWnd, GetSelectedItems(window)), _mainWindowHandle);
 
                 window.Quit();
                 RemoveWindowAndUnhookEvents(window, windowInfo);
@@ -508,7 +513,7 @@ public class ExplorerWatcher : IHook
             await RequestToOpenNewTab(mainWindowHWnd, lockToOpenWindows: false).ConfigureAwait(false);
 
             // Wait for the new tab
-            var newTabHandle = await Helper.ListenForNewExplorerTabAsync(mainWindowHWnd, currentTabs).ConfigureAwait(false);
+            var newTabHandle = await Helper.ListenForNewExplorerTabAsync(mainWindowHWnd, currentTabs, 2_000).ConfigureAwait(false);
             if (newTabHandle == 0) return;
 
             // Get the window object
