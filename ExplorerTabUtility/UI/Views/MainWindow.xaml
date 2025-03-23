@@ -75,13 +75,32 @@
                     <!-- Menu Drawer -->
                     <Border Grid.Column="0"
                             Background="{StaticResource CardGradientBrush}"
-                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderBrush="{StaticResource BorderGradientBrush}"
                             BorderThickness="0,0,1,0"
-                            CornerRadius="0,4,4,0"
+                            CornerRadius="0,0,0,4"
                             Width="0">
                         <DockPanel>
                             <ListBox x:Name="NavigationList" DockPanel.Dock="Top" SelectedIndex="0"
                                      Style="{StaticResource NavigationListBoxStyle}">
+                                <ListBox.Resources>
+                                    <Storyboard x:Key="CloseDrawerStoryboard">
+                                        <BooleanAnimationUsingKeyFrames Storyboard.TargetName="DrawerButton"
+                                                                        Storyboard.TargetProperty="IsChecked">
+                                            <DiscreteBooleanKeyFrame KeyTime="0:0:0" Value="False" />
+                                        </BooleanAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </ListBox.Resources>
+                                <ListBox.Triggers>
+                                    <EventTrigger RoutedEvent="ListBox.MouseLeftButtonDown">
+                                        <BeginStoryboard Storyboard="{StaticResource CloseDrawerStoryboard}"/>
+                                    </EventTrigger>
+                                    <EventTrigger RoutedEvent="ListBox.PreviewMouseDoubleClick">
+                                        <BeginStoryboard Storyboard="{StaticResource CloseDrawerStoryboard}"/>
+                                    </EventTrigger>
+                                    <EventTrigger RoutedEvent="ListBox.KeyDown">
+                                        <BeginStoryboard Storyboard="{StaticResource CloseDrawerStoryboard}"/>
+                                    </EventTrigger>
+                                </ListBox.Triggers>
                                 <ListBoxItem ToolTip="Configure keyboard and mouse shortcuts">
                                     <TextBlock Text="&#x1F5F2; Shortcuts" VerticalAlignment="Center" />
                                 </ListBoxItem>
@@ -135,18 +154,6 @@
                         <!-- Tab Control -->
                         <TabControl Style="{StaticResource CustomTabControlStyle}" Margin="0"
                                     SelectedIndex="{Binding SelectedIndex, ElementName=NavigationList}">
-                            <TabControl.Triggers>
-                                <EventTrigger RoutedEvent="TabControl.SelectionChanged">
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <BooleanAnimationUsingKeyFrames Storyboard.TargetName="DrawerButton"
-                                                                            Storyboard.TargetProperty="IsChecked">
-                                                <DiscreteBooleanKeyFrame KeyTime="0:0:0" Value="False" />
-                                            </BooleanAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </EventTrigger>
-                            </TabControl.Triggers>
                             <TabControl.Effect>
                                 <DropShadowEffect ShadowDepth="1" BlurRadius="3" Opacity="0.2"
                                                   Color="{StaticResource ShadowColor}" />

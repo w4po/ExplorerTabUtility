@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -128,7 +128,7 @@ public partial class TabSearchPopup : Window
         CloseWindow();
     }
 
-    private void TabsList_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    private void TabItem_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
         if (TabsList.SelectedItem != null)
             SwitchToSelectedTab();

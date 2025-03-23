@@ -43,8 +43,8 @@
 
     <!-- FlatButton Style -->
     <Style x:Key="FlatButtonStyle" TargetType="ButtonBase">
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Cursor" Value="Hand" />
@@ -52,9 +52,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ButtonBase">
-                    <Border behaviors:HoverBackground.IsEnabled="True"
-                            behaviors:HoverBackground.HoverColor="{StaticResource ControlBackgroundColor}"
-                            Background="{TemplateBinding Background}"
+                    <Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Padding="10,5"
@@ -63,14 +61,17 @@
                                           VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="BorderBrush" Value="{StaticResource BorderGradientBrush}" />
+                        </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource TextAccentBrush}" />
                         </Trigger>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter Property="Foreground" Value="{StaticResource TextAccentBrush}" />
+                            <Setter Property="BorderBrush" Value="{StaticResource BorderGradientBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -90,22 +91,24 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleButton">
-                    <DockPanel Background="Transparent" LastChildFill="False" VerticalAlignment="Center">
-                        <Border x:Name="border" Background="{StaticResource ControlBackgroundBrush}"
-                                Width="40" Height="20" CornerRadius="10" DockPanel.Dock="Left">
-                            <Ellipse x:Name="circle"
-                                     Width="16"
-                                     Height="16"
-                                     HorizontalAlignment="Left"
-                                     Fill="{StaticResource TextPrimaryBrush}" />
-                        </Border>
-                        <TextBlock x:Name="label"
-                                   DockPanel.Dock="Right"
-                                   Margin="8,0,0,0"
-                                   VerticalAlignment="Center"
-                                   Text="{TemplateBinding Content}"
-                                   Visibility="Collapsed" />
-                    </DockPanel>
+                    <Grid Background="Transparent">
+                        <DockPanel LastChildFill="False" VerticalAlignment="Center">
+                            <Border x:Name="border" Background="{StaticResource ControlBackgroundBrush}"
+                                    Width="40" Height="20" CornerRadius="10" DockPanel.Dock="Left">
+                                <Ellipse x:Name="circle"
+                                         Width="16"
+                                         Height="16"
+                                         HorizontalAlignment="Left"
+                                         Fill="{StaticResource TextPrimaryBrush}" />
+                            </Border>
+                            <TextBlock x:Name="label"
+                                       DockPanel.Dock="Right"
+                                       Margin="8,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Text="{TemplateBinding Content}"
+                                       Visibility="Collapsed" />
+                        </DockPanel>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="HasContent" Value="True">
                             <Setter TargetName="label" Property="Visibility" Value="Visible" />

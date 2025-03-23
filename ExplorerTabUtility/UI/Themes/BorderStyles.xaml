@@ -10,7 +10,7 @@
         <Setter Property="CornerRadius" Value="6" />
         <Setter Property="Padding" Value="16" />
         <Setter Property="behaviors:HoverBorder.IsEnabled" Value="True" />
-        <Setter Property="behaviors:HoverBorder.BorderBrush" Value="{StaticResource ControlHoverBrush}" />
+        <Setter Property="behaviors:HoverBorder.BorderBrush" Value="{StaticResource BorderGradientBrush}" />
         <Setter Property="Margin" Value="0,0,0,8" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="UseLayoutRounding" Value="True" />

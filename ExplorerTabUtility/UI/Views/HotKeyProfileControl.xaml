@@ -36,7 +36,7 @@
 
                 <!-- Enabled Toggle -->
                 <ToggleButton x:Name="CbEnabled" Grid.Column="0" Style="{StaticResource ToggleButtonStyle}"
-                              ToolTip="Enable or disable this profile" />
+                              VerticalAlignment="Stretch" ToolTip="Enable or disable this profile" />
 
                 <!-- Name -->
                 <TextBox x:Name="TxtName" Grid.Column="1" Tag="Name" Style="{StaticResource CustomTextBoxStyle}"

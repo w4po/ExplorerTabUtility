@@ -5,15 +5,16 @@
     <Style x:Key="NavigationListBoxItemStyle" TargetType="ListBoxItem">
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="Padding" Value="12, 10" />
         <Setter Property="Margin" Value="4,2" />
         <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
                     <Border x:Name="Border"
                             Background="{TemplateBinding Background}"
-                            BorderThickness="0"
+                            BorderThickness="1"
                             CornerRadius="4"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter />
@@ -23,7 +24,8 @@
                             <Setter TargetName="Border" Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{StaticResource PrimaryBrush}" />
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource BorderGradientBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -35,7 +37,7 @@
     <Style x:Key="NavigationListBoxStyle" TargetType="ListBox">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Margin" Value="0,16,0,16" />
+        <Setter Property="Margin" Value="0,6" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
