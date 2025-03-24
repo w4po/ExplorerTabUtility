@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Text.Json;
+using ExplorerTabUtility.Models;
 using ExplorerTabUtility.Helpers;
 
 namespace ExplorerTabUtility.Managers;
@@ -147,6 +148,27 @@ public static class SettingsManager
         }
     }
 
+    public static bool SaveClosedWindows
+    {
+        get => Settings.SaveClosedWindows;
+        set
+        {
+            Settings.SaveClosedWindows = value;
+            SaveSettings();
+        }
+    }
+
+    public static WindowRecord[]? ClosedWindows
+    {
+        get => Settings.ClosedWindows;
+        set
+        {
+            Settings.ClosedWindows = value;
+            SaveSettings();
+        }
+    }
+
+
     public static void SaveSettings()
     {
         try
@@ -167,11 +189,13 @@ internal class AppSettings
     public bool KeyboardHook { get; set; } = true;
     public bool WindowHook { get; set; } = true;
     public bool ReuseTabs { get; set; } = true;
-    public string HotKeyProfiles { get; set; } = Constants.DefaultHotKeyProfiles;
     public Size FormSize { get; set; } = new(852, 402);
     public bool SaveProfilesOnExit { get; set; } = true;
     public bool IsFirstRun { get; set; } = true;
     public bool IsTrayIconHidden { get; set; }
     public bool HaveThemeIssue { get; set; }
     public bool AutoUpdate { get; set; }
+    public string HotKeyProfiles { get; set; } = Constants.DefaultHotKeyProfiles;
+    public bool SaveClosedWindows { get; set; }
+    public WindowRecord[]? ClosedWindows { get; set; }
 }

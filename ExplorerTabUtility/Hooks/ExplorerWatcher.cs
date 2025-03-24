@@ -49,6 +49,9 @@ public class ExplorerWatcher : IHook
             throw new InvalidOperationException("Only one instance of ExplorerWatcher is allowed at a time.");
         _created = true;
 
+        if (SettingsManager.SaveClosedWindows && SettingsManager.ClosedWindows != null)
+            _closedWindows.AddRange(SettingsManager.ClosedWindows);
+
         _syncContext = SynchronizationContext.Current!;
         _ = MonitorExplorerProcess();
     }
@@ -70,7 +73,7 @@ public class ExplorerWatcher : IHook
     {
         var result = new List<WindowRecord>();
         
-        // Add opened windows
+        // Add open windows
         lock (_windowEntryDictLock)
             result.AddRange(
                 _windowEntryDict.Keys.Select(ie => new WindowRecord(GetLocation(ie), new IntPtr(ie.HWND), GetSelectedItems(ie), ie.LocationName)));
@@ -841,6 +844,10 @@ public class ExplorerWatcher : IHook
 
     public void Dispose()
     {
+        SettingsManager.ClosedWindows = SettingsManager.SaveClosedWindows
+            ? _closedWindows.AsEnumerable().Reverse().Take(100).ToArray()
+            : null;
+
         DisposeShellObjects();
 
         _created = false;

@@ -207,6 +207,9 @@
                                             <CheckBox x:Name="CbThemeIssue" Content="I have theme issues"
                                                       Style="{StaticResource CustomCheckBoxStyle}"
                                                       ToolTip="Use alternative window hiding method that preserves your custom File-Explorer theme.&#x0a;Enable this if you have theme-related issues" />
+                                            <CheckBox x:Name="CbSaveClosedWindows" Content="Save closed windows"
+                                                      Style="{StaticResource CustomCheckBoxStyle}"
+                                                      ToolTip="Save recently closed windows on exit and restore them on the next startup" />
                                             <CheckBox x:Name="CbHideTrayIcon" Content="Hide tray icon"
                                                       Style="{StaticResource CustomCheckBoxStyle}"
                                                       ToolTip="Hide the system tray icon" />

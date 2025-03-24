@@ -39,6 +39,7 @@ public partial class MainWindow : Window
         CbThemeIssue.IsChecked = SettingsManager.HaveThemeIssue;
         CbHideTrayIcon.IsChecked = SettingsManager.IsTrayIconHidden;
         CbAutoSaveProfiles.IsChecked = SettingsManager.SaveProfilesOnExit;
+        CbSaveClosedWindows.IsChecked = SettingsManager.SaveClosedWindows;
         UpdateTrayIconVisibility(false);
 
         if (SettingsManager.AutoUpdate)
@@ -63,6 +64,8 @@ public partial class MainWindow : Window
         BtnSave.Click += BtnSave_Click;
         CbAutoSaveProfiles.Checked += CbAutoSaveProfiles_CheckedChanged;
         CbAutoSaveProfiles.Unchecked += CbAutoSaveProfiles_CheckedChanged;
+        CbSaveClosedWindows.Checked += CbSaveClosedWindows_CheckedChanged;
+        CbSaveClosedWindows.Unchecked += CbSaveClosedWindows_CheckedChanged;
         CbAutoUpdate.Checked += CbAutoUpdate_CheckedChanged;
         CbAutoUpdate.Unchecked += CbAutoUpdate_CheckedChanged;
         CbThemeIssue.Checked += CbThemeIssue_CheckedChanged;
@@ -167,6 +170,11 @@ public partial class MainWindow : Window
     private void CbThemeIssue_CheckedChanged(object? _, RoutedEventArgs __)
     {
         SettingsManager.HaveThemeIssue = CbThemeIssue.IsChecked ?? false;
+    }
+
+    private void CbSaveClosedWindows_CheckedChanged(object? _, RoutedEventArgs __)
+    {
+        SettingsManager.SaveClosedWindows = CbSaveClosedWindows.IsChecked ?? false;
     }
 
     private void CbHideTrayIcon_CheckedChanged(object? _, RoutedEventArgs __) => UpdateTrayIconVisibility(true);
