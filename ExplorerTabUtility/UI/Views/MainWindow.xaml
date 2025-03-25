@@ -1,6 +1,7 @@
 <Window x:Class="ExplorerTabUtility.UI.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ExplorerTabUtility.UI.Views"
         Title="Explorer Tab Utility"
         Width="850" Height="600"
         MinWidth="700" MinHeight="175"
@@ -8,6 +9,7 @@
         Background="Transparent"
         ResizeMode="CanResizeWithGrip"
         WindowStyle="None"
+        WindowStartupLocation="CenterScreen"
         TextBlock.Foreground="{StaticResource TextPrimaryBrush}"
         TextElement.Foreground="{StaticResource TextPrimaryBrush}">
 
@@ -102,10 +104,13 @@
                                     </EventTrigger>
                                 </ListBox.Triggers>
                                 <ListBoxItem ToolTip="Configure keyboard and mouse shortcuts">
-                                    <TextBlock Text="&#x1F5F2; Shortcuts" VerticalAlignment="Center" />
+                                    <TextBlock Text="&#x1F5F2;  Shortcuts" VerticalAlignment="Center" />
                                 </ListBoxItem>
                                 <ListBoxItem ToolTip="Configure application settings">
-                                    <TextBlock Text="&#x26ED; Preferences" VerticalAlignment="Center" />
+                                    <TextBlock Text="&#xE713;  Preferences" VerticalAlignment="Center" />
+                                </ListBoxItem>
+                                <ListBoxItem ToolTip="About the application and support options">
+                                    <TextBlock Text="&#xE939;  About" VerticalAlignment="Center" />
                                 </ListBoxItem>
                             </ListBox>
                         </DockPanel>
@@ -152,7 +157,7 @@
                     <!-- Main Content -->
                     <Grid Grid.Column="1">
                         <!-- Tab Control -->
-                        <TabControl Style="{StaticResource CustomTabControlStyle}" Margin="0"
+                        <TabControl Style="{StaticResource CustomTabControlStyle}"
                                     SelectedIndex="{Binding SelectedIndex, ElementName=NavigationList}">
                             <TabControl.Effect>
                                 <DropShadowEffect ShadowDepth="1" BlurRadius="3" Opacity="0.2"
@@ -216,6 +221,11 @@
                                         </StackPanel>
                                     </GroupBox>
                                 </StackPanel>
+                            </TabItem>
+                            
+                            <!-- About Tab -->
+                            <TabItem Header="About" Visibility="Collapsed">
+                                <local:AboutView />
                             </TabItem>
                         </TabControl>
                     </Grid>

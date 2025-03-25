@@ -5,6 +5,7 @@
     <Style x:Key="CustomTabControlStyle" TargetType="TabControl">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Margin" Value="0, -2, 0, 0" />
         <Setter Property="Padding" Value="0" />
     </Style>
 

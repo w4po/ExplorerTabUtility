@@ -1,0 +1,685 @@
+<UserControl x:Class="ExplorerTabUtility.UI.Views.AboutView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:ExplorerTabUtility.UI.Converters"
+             xmlns:views="clr-namespace:ExplorerTabUtility.UI.Views"
+             xmlns:models="clr-namespace:ExplorerTabUtility.Models"
+             mc:Ignorable="d"
+             d:DesignHeight="900" d:DesignWidth="800"
+             Loaded="AboutView_Loaded">
+
+    <UserControl.Resources>
+        <!-- Converters -->
+        <converters:Base64ImageConverter x:Key="Base64ImageConverter" />
+
+        <!-- Easing Functions -->
+        <CubicEase x:Key="EaseOutFunction" EasingMode="EaseOut" />
+        <BackEase x:Key="EaseOutBack" EasingMode="EaseOut" Amplitude="0.5" />
+
+        <!-- Animations -->
+        <Storyboard x:Key="IconPulseAnimation">
+            <DoubleAnimation
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                From="1" To="1.05" Duration="0:0:0.3" AutoReverse="True" />
+            <DoubleAnimation
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                From="1" To="1.05" Duration="0:0:0.3" AutoReverse="True" />
+        </Storyboard>
+
+        <Storyboard x:Key="SupporterFadeInAnimation">
+            <DoubleAnimation
+                Storyboard.TargetProperty="Opacity"
+                From="0" To="1" Duration="0:0:0.5" />
+            <DoubleAnimation
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                From="20" To="0" Duration="0:0:0.5"
+                EasingFunction="{StaticResource EaseOutFunction}" />
+        </Storyboard>
+
+        <Storyboard x:Key="StarContinuousAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation
+                Storyboard.TargetName="StarIcon"
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                From="0.9" To="1.1" Duration="0:0:1.5" AutoReverse="True"
+                RepeatBehavior="Forever" />
+            <DoubleAnimation
+                Storyboard.TargetName="StarIcon"
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                From="0.9" To="1.1" Duration="0:0:1.5" AutoReverse="True"
+                RepeatBehavior="Forever" />
+            <ColorAnimation
+                Storyboard.TargetName="StarIcon"
+                Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
+                From="#F0F0F0" To="#FFD700" Duration="0:0:1.5" AutoReverse="True"
+                RepeatBehavior="Forever" />
+        </Storyboard>
+
+        <Storyboard x:Key="SupporterHoverAnimation">
+            <DoubleAnimation
+                Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleX)"
+                To="1.05"
+                Duration="0:0:0.3"
+                EasingFunction="{StaticResource EaseOutBack}" />
+            <DoubleAnimation
+                Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleY)"
+                To="1.05"
+                Duration="0:0:0.3"
+                EasingFunction="{StaticResource EaseOutBack}" />
+        </Storyboard>
+
+        <Storyboard x:Key="SupporterLeaveAnimation">
+            <DoubleAnimation
+                Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleX)"
+                To="1.0"
+                Duration="0:0:0.3"
+                EasingFunction="{StaticResource EaseOutBack}" />
+            <DoubleAnimation
+                Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleY)"
+                To="1.0"
+                Duration="0:0:0.3"
+                EasingFunction="{StaticResource EaseOutBack}" />
+        </Storyboard>
+
+        <Storyboard x:Key="TitleAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation
+                Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.ShadowDepth)"
+                From="0" To="2" Duration="0:0:2"
+                AutoReverse="True"
+                RepeatBehavior="Forever"
+                EasingFunction="{StaticResource EaseOutFunction}" />
+            <DoubleAnimation
+                Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.BlurRadius)"
+                From="10" To="20" Duration="0:0:2"
+                AutoReverse="True"
+                RepeatBehavior="Forever"
+                EasingFunction="{StaticResource EaseOutFunction}" />
+            <DoubleAnimation
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                From="-2" To="2" Duration="0:0:4"
+                AutoReverse="True"
+                RepeatBehavior="Forever"
+                EasingFunction="{StaticResource EaseOutFunction}" />
+        </Storyboard>
+
+        <Storyboard x:Key="IconAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation
+                Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.BlurRadius)"
+                From="15" To="25" Duration="0:0:2"
+                AutoReverse="True"
+                RepeatBehavior="Forever"
+                EasingFunction="{StaticResource EaseOutFunction}" />
+            <ColorAnimation
+                Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.Color)"
+                From="#4FC3F7" To="#03A9F4" Duration="0:0:2"
+                AutoReverse="True"
+                RepeatBehavior="Forever"
+                EasingFunction="{StaticResource EaseOutFunction}" />
+            <DoubleAnimation
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                From="0" To="360" Duration="0:0:20"
+                RepeatBehavior="Forever"
+                EasingFunction="{StaticResource EaseOutFunction}" />
+        </Storyboard>
+
+        <Storyboard x:Key="DeveloperNameAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation
+                Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.BlurRadius)"
+                From="4" To="8" Duration="0:0:4"
+                AutoReverse="True"
+                RepeatBehavior="Forever"
+                EasingFunction="{StaticResource EaseOutFunction}" />
+            <ColorAnimation
+                Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.Color)"
+                From="#9575CD" To="#7E57C2" Duration="0:0:4"
+                AutoReverse="True"
+                RepeatBehavior="Forever"
+                EasingFunction="{StaticResource EaseOutFunction}" />
+            <DoubleAnimation
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                From="-0.5" To="0.5" Duration="0:0:5"
+                AutoReverse="True"
+                RepeatBehavior="Forever"
+                EasingFunction="{StaticResource EaseOutFunction}" />
+        </Storyboard>
+
+        <!-- Styles -->
+        <Style x:Key="AppTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="32" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+
+        <Style x:Key="GitHubButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Padding" Value="16,0" />
+            <Setter Property="Margin" Value="0,8,0,0" />
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryLightBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="20">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1" ScaleY="1" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background">
+                        <Setter.Value>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#343B44" Offset="0.0" />
+                                <GradientStop Color="#414852" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                </Trigger>
+                <EventTrigger RoutedEvent="MouseEnter">
+                    <BeginStoryboard Storyboard="{StaticResource IconPulseAnimation}" />
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+        </Style>
+
+        <Style x:Key="SupportButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="56" />
+            <Setter Property="Margin" Value="0,6" />
+            <Setter Property="Background" Value="{StaticResource CardGradientBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <Grid>
+                                <ContentPresenter HorizontalAlignment="Left"
+                                                  VerticalAlignment="Center"
+                                                  Margin="16,0" />
+                                <TextBlock Text="→"
+                                           FontSize="18"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,16,0"
+                                           Foreground="{StaticResource TextSecondaryBrush}" />
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1" ScaleY="1" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background">
+                        <Setter.Value>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#343B44" Offset="0.0" />
+                                <GradientStop Color="#414852" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                </Trigger>
+                <EventTrigger RoutedEvent="MouseEnter">
+                    <BeginStoryboard Storyboard="{StaticResource IconPulseAnimation}" />
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SupporterItemStyle" TargetType="Border">
+            <Setter Property="MaxWidth" Value="100" />
+            <Setter Property="MaxHeight" Value="100" />
+            <Setter Property="Margin" Value="8" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TranslateTransform Y="0" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard Storyboard="{StaticResource SupporterFadeInAnimation}" />
+                </EventTrigger>
+                <EventTrigger RoutedEvent="MouseEnter">
+                    <BeginStoryboard Storyboard="{StaticResource SupporterHoverAnimation}" />
+                </EventTrigger>
+                <EventTrigger RoutedEvent="MouseLeave">
+                    <BeginStoryboard Storyboard="{StaticResource SupporterLeaveAnimation}" />
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SupporterAvatarStyle" TargetType="Border">
+            <Setter Property="Width" Value="64" />
+            <Setter Property="Height" Value="64" />
+            <Setter Property="CornerRadius" Value="32" />
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryLightBrush}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1" ScaleY="1" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Cursor" Value="Hand" />
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="MouseEnter">
+                    <BeginStoryboard Storyboard="{StaticResource SupporterHoverAnimation}" />
+                </EventTrigger>
+                <EventTrigger RoutedEvent="MouseLeave">
+                    <BeginStoryboard Storyboard="{StaticResource SupporterLeaveAnimation}" />
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SupporterNameStyle" TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Setter Property="MaxWidth" Value="90" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Margin" Value="0,8,0,0" />
+            <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}" />
+            <Setter Property="ToolTipService.InitialShowDelay" Value="400" />
+            <Setter Property="ToolTipService.ShowDuration" Value="5000" />
+        </Style>
+
+        <Style x:Key="ColorfulEmojiStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI Emoji" />
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,12,0" />
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1" ScaleY="1" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" /> <!-- Header -->
+                    <RowDefinition Height="*" /> <!-- Content -->
+                </Grid.RowDefinitions>
+
+                <!-- Header Section with App Logo and Title -->
+                <Border Grid.Row="0"
+                        Background="{StaticResource CardGradientBrush}"
+                        Padding="24,20">
+                    <StackPanel HorizontalAlignment="Center">
+                        <Border Width="90"
+                                Height="90"
+                                BorderBrush="{StaticResource BorderGradientBrush}"
+                                BorderThickness="1"
+                                CornerRadius="45"
+                                Margin="0,0,0,12"
+                                Cursor="Hand"
+                                MouseLeftButtonUp="OpenProjectPage">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#4FC3F7"
+                                                  BlurRadius="15"
+                                                  ShadowDepth="0"
+                                                  Opacity="0.7" />
+                            </Border.Effect>
+                            <Border.RenderTransform>
+                                <RotateTransform CenterX="45" CenterY="45" />
+                            </Border.RenderTransform>
+                            <Border.Background>
+                                <ImageBrush ImageSource="pack://application:,,,/Icon.ico" />
+                            </Border.Background>
+                            <Border.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard Storyboard="{StaticResource IconAnimation}" />
+                                </EventTrigger>
+                            </Border.Triggers>
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="Explorer Tab Utility"
+                                       Style="{StaticResource AppTitleStyle}"
+                                       MouseLeftButtonUp="OpenProjectPage">
+                                <TextBlock.Effect>
+                                    <DropShadowEffect Color="#4FC3F7"
+                                                      ShadowDepth="0"
+                                                      BlurRadius="15"
+                                                      Opacity="0.7" />
+                                </TextBlock.Effect>
+                                <TextBlock.RenderTransform>
+                                    <TranslateTransform />
+                                </TextBlock.RenderTransform>
+                                <TextBlock.Triggers>
+                                    <EventTrigger RoutedEvent="Loaded">
+                                        <BeginStoryboard Storyboard="{StaticResource TitleAnimation}" />
+                                    </EventTrigger>
+                                </TextBlock.Triggers>
+                            </TextBlock>
+
+                            <TextBlock Text="{Binding Version, RelativeSource={RelativeSource AncestorType=views:AboutView}}"
+                                       FontSize="14"
+                                       Margin="12,0,0,0"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       VerticalAlignment="Bottom" />
+                        </StackPanel>
+
+                        <TextBlock Text="Enhance your Windows File Explorer experience"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,4" />
+
+                        <Button x:Name="BtnGitHub"
+                                Style="{StaticResource GitHubButtonStyle}"
+                                Click="OpenProjectPage">
+                            <Button.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard Name="ContinuousStarStoryboard" Storyboard="{StaticResource StarContinuousAnimation}" />
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="Button.Click">
+                                    <StopStoryboard BeginStoryboardName="ContinuousStarStoryboard" />
+                                    <BeginStoryboard>
+                                        <Storyboard Completed="StarClickAnimation_Completed">
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="StarIcon"
+                                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                From="1" To="1.5" Duration="0:0:0.3" AutoReverse="True" />
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="StarIcon"
+                                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                From="1" To="1.5" Duration="0:0:0.3" AutoReverse="True" />
+                                            <ColorAnimation
+                                                Storyboard.TargetName="StarIcon"
+                                                Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
+                                                To="#FFD700" Duration="0:0:0.3" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Button.Triggers>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock x:Name="StarIcon"
+                                           Text="⭐"
+                                           FontFamily="Segoe UI Emoji"
+                                           FontSize="20"
+                                           Margin="0,0,8,0"
+                                           VerticalAlignment="Center"
+                                           Foreground="White"
+                                           RenderTransformOrigin="0.5,0.5">
+                                    <TextBlock.RenderTransform>
+                                        <ScaleTransform ScaleX="1" ScaleY="1" />
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+                                <TextBlock Text="Star on GitHub"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Main Content -->
+                <Grid Grid.Row="1" Margin="24,24,24,40">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="24" /> <!-- Spacer -->
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Column: Support Options -->
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Support the Project"
+                                   Style="{StaticResource SectionTitleStyle}" />
+
+                        <TextBlock Text="If you find this utility helpful, consider supporting its development through one of these options:"
+                                   TextWrapping="Wrap"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Height="42"
+                                   Margin="0,0,0,6" />
+
+                        <Button x:Name="BtnGitHubSponsors"
+                                Style="{StaticResource SupportButtonStyle}"
+                                Click="BtnGitHubSponsors_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="💖"
+                                           Style="{StaticResource ColorfulEmojiStyle}"
+                                           Foreground="#EA4AAA" />
+                                <TextBlock Text="GitHub Sponsors"
+                                           FontSize="16"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="BtnPatreon"
+                                Style="{StaticResource SupportButtonStyle}"
+                                Click="BtnPatreon_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🏆"
+                                           Style="{StaticResource ColorfulEmojiStyle}"
+                                           Foreground="#F96854" />
+                                <TextBlock Text="Patreon"
+                                           FontSize="16"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="BtnBuyMeACoffee"
+                                Style="{StaticResource SupportButtonStyle}"
+                                Click="BtnBuyMeACoffee_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="☕"
+                                           Style="{StaticResource ColorfulEmojiStyle}"
+                                           Foreground="#FFDD00" />
+                                <TextBlock Text="Buy Me A Coffee"
+                                           FontSize="16"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="BtnPayPal"
+                                Style="{StaticResource SupportButtonStyle}"
+                                Click="BtnPayPal_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="💸"
+                                           Style="{StaticResource ColorfulEmojiStyle}"
+                                           Foreground="#00457C" />
+                                <TextBlock Text="PayPal"
+                                           FontSize="16"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Border Margin="0,24,0,0" CornerRadius="8"
+                                Style="{StaticResource ProfileCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Developer"
+                                           FontWeight="SemiBold"
+                                           FontSize="18"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           Margin="0,0,0,16" />
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Developer Avatar -->
+                                    <Border Margin="0,0,16,0"
+                                            Style="{StaticResource SupporterAvatarStyle}"
+                                            MouseLeftButtonUp="OpenDeveloperPage">
+                                        <Border.Background>
+                                            <ImageBrush ImageSource="https://avatars.githubusercontent.com/u/6666887?s=160" />
+                                        </Border.Background>
+                                    </Border>
+
+                                    <!-- Developer Info -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Abd-Alrahman Ghanem"
+                                                   FontWeight="SemiBold"
+                                                   FontSize="16"
+                                                   Cursor="Hand"
+                                                   MouseLeftButtonUp="OpenDeveloperPage"
+                                                   Foreground="{StaticResource TextPrimaryBrush}">
+                                            <TextBlock.Effect>
+                                                <DropShadowEffect Color="#9575CD"
+                                                                  BlurRadius="4"
+                                                                  ShadowDepth="0"
+                                                                  Opacity="0.5" />
+                                            </TextBlock.Effect>
+                                            <TextBlock.RenderTransform>
+                                                <TranslateTransform />
+                                            </TextBlock.RenderTransform>
+                                            <TextBlock.Triggers>
+                                                <EventTrigger RoutedEvent="Loaded">
+                                                    <BeginStoryboard Storyboard="{StaticResource DeveloperNameAnimation}" />
+                                                </EventTrigger>
+                                            </TextBlock.Triggers>
+                                        </TextBlock>
+                                        <TextBlock Margin="0,4,0,0">
+                                            <TextBlock Text="github.com/w4po"
+                                                       Cursor="Hand"
+                                                       TextDecorations="Underline"
+                                                       MouseLeftButtonUp="OpenDeveloperPage"
+                                                       Foreground="{StaticResource AccentBrush}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Right Column: Supporters -->
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Current Supporters"
+                                   Style="{StaticResource SectionTitleStyle}" />
+
+                        <TextBlock Text="Thank you to all the amazing people who support this project!"
+                                   TextWrapping="Wrap"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Height="42"
+                                   Margin="0,0,0,12" />
+
+                        <Border Style="{StaticResource ProfileCardStyle}"
+                                CornerRadius="8"
+                                Padding="12">
+                            <ScrollViewer MaxHeight="300"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          Style="{StaticResource CustomScrollViewerStyle}">
+                                <ItemsControl x:Name="SupportersItemsControl"
+                                              d:DataContext="{d:DesignInstance Type=models:SupporterInfo}">
+                                    <ItemsControl.Style>
+                                        <Style TargetType="ItemsControl">
+                                            <Style.Triggers>
+                                                <Trigger Property="HasItems" Value="False">
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate>
+                                                                <StackPanel HorizontalAlignment="Center"
+                                                                            VerticalAlignment="Center">
+                                                                    <TextBlock Text="🤝"
+                                                                               FontFamily="Segoe UI Emoji"
+                                                                               FontSize="32"
+                                                                               HorizontalAlignment="Center"
+                                                                               Foreground="{StaticResource PrimaryLightBrush}"
+                                                                               Margin="0,0,0,12">
+                                                                        <TextBlock.Effect>
+                                                                            <DropShadowEffect Color="{StaticResource PrimaryLightColor}"
+                                                                                              BlurRadius="15"
+                                                                                              ShadowDepth="0"
+                                                                                              Opacity="0.5" />
+                                                                        </TextBlock.Effect>
+                                                                    </TextBlock>
+                                                                    <TextBlock Text="Be the first to support this project!"
+                                                                               TextWrapping="Wrap"
+                                                                               FontSize="16"
+                                                                               FontWeight="Medium"
+                                                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                                                               HorizontalAlignment="Center" />
+                                                                    <TextBlock Text="Your support helps keep this project alive"
+                                                                               TextWrapping="Wrap"
+                                                                               Margin="0,8,0,0"
+                                                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                                                               Opacity="0.8"
+                                                                               HorizontalAlignment="Center" />
+                                                                </StackPanel>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ItemsControl.Style>
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type models:SupporterInfo}">
+                                            <Border Style="{StaticResource SupporterItemStyle}">
+                                                <StackPanel>
+                                                    <Border Style="{StaticResource SupporterAvatarStyle}"
+                                                            Tag="{Binding ProfileUrl}"
+                                                            MouseLeftButtonUp="OpenSupportPage">
+                                                        <Border.Background>
+                                                            <ImageBrush
+                                                                ImageSource="{Binding ImageUrl, Converter={StaticResource Base64ImageConverter}}" />
+                                                        </Border.Background>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Name}"
+                                                               Style="{StaticResource SupporterNameStyle}" />
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
