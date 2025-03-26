@@ -56,10 +56,6 @@
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.7" />
                             </Trigger>
-                            <Trigger Property="IsDefault" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
-                                <Setter TargetName="ButtonBorder" Property="BorderThickness" Value="1.5" />
-                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>

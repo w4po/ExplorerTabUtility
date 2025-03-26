@@ -29,11 +29,13 @@ public partial class CustomMessageBox : Window
     /// <param name="title">The title of the message box</param>
     /// <param name="buttons">The buttons to display</param>
     /// <param name="icon">The icon to display</param>
+    /// <param name="defaultButton">The button that should be focused by default</param>
     /// <returns>The result of the message box</returns>
     public static MessageBoxResult Show(string message, string title,
-        MessageBoxButton buttons = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.None)
+        MessageBoxButton buttons = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.None,
+        MessageBoxResult defaultButton = MessageBoxResult.None)
     {
-        return Show(null, message, title, buttons, icon);
+        return Show(null, message, title, buttons, icon, defaultButton);
     }
 
     /// <summary>
@@ -44,9 +46,11 @@ public partial class CustomMessageBox : Window
     /// <param name="title">The title of the message box</param>
     /// <param name="buttons">The buttons to display</param>
     /// <param name="icon">The icon to display</param>
+    /// <param name="defaultButton">The button that should be focused by default</param>
     /// <returns>The result of the message box</returns>
     public static MessageBoxResult Show(Window? owner, string message, string title,
-        MessageBoxButton buttons = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.None)
+        MessageBoxButton buttons = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.None,
+        MessageBoxResult defaultButton = MessageBoxResult.None)
     {
         var messageBox = new CustomMessageBox
         {
@@ -60,7 +64,7 @@ public partial class CustomMessageBox : Window
         };
 
         messageBox.SetIcon(icon);
-        messageBox.AddButtons(buttons);
+        messageBox.AddButtons(buttons, defaultButton);
         messageBox.ShowDialog();
         return messageBox._result;
     }
@@ -94,32 +98,32 @@ public partial class CustomMessageBox : Window
             case MessageBoxImage.Question:
                 IconPath.Data = Geometry.Parse(
                     "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z");
-                IconPath.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#673AB7"));
+                IconPath.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00838F"));
                 break;
         }
     }
 
-    private void AddButtons(MessageBoxButton buttons)
+    private void AddButtons(MessageBoxButton buttons, MessageBoxResult defaultButton = MessageBoxResult.None)
     {
         ButtonPanel.Children.Clear();
 
         switch (buttons)
         {
             case MessageBoxButton.OK:
-                AddButton("OK", MessageBoxResult.OK, true);
+                AddButton("OK", MessageBoxResult.OK, defaultButton is MessageBoxResult.None or MessageBoxResult.OK);
                 break;
             case MessageBoxButton.OKCancel:
-                AddButton("OK", MessageBoxResult.OK, true);
-                AddButton("Cancel", MessageBoxResult.Cancel);
+                AddButton("OK", MessageBoxResult.OK, defaultButton is MessageBoxResult.None or MessageBoxResult.OK);
+                AddButton("Cancel", MessageBoxResult.Cancel, defaultButton is MessageBoxResult.Cancel);
                 break;
             case MessageBoxButton.YesNo:
-                AddButton("Yes", MessageBoxResult.Yes, true);
-                AddButton("No", MessageBoxResult.No);
+                AddButton("Yes", MessageBoxResult.Yes, defaultButton is MessageBoxResult.None or MessageBoxResult.Yes);
+                AddButton("No", MessageBoxResult.No, defaultButton is MessageBoxResult.No);
                 break;
             case MessageBoxButton.YesNoCancel:
-                AddButton("Yes", MessageBoxResult.Yes, true);
-                AddButton("No", MessageBoxResult.No);
-                AddButton("Cancel", MessageBoxResult.Cancel);
+                AddButton("Yes", MessageBoxResult.Yes, defaultButton is MessageBoxResult.None or MessageBoxResult.Yes);
+                AddButton("No", MessageBoxResult.No, defaultButton is MessageBoxResult.No);
+                AddButton("Cancel", MessageBoxResult.Cancel, defaultButton is MessageBoxResult.Cancel);
                 break;
         }
     }

@@ -95,41 +95,66 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- Search Box -->
-            <Border Grid.Row="0"
-                    Background="{StaticResource ControlBackgroundBrush}"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="4"
-                    Margin="15">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+            <!-- Search Row -->
+            <Grid Grid.Row="0" Margin="15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0"
-                               Text="&#xE11A;"
-                               Foreground="{StaticResource BorderGradientBrush}"
-                               Margin="12,5,8,0"
-                               VerticalAlignment="Center" />
+                <!-- Search Box -->
+                <Border Grid.Column="0"
+                        Background="{StaticResource ControlBackgroundBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
-                    <TextBox x:Name="SearchBox"
-                             Grid.Column="1"
-                             Margin="0,4"
-                             Padding="8,5"
-                             BorderThickness="0"
-                             FocusVisualStyle="{x:Null}"
-                             Background="Transparent"
-                             Foreground="{StaticResource AccentBrush}"
-                             FontFamily="{StaticResource DefaultFontFamily}"
-                             FontSize="{StaticResource DefaultFontSize}"
-                             ContextMenu="{StaticResource TextBoxCustomContextMenu}"
-                             CaretBrush="{StaticResource AccentBrush}"
-                             TextChanged="SearchBox_TextChanged"
-                             PreviewKeyDown="SearchBox_PreviewKeyDown" />
-                </Grid>
-            </Border>
+                        <TextBlock Grid.Column="0"
+                                   Text="&#xE11A;"
+                                   Foreground="{StaticResource BorderGradientBrush}"
+                                   Margin="12,5,8,0"
+                                   VerticalAlignment="Center" />
+
+                        <TextBox x:Name="SearchBox"
+                                 Grid.Column="1"
+                                 Margin="0,4"
+                                 Padding="8,5"
+                                 BorderThickness="0"
+                                 FocusVisualStyle="{x:Null}"
+                                 Background="Transparent"
+                                 Foreground="{StaticResource AccentBrush}"
+                                 FontFamily="{StaticResource DefaultFontFamily}"
+                                 FontSize="{StaticResource DefaultFontSize}"
+                                 ContextMenu="{StaticResource TextBoxCustomContextMenu}"
+                                 CaretBrush="{StaticResource AccentBrush}"
+                                 TextChanged="SearchBox_TextChanged"
+                                 PreviewKeyDown="SearchBox_PreviewKeyDown" />
+                    </Grid>
+                </Border>
+
+                <!-- Clear Button -->
+                <Button Grid.Column="1" ToolTip="Clear closed windows history"
+                        Margin="5,0,0,0"
+                        Focusable="False"
+                        Width="40" Height="Auto"
+                        Click="ClearClosedWindows_Click">
+                    <TextBlock Text="&#xE107;" />
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource IconButtonStyle}">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
 
             <!-- Tab List -->
             <ListView x:Name="TabsList"

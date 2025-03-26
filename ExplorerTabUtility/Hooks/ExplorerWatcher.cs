@@ -69,6 +69,12 @@ public class ExplorerWatcher : IHook
     }
     public void SetReuseTabs(bool reuseTabs) => _reuseTabs = reuseTabs;
 
+    public void ClearClosedWindows()
+    {
+        lock (_closedWindowsLock)
+            _closedWindows.Clear();
+    }
+
     public IReadOnlyCollection<WindowRecord> GetWindows()
     {
         var result = new List<WindowRecord>();

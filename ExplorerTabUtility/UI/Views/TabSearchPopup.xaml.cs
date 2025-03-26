@@ -14,6 +14,7 @@ namespace ExplorerTabUtility.UI.Views;
 // ReSharper disable once RedundantExtendsListEntry
 public partial class TabSearchPopup : Window
 {
+    private bool _isShowingDialog;
     private bool _isClosing;
     private readonly ExplorerWatcher _explorerWatcher;
     private IReadOnlyCollection<WindowRecord> _allWindows = null!;
@@ -125,7 +126,8 @@ public partial class TabSearchPopup : Window
 
     private void Window_Deactivated(object sender, EventArgs e)
     {
-        CloseWindow();
+        if (!_isShowingDialog)
+            CloseWindow();
     }
 
     private void TabItem_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -171,6 +173,28 @@ public partial class TabSearchPopup : Window
         if (_isClosing) return;
         _isClosing = true;
         Close();
+    }
+
+    private void ClearClosedWindows_Click(object sender, RoutedEventArgs e)
+    {
+        _isShowingDialog = true;
+        var result = CustomMessageBox.Show(
+            "Are you sure you want to clear the closed windows history?",
+            "Confirm Clear History",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question,
+            MessageBoxResult.No);
+        _isShowingDialog = false;
+
+        if (result == MessageBoxResult.Yes)
+        {
+            _explorerWatcher.ClearClosedWindows();
+            LoadWindows();
+        }
+
+        // Re-activate the window and focus the search box
+        Activate();
+        SearchBox.Focus();
     }
 
     public new void Show()
