@@ -422,7 +422,18 @@ public class ExplorerWatcher : IHook
         };
 
         // Subscribe
-        window.OnQuit += windowInfo.OnQuitHandler;
+        try
+        {
+            window.OnQuit += windowInfo.OnQuitHandler;
+
+            // Make sure the window is still alive (User might have closed it immediately after opening it)
+            _ = window.HWND;
+        }
+        catch
+        {
+            lock (_windowEntryDictLock)
+                _windowEntryDict.Remove(window);
+        }
     }
     private void RemoveWindowAndUnhookEvents(InternetExplorer window, WindowInfo windowInfo)
     {
@@ -431,7 +442,8 @@ public class ExplorerWatcher : IHook
             window.OnQuit -= windowInfo.OnQuitHandler;
 
         // Remove from dictionary
-        _windowEntryDict.Remove(window);
+        lock (_windowEntryDictLock)
+            _windowEntryDict.Remove(window);
 
         // Finally release the COM reference for this InternetExplorer instance
         Marshal.ReleaseComObject(window);
