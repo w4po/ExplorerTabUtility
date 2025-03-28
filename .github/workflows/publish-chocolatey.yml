@@ -1,0 +1,82 @@
+# Publish to Chocolatey
+#
+# This workflow creates and submits a package to the Chocolatey Community Repository.
+# It is designed for portable applications distributed as ZIP files.
+#
+# Requirements:
+#   - Release artifacts must be ZIP files with the following structure:
+#     MyApp.zip
+#     └── MyApp/
+#         └── MyApp.exe
+#   - Each architecture should have its own ZIP file (x86, x64)
+#   - ZIP names should follow the pattern: {name}_v{version}_{arch}{suffix}.zip
+#
+# Usage:
+#   1. Automatic (via release):
+#      - Create a new release in your repository
+#      - The workflow will run automatically with default settings
+#
+#   2. Manual (workflow_dispatch):
+#      - Go to Actions -> Publish to Chocolatey -> Run workflow
+#      - Required inputs:
+#        * Version: The version to publish (e.g., v1.0.0)
+#      - Optional inputs:
+#        * File suffix: Added to the end of artifact names (default: _Net9.0_FrameworkDependent)
+#        * Architectures: Comma-separated list of architectures (default: x86,x64,arm64)
+#
+# Note: 
+#   - Requires CHOCOLATEY_API_KEY secret to be set in repository settings for pushing to Chocolatey
+#   - If your ZIP structure is different, modify the chocolateyinstall.ps1 template
+#     in the packages/chocolatey/templates directory
+
+name: Publish to Chocolatey
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., v1.0.0)'
+        required: true
+        type: string
+        default: 'v1.0.0'
+      file_suffix:
+        description: 'File suffix for the artifacts'
+        required: false
+        type: string
+        default: '_Net9.0_FrameworkDependent'
+      architectures:
+        description: 'Comma-separated list of architectures (e.g., x86,x64,arm64)'
+        required: false
+        type: string
+        default: 'x86,x64,arm64'
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    env:
+      CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Chocolatey
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+          iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+      - name: Create and package
+        working-directory: ${{ github.workspace }}/packages/chocolatey
+        run: |
+          $architectures = "${{ inputs.architectures || 'x86,x64,arm64' }}".Split(',')
+          ./build.ps1 `
+          -Publisher "${{ github.repository_owner }}" `
+          -Name "${{ github.event.repository.name }}" `
+          -Version "${{ github.event.release.tag_name || inputs.version }}" `
+          -FileSuffix "${{ inputs.file_suffix || '_Net9.0_FrameworkDependent' }}" `
+          -Architectures $architectures `
+          -Description "🚀 Supercharge Windows 11's File Explorer: Auto-convert windows to tabs, duplicate tabs, reopen closed ones, and more!" `
+          -Summary "Enhanced File Explorer experience for Windows 11" `
+          -ApiKey $env:CHOCOLATEY_API_KEY

@@ -205,6 +205,8 @@ PublishScripts/
 !**/[Pp]ackages/build/
 # Allow WinGet packages folder
 ![Pp]ackages/winget/
+# Allow Chocolatey packages folder
+![Pp]ackages/chocolatey/
 # Uncomment if necessary however generally it will be regenerated when needed
 #!**/[Pp]ackages/repositories.config
 # NuGet v3's project.json files produces more ignorable files

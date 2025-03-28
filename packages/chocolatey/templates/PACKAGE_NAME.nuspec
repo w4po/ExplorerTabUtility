@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+    <metadata>
+        <id>{{PACKAGE_NAME}}</id>
+        <version>{{VERSION}}</version>
+        <title>{{PACKAGE_NAME}}</title>
+        <authors>{{PUBLISHER}}</authors>
+        <projectUrl>https://github.com/{{PUBLISHER}}/{{PACKAGE_NAME}}</projectUrl>
+        <iconUrl>https://raw.githubusercontent.com/{{PUBLISHER}}/{{PACKAGE_NAME}}/master/{{PACKAGE_NAME}}/Icon.ico</iconUrl>
+        <licenseUrl>https://github.com/{{PUBLISHER}}/{{PACKAGE_NAME}}/blob/master/LICENSE</licenseUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description><![CDATA[{{DESCRIPTION}}]]></description>
+        <summary>{{SUMMARY}}</summary>
+        <tags>explorer tab utility expltab windows11 file-explorer tabs os-windows11</tags>
+        <releaseNotes>https://github.com/{{PUBLISHER}}/{{PACKAGE_NAME}}/releases/tag/v{{VERSION}}</releaseNotes>
+        <packageSourceUrl>https://github.com/{{PUBLISHER}}/{{PACKAGE_NAME}}/tree/master/packages/chocolatey</packageSourceUrl>
+        <docsUrl>https://github.com/{{PUBLISHER}}/{{PACKAGE_NAME}}/blob/master/README.md</docsUrl>
+        <bugTrackerUrl>https://github.com/{{PUBLISHER}}/{{PACKAGE_NAME}}/issues</bugTrackerUrl>
+
+        <dependencies>
+            <dependency id="dotnet-desktopruntime" version="[9.0.0,10.0.0)"/>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="tools\**" target="tools"/>
+    </files>
+</package>
