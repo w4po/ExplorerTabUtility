@@ -189,7 +189,23 @@ public class ExplorerWatcher : IHook
             await Task.Delay(delay).ConfigureAwait(false);
 
         var normalizedPath = Helper.NormalizeLocation(location ?? string.Empty);
-
+        
+        if (normalizedPath.StartsWith("http", StringComparison.OrdinalIgnoreCase) ||
+            normalizedPath.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ||
+            System.IO.File.Exists(normalizedPath))
+        {
+            try
+            {
+                Helper.BypassWinForegroundRestrictions();
+                Process.Start(new ProcessStartInfo(normalizedPath) { UseShellExecute = true });
+                return;
+            }
+            catch
+            {
+                //
+            }
+        }
+        
         if (!asTab)
         {
             await OpenNewWindowWithSelection(new WindowRecord(normalizedPath)).ConfigureAwait(false);

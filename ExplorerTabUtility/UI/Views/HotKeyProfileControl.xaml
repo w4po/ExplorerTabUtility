@@ -87,9 +87,9 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Path -->
-                <TextBox Grid.Column="0" x:Name="TxtPath" Tag="Path" Style="{StaticResource CustomTextBoxStyle}"
+                <TextBox Grid.Column="0" x:Name="TxtPath" Tag="Location" Style="{StaticResource CustomTextBoxStyle}"
                          ContextMenu="{StaticResource TextBoxCustomContextMenu}"
-                         ToolTip="Folder path to open when the hotkeys are pressed" />
+                         ToolTip="Path to open when the hotkeys are pressed. (folder, file, website, CLSID)" />
 
                 <!-- Delay -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="6"
