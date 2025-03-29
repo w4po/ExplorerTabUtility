@@ -51,6 +51,7 @@ public partial class TabSearchPopup : Window
             const StringComparison sc = StringComparison.OrdinalIgnoreCase;
             _filteredWindows = _allWindows
                 .Where(w => w.Name.IndexOf(searchText, sc) != -1 || w.Location.IndexOf(searchText, sc) != -1)
+                .OrderByDescending(w => w.Name.IndexOf(searchText, sc) != -1) // Name matches first
                 .ToList();
         }
 
