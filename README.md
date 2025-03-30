@@ -4,7 +4,7 @@
 > Force new File Explorer windows to open as tabs in Windows 11, making your workflow cleaner and more organized!
 
 <div align="center">
-  <img src="Assets/ExplorerTabUtilityLogo.gif" alt="Explorer Tab Utility Logo">
+  <img src="https://cdn.jsdelivr.net/gh/w4po/ExplorerTabUtility@master/Assets/ExplorerTabUtilityLogo.gif" alt="Explorer Tab Utility Logo">
   
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
   [![Windows 11](https://img.shields.io/badge/Windows%2011-22H2+-blue.svg)](https://www.microsoft.com/windows/windows-11)
@@ -18,7 +18,7 @@
 ## 🤔 Why Explorer Tab Utility?
 
 <div align="center">
-  <img src="Assets/TheWhy.png" alt="Why use Explorer Tab Utility">
+  <img src="https://cdn.jsdelivr.net/gh/w4po/ExplorerTabUtility@master/Assets/TheWhy.png" alt="Why use Explorer Tab Utility">
 </div>
 
 Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab Utility automatically converts new windows into tabs, providing a cleaner and more organized file management experience.
@@ -36,8 +36,7 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
 - Handles opening multiple tabs at once
 
 **See it in action:**
-![Window to tab conversion](Assets/After_ExplorerTabUtility.gif)
-![Multiple windows opening](Assets/MultiOpen.gif)
+![Window to tab conversion](https://cdn.jsdelivr.net/gh/w4po/ExplorerTabUtility@master/Assets/WindowToTab.gif)
 </details>
 
 <details>
@@ -47,7 +46,8 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
 - Choose whether to duplicate as a tab or new window (toggle `Tab` option)
 - Preserves the current location and selected items
 
-![Duplicate current tab](Assets/DuplicateTab.gif)
+**See it in action:**
+![Duplicate current tab](https://cdn.jsdelivr.net/gh/w4po/ExplorerTabUtility@master/Assets/DuplicateTab.gif)
 </details>
 
 <details>
@@ -57,7 +57,8 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
 - Choose whether to reopen as a tab or new window (toggle `Tab` option)
 - Restores the exact location and selected items
 
-![Reopen closed tabs](Assets/ReopenClosedTab.gif)
+**See it in action:**
+![Reopen closed tabs](https://cdn.jsdelivr.net/gh/w4po/ExplorerTabUtility@master/Assets/ReopenClosedTab.gif)
 </details>
 
 <details>
@@ -72,7 +73,8 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
   3. Third profile: Snap new window to the right (with customizable delay)
 - Customize delays to match your system's performance
 
-![Detach & Snap](Assets/DetachSnap.gif)
+**See it in action:**
+![Detach & Snap](https://cdn.jsdelivr.net/gh/w4po/ExplorerTabUtility@master/Assets/DetachSnap.gif)
 </details>
 
 <details>
@@ -83,6 +85,8 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
   - Mouse clicks on any empty space in the folder
 - Perfect for quick navigation between directories
 
+**See it in action:**
+![Navigate back/up](https://cdn.jsdelivr.net/gh/w4po/ExplorerTabUtility@master/Assets/NavigateBack.gif)
 </details>
 
 <details>
@@ -99,8 +103,23 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
 - Perfect for frequently accessed locations
 - Instant access to system folders using CLSIDs
 
-![Open custom path](Assets/OpenCustomPath.gif)
-![Open custom URL](Assets/OpenCustomUrl.gif)
+**See it in action:**
+![Custom location](https://cdn.jsdelivr.net/gh/w4po/ExplorerTabUtility@master/Assets/CustomLocation.gif)
+</details>
+
+<details>
+<summary>🔍 Tab Search/Switcher</summary>
+
+- Quickly find and switch between open Explorer tabs/windows
+- Search by typing part of a folder name or path
+- Keyboard navigation with up/down arrows and Enter to select
+- Special modifiers for different actions:
+  - Default: Switch to existing tab or open location in a new tab
+  - SHIFT key: Open selected location in a new window instead of a tab
+  - CTRL key: Duplicate the tab even if it already exists
+- Clear recently closed windows history with a single click
+
+![Tab Search](https://cdn.jsdelivr.net/gh/w4po/ExplorerTabUtility@master/Assets/TabSearch.gif)
 </details>
 
 <details>
@@ -114,13 +133,17 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
 
 ## 🚀 Getting Started
 
-1. Download the latest version from the [Releases](https://github.com/w4po/ExplorerTabUtility/releases) page or install it via `winget`:
-```powershell
-winget install w4po.ExplorerTabUtility
-```
+1. Download the latest version from the [Releases](https://github.com/w4po/ExplorerTabUtility/releases) page or install it via `winget` or `choco`:
+    ```powershell
+    winget install w4po.ExplorerTabUtility
+    ```
+    ```powershell
+    choco install explorertabutility
+    ```
 2. Run the application
 3. Look for the tray icon and you're ready to go!
-   ![image](Assets/Menu.png)
+
+    ![Menu](https://cdn.jsdelivr.net/gh/w4po/ExplorerTabUtility@master/Assets/Menu.png)
 
 ## ⚙️ Configuration
 
@@ -140,6 +163,18 @@ winget install w4po.ExplorerTabUtility
   %APPDATA%\ExplorerTabUtility\settings.json
   ```
   If you need to reset to default settings, simply delete the settings.json file.
+</details>
+
+<details>
+<summary>⚙️ Preferences</summary>
+
+- **Auto update**: Automatically check for updates on startup to ensure you're always using the latest version
+- **I have theme issues**: Use an alternative window hiding method that preserves your custom File Explorer theme. Enable this if you experience theme-related issues
+- **Save closed windows**: Save recently closed windows when exiting the application and restore them on the next startup, allowing you to continue where you left off
+- **Hide tray icon**: Hide the system tray icon for a cleaner taskbar experience.
+  * You must first configure a hotkey with the `ToggleVisibility` action before enabling this option
+
+![Preferences](https://cdn.jsdelivr.net/gh/w4po/ExplorerTabUtility@master/Assets/Preferences.png)
 </details>
 
 <details>
@@ -164,10 +199,15 @@ Each profile contains the following settings:
      - `Open`: Open a new tab (optionally with specified path)
      - `Duplicate`: Duplicate current tab
      - `ReopenClosed`: Reopen last closed tab
+     - `TabSearch`: Open the tab search popup for quick navigation
      - `SetTargetWindow`: Set current Explorer window as the destination for new tabs
      - `ToggleWinHook`: Toggle window hook
      - `ToggleReuseTabs`: Toggle tab reuse
      - `ToggleVisibility`: Toggle form visibility
+     - `NavigateBack`: Navigate back in the current Explorer window
+     - `NavigateUp`: Navigate up one directory level in the current Explorer window
+     - `DetachTab`: Detach the current tab to a new window
+     - `Snap`: Snap the current window to the screen edges (right/left/top/bottom)
    - Path Field (for `Open` action)
      - Optional: Leave empty to open new tab
      - Supports multiple path formats (see Custom Path Navigation section)
@@ -177,7 +217,7 @@ Each profile contains the following settings:
    - Key Handling: Toggle whether hotkeys are passed to other applications
    - Profile Deletion: Remove unwanted profiles
 
-![Form](Assets/Form.png)
+![Form](https://cdn.jsdelivr.net/gh/w4po/ExplorerTabUtility@master/Assets/Form.png)
 
 > [!TIP]
 > Use the "Handled" toggle to prevent or allow hotkey propagation to other applications that might be listening for the same key combination.
@@ -228,6 +268,18 @@ Each profile contains the following settings:
   - Memory-efficient collections
   - Minimal window recreation
 
+#### 5. 🎨 Modern UI
+- Modern WPF-based user interface:
+  - XAML-based UI components for better flexibility and design
+  - Custom themes and styles in dedicated XAML files
+  - Improved visual consistency with Windows 11 design language
+- Enhanced system tray integration:
+  - Modern WPF-based TaskbarIcon implementation
+  - XAML-based context menu with Windows 11 iconography
+  - Custom icons and hover effects for better visual feedback
+- Tab Search popup with modern styling and keyboard navigation
+- About page with developer information and support options
+
 ### Key Technologies
 - .NET 9 and .NET Framework 4.8.1
 - Windows COM APIs
@@ -235,6 +287,7 @@ Each profile contains the following settings:
   - Native P/Invoke
 - Advanced threading with STA scheduler
 - Concurrent collections for thread safety
+- WPF (Windows Presentation Foundation) for modern UI
 </details>
 
 ## Antivirus Detection
@@ -265,7 +318,7 @@ Alternatively, you can use PowerShell (Run as Administrator):
 Add-MpPreference -ExclusionPath "PATH_TO_UTILITY_FOLDER"
 ```
 
-## Uninstallation
+## 🗑️ Uninstallation
 
 The utility is portable and can be removed by simply deleting its folder. However:
 
@@ -273,6 +326,10 @@ The utility is portable and can be removed by simply deleting its folder. Howeve
 - If you installed via winget, run:
   ```powershell
   winget uninstall w4po.ExplorerTabUtility
+  ```
+- If you installed via Chocolatey, run:
+  ```powershell
+  choco uninstall explorertabutility
   ```
 
 ## ℹ️ Notes
@@ -306,6 +363,16 @@ If you find Explorer Tab Utility helpful, consider supporting its development:
 
 Your support helps maintain and improve the project! ❤️
 
+### Sponsors & Supporters
+
+Thank you to all the amazing people who support this project!
+
+<p align="center">
+  <a href="https://github.com/sponsors/w4po">
+    <img src="https://cdn.jsdelivr.net/gh/w4po/sponsors/sponsors.svg" alt="Sponsors" />
+  </a>
+</p>
+
 ## Contributing
 
 Contributions are welcome! Feel free to submit issues and pull requests.
@@ -322,12 +389,12 @@ This project makes use of the following excellent open-source packages:
   <a href="https://github.com/HavenDV/H.Hooks">
     <img src="https://img.shields.io/badge/H.Hooks-Keyboard%20Hook-purple?style=for-the-badge" alt="H.Hooks"/>
   </a>
-  <a href="https://github.com/leocb/MaterialSkin">
-    <img src="https://img.shields.io/badge/MaterialSkin.2-UI%20Theming-blue?style=for-the-badge" alt="MaterialSkin"/>
+  <a href="https://github.com/hardcodet/wpf-notifyicon">
+    <img src="https://img.shields.io/badge/Hardcodet.NotifyIcon.Wpf-System%20Tray-blue?style=for-the-badge" alt="Hardcodet NotifyIcon"/>
   </a>
 </p>
 
 - **[H.Hooks](https://github.com/HavenDV/H.Hooks)** - Efficient and reliable keyboard hook implementation
-- **[MaterialSkin.2](https://github.com/leocb/MaterialSkin)** - Beautiful Material Design theming for WinForms
+- **[Hardcodet.NotifyIcon.Wpf](https://github.com/hardcodet/wpf-notifyicon)** - Modern WPF-based system tray icon implementation
 
 Special thanks to the maintainers of these packages for their excellent work!
