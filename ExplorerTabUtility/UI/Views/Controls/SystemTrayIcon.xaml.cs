@@ -18,6 +18,7 @@ public partial class SystemTrayIcon : UserControl, IDisposable
     private readonly HookManager _hookManager;
     private readonly Action _showWindowAction;
     private ICommand ProfileItemCommand { get; set; } = null!;
+    private bool _savedReuseTabsState;
 
     public SystemTrayIcon(ProfileManager profileManager, HookManager hookManager, Action showWindowAction)
     {
@@ -30,6 +31,9 @@ public partial class SystemTrayIcon : UserControl, IDisposable
         _profileManager = profileManager;
         _hookManager = hookManager;
         _showWindowAction = showWindowAction;
+        
+        _hookManager.OnWindowHookToggled += HookManager_OnWindowHookToggled;
+        _hookManager.OnReuseTabsToggled += HookManager_OnReuseTabsToggled;
 
         // Populate submenus for keyboard & mouse profiles
         UpdateMenuItems(autoCheckParent: false);
@@ -51,6 +55,37 @@ public partial class SystemTrayIcon : UserControl, IDisposable
         OpenSettings.Command = new RelayCommand(_ => _showWindowAction());
         CheckForUpdates.Command = new RelayCommand(_ => UpdateManager.CheckForUpdates());
         ExitApplication.Command = new RelayCommand(_ => Application.Current.Shutdown());
+    }
+
+    private void HookManager_OnWindowHookToggled()
+    {
+        if (WindowHook.IsChecked)
+        {
+            // Store the current ReuseTabs state before toggling WindowHook
+            _savedReuseTabsState = SettingsManager.ReuseTabs;
+
+            WindowHook.IsChecked = false;
+            WindowHook.Command.Execute(WindowHook.CommandParameter);
+            return;
+        }
+        
+        if (_savedReuseTabsState)
+        {
+            // It will activate window hook too as well.
+            ReuseTabs.IsChecked = true;
+            ReuseTabs.Command.Execute(ReuseTabs.CommandParameter);
+        }
+        else
+        {
+            WindowHook.IsChecked = true;
+            WindowHook.Command.Execute(WindowHook.CommandParameter);
+        }
+    }
+
+    private void HookManager_OnReuseTabsToggled()
+    {
+        ReuseTabs.IsChecked = !ReuseTabs.IsChecked;
+        ReuseTabs.Command.Execute(ReuseTabs.CommandParameter);
     }
 
     public void UpdateMenuItems(bool autoCheckParent = true)
