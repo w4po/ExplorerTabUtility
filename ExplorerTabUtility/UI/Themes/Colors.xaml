@@ -17,6 +17,8 @@
     <Color x:Key="SuccessColor">#43A047</Color>
     <Color x:Key="WarningColor">#FFA000</Color>
     <Color x:Key="AccentColor">#00838F</Color>
+    <Color x:Key="StatusActiveColor">#43A047</Color>
+    <Color x:Key="StatusInactiveColor">#757575</Color>
 
     <!-- Brushes -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
@@ -33,6 +35,8 @@
     <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
     <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}" />
     <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="StatusActiveBrush" Color="{StaticResource StatusActiveColor}" />
+    <SolidColorBrush x:Key="StatusInactiveBrush" Color="{StaticResource StatusInactiveColor}" />
 
     <!-- Gradients -->
     <LinearGradientBrush x:Key="BackgroundGradientBrush" StartPoint="0,0" EndPoint="0,1">

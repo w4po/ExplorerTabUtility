@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Text.Json;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using ExplorerTabUtility.Models;
 using ExplorerTabUtility.Helpers;
 
@@ -10,6 +12,7 @@ namespace ExplorerTabUtility.Managers;
 public static class SettingsManager
 {
     private static readonly AppSettings Settings;
+    public static event EventHandler<PropertyChangedEventArgs>? StaticPropertyChanged;
 
     private static readonly string SettingsFilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -38,6 +41,11 @@ public static class SettingsManager
         }
     }
 
+    private static void NotifyStaticPropertyChanged([CallerMemberName] string propertyName = "")
+    {
+        StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(propertyName));
+    }
+
     public static bool IsMouseHookActive
     {
         get => Settings.MouseHook;
@@ -45,6 +53,7 @@ public static class SettingsManager
         {
             Settings.MouseHook = value;
             SaveSettings();
+            NotifyStaticPropertyChanged();
         }
     }
 
@@ -55,6 +64,7 @@ public static class SettingsManager
         {
             Settings.KeyboardHook = value;
             SaveSettings();
+            NotifyStaticPropertyChanged();
         }
     }
 
@@ -65,6 +75,7 @@ public static class SettingsManager
         {
             Settings.WindowHook = value;
             SaveSettings();
+            NotifyStaticPropertyChanged();
         }
     }
 
@@ -75,6 +86,7 @@ public static class SettingsManager
         {
             Settings.ReuseTabs = value;
             SaveSettings();
+            NotifyStaticPropertyChanged();
         }
     }
 
