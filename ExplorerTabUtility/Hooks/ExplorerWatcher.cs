@@ -6,6 +6,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using ExplorerTabUtility.Helpers;
 using ExplorerTabUtility.Interop;
@@ -28,6 +29,7 @@ public class ExplorerWatcher : IHook
     private CancellationTokenSource? _processMonitorCts;
     private int _disposedFlag;
     private nint _mainWindowHandle;
+    private readonly ConcurrentDictionary<nint, byte> _processedHWnds = new();
     private readonly DualKeyDictionary<InternetExplorer, nint?, WindowInfo> _windowEntryDict = [];
     private readonly List<WindowRecord> _closedWindows = new();
     private readonly object _windowEntryDictLock = new(), _closedWindowsLock = new();
@@ -309,12 +311,25 @@ public class ExplorerWatcher : IHook
             // Will throw if there is no further history
         }
     }
+
+    private void PreventWindowHiding(nint hWnd)
+    {
+        if (_processedHWnds.TryAdd(hWnd, 0))
+        {
+            // Schedule removal after a short delay
+            _ = Task.Delay(7_000).ContinueWith(t => _processedHWnds.TryRemove(hWnd, out _), TaskScheduler.Default);
+        }
+    }
     private void OnWindowShown(nint hWinEventHook, uint eventType, nint hWnd, int idObject, int idChild, uint dwEventThread, uint dWmsEventTime)
     {
         if (!_isForcingTabs || idObject != 0 || idChild != 0) return;
+        
+        // Check if the hWnd was processed by OnShellWindowRegistered
+        if (_processedHWnds.TryRemove(hWnd, out _)) return;
+        
         if (!WinApi.IsWindowHasClassName(hWnd, "CabinetWClass")) return;
 
-        if (_windowEntryDict.Count < 2) return;
+        if (_windowEntryDict.Count < 2 || Helper.IsCtrlShiftDown()) return;
         Helper.HideWindow(hWnd, SettingsManager.HaveThemeIssue);
     }
     private InternetExplorer? GetRecentlyCreatedWindow(out WindowInfo? windowInfo)
@@ -348,6 +363,8 @@ public class ExplorerWatcher : IHook
         nint hWnd = 0;
         try
         {
+            var shouldOpenAsWindow = Helper.IsCtrlShiftDown();
+
             WindowInfo windowInfo = null!;
             var window = await Helper.DoUntilNotDefaultAsync(() => GetRecentlyCreatedWindow(out windowInfo!), 2_000, 40).ConfigureAwait(false);
             if (window == null) return;
@@ -355,6 +372,14 @@ public class ExplorerWatcher : IHook
             _ = GetTabHandle(window);
 
             hWnd = new IntPtr(window.HWND);
+            
+            if (shouldOpenAsWindow)
+            {
+                PreventWindowHiding(hWnd);
+                HookWindowEvents(window, windowInfo);
+                return;
+            }
+            
             var location = GetLocation(window);
 
             //Control Panel
@@ -372,6 +397,8 @@ public class ExplorerWatcher : IHook
 
             if (shouldReopenAsTab)
                 Helper.HideWindow(hWnd, SettingsManager.HaveThemeIssue);
+            else
+                PreventWindowHiding(hWnd);
 
             // Check if it is a detached tab
             var isRecentlyClosed = TryGetRecentlyClosedWindow(location, out var closedWindow);
@@ -411,7 +438,7 @@ public class ExplorerWatcher : IHook
                     Helper.UpdateWindowLayered(hWnd, remove: true);
 
                 // OnWindowShown might fire after ShellWindowRegistered and hide it again, keep the cache, wait a bit, then remove it.
-                _ = Task.Delay(3000).ContinueWith(t => Helper.HiddenWindows.TryRemove(hWnd, out _));
+                _ = Task.Delay(3000).ContinueWith(t => Helper.HiddenWindows.TryRemove(hWnd, out _), TaskScheduler.Default);
             }
         }
     }

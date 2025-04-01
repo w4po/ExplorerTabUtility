@@ -19,6 +19,8 @@ namespace ExplorerTabUtility.Helpers;
 
 public static class Helper
 {
+    private static int _lastCtrlShiftCheckAt;
+    private static bool _lastCtrlShiftCheckValue;
     public static readonly ConcurrentDictionary<nint, RECT?> HiddenWindows = new();
 
     public static Task DoDelayedBackgroundAsync(Action action, int delayMs = 2_000, CancellationToken cancellationToken = default)
@@ -391,6 +393,18 @@ public static class Helper
         return true;
     }
 
+    public static bool IsCtrlShiftDown()
+    {
+        if (_lastCtrlShiftCheckValue && Environment.TickCount - _lastCtrlShiftCheckAt < 1_000)
+            return true;
+        
+        _lastCtrlShiftCheckValue =
+            (KeyboardSimulator.IsKeyPressed((int)VirtualKey.LeftControl) || KeyboardSimulator.IsKeyPressed((int)VirtualKey.RightControl)) &&
+               (KeyboardSimulator.IsKeyPressed((int)VirtualKey.LeftShift) || KeyboardSimulator.IsKeyPressed((int)VirtualKey.RightShift));
+        
+        _lastCtrlShiftCheckAt = Environment.TickCount;
+        return _lastCtrlShiftCheckValue;
+    }
     public static void BypassWinForegroundRestrictions()
     {
         // Simulate a key press to bypass the Foreground restriction
