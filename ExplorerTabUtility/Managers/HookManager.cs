@@ -193,6 +193,7 @@ public sealed class HookManager
     public void Dispose()
     {
         _keyboardHook.Dispose();
+        _mouseHook.Dispose();
         _windowHook.Dispose();
     }
 }
