@@ -385,6 +385,7 @@ public class ExplorerWatcher : IHook
             //Control Panel
             if (location.StartsWith("shell:::{26EE0668-A00A-44D7-9371-BEB064C98683}"))
             {
+                PreventWindowHiding(hWnd);
                 RemoveWindowAndUnhookEvents(window, windowInfo);
                 return;
             }
@@ -433,7 +434,8 @@ public class ExplorerWatcher : IHook
         {
             if (showAgain)
             {
-                Helper.ShowWindow(hWnd, removeCache: false);
+                await Helper.DoUntilNotDefaultAsync(() => Helper.ShowWindow(hWnd, removeCache: false), 1_500, 200).ConfigureAwait(false);
+
                 if (!SettingsManager.HaveThemeIssue)
                     Helper.UpdateWindowLayered(hWnd, remove: true);
 
