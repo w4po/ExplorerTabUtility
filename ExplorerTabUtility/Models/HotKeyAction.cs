@@ -19,6 +19,8 @@ public enum HotKeyAction
     NavigateBack,
     [Description("Navigate up.")]
     NavigateUp,
+    [Description("Navigate forward.")]
+    NavigateForward,
     [Description("Mark the window that will receive the new tabs.")]
     SetTargetWindow,
     [Description("Toggle the window hook.")]

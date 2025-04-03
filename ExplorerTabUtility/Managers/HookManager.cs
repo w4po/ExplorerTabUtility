@@ -68,11 +68,15 @@ public sealed class HookManager
                 break;
 
             case HotKeyAction.NavigateBack:
-                NavigateBack(e.ForegroundWindow, e.MousePosition);
+                NavigateBackForward(e.ForegroundWindow, e.MousePosition, isForward: false);
                 break;
 
             case HotKeyAction.NavigateUp:
                 NavigateUp(e.ForegroundWindow, e.MousePosition);
+                break;
+            
+            case HotKeyAction.NavigateForward:
+                NavigateBackForward(e.ForegroundWindow, e.MousePosition, isForward: true);
                 break;
 
             case HotKeyAction.ToggleReuseTabs:
@@ -115,14 +119,14 @@ public sealed class HookManager
         if (SettingsManager.IsMouseHookActive) StartMouseHook();
         if (SettingsManager.IsKeyboardHookActive) StartKeyboardHook();
     }
-    private void NavigateBack(nint foregroundWindow, Point? mousePosition)
+    private void NavigateBackForward(nint foregroundWindow, Point? mousePosition, bool isForward)
     {
         if (foregroundWindow == 0) return;
 
         if (mousePosition is not { } position)
-            _windowHook.NavigateBack(foregroundWindow);
+            _windowHook.NavigateBackForward(foregroundWindow, isForward);
         else if (Helper.IsExplorerEmptySpace(position))
-            KeyboardSimulator.ModifiedKeyStroke(VirtualKey.Alt, VirtualKey.Left);
+            KeyboardSimulator.ModifiedKeyStroke(VirtualKey.Alt, isForward ? VirtualKey.Right : VirtualKey.Left);
     }
     private void NavigateUp(nint foregroundWindow, Point? mousePosition)
     {

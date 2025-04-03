@@ -296,7 +296,7 @@ public class ExplorerWatcher : IHook
         if (Helper.IsFileExplorerWindow(windowHandle))
             _mainWindowHandle = windowHandle;
     }
-    public void NavigateBack(nint windowHandle)
+    public void NavigateBackForward(nint windowHandle, bool isForward)
     {
         var activeTabHandle = GetActiveTabHandle(windowHandle);
         if (activeTabHandle == 0) return;
@@ -304,7 +304,8 @@ public class ExplorerWatcher : IHook
         var window = GetWindowByTabHandle(activeTabHandle);
         try
         {
-            window?.GoBack();
+            if (isForward) window?.GoForward();
+            else window?.GoBack();
         }
         catch
         {
