@@ -101,7 +101,7 @@ public class ProfileManager
     public void SaveProfiles()
     {
         // Remove profiles that don't have any hotkeys
-        _tempProfiles.RemoveAll(p => p.HotKeys == null || p.HotKeys.Length == 0);
+        _tempProfiles.Where(p => p.HotKeys == null || p.HotKeys.Length == 0).ToList().ForEach(RemoveProfile);
 
         // Update saved profiles
         _savedProfiles.Clear();

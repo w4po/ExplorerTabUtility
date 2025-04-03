@@ -1,7 +1,10 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
+using System.Text.Json.Serialization;
+using ExplorerTabUtility.Helpers;
 
 namespace ExplorerTabUtility.Models;
 
+[JsonConverter(typeof(HotKeyActionJsonConverter))]
 public enum HotKeyAction
 {
     [Description("Open a new tab/window with the specified location.")]
@@ -10,6 +13,12 @@ public enum HotKeyAction
     Duplicate,
     [Description("Reopen the last closed location.")]
     ReopenClosed,
+    [Description("Open tab search popup to find and switch between tabs.")]
+    TabSearch,
+    [Description("Navigate back.")]
+    NavigateBack,
+    [Description("Navigate up.")]
+    NavigateUp,
     [Description("Mark the window that will receive the new tabs.")]
     SetTargetWindow,
     [Description("Toggle the window hook.")]
@@ -18,10 +27,6 @@ public enum HotKeyAction
     ToggleReuseTabs,
     [Description("Show/Hide the app.")]
     ToggleVisibility,
-    [Description("Navigate back.")]
-    NavigateBack,
-    [Description("Navigate up.")]
-    NavigateUp,
     [Description("Detach the current tab.")]
     DetachTab,
     [Description("Snap the current window to the right.")]
@@ -31,7 +36,5 @@ public enum HotKeyAction
     [Description("Snap the current window to the top.")]
     SnapUp,
     [Description("Snap the current window to the bottom.")]
-    SnapDown,
-    [Description("Open tab search popup to find and switch between tabs.")]
-    TabSearch
+    SnapDown
 }

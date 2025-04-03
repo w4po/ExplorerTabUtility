@@ -114,7 +114,7 @@ public partial class HotKeyProfileControl : UserControl
         DisposeKeybindingHooks();
 
         // If the name is empty, set it to the hotkey.
-        if (string.IsNullOrEmpty(TxtName.Text))
+        if (string.IsNullOrWhiteSpace(TxtName.Text))
             TxtName.Text = TxtHotKeys.Text;
     }
 
@@ -290,6 +290,11 @@ public partial class HotKeyProfileControl : UserControl
                 CbOpenAsTab.IsEnabled = false;
                 break;
         }
+        
+        // If the name is empty or is an exact match of an action, set it to the hotkey.
+        var isExactMatch = Enum.GetNames(typeof(HotKeyAction)).Any(a => a == TxtName.Text);
+        if (string.IsNullOrWhiteSpace(TxtName.Text) || isExactMatch)
+            TxtName.Text = selectedAction.ToString();
     }
 
     private static HotKeyAction[] GetAllowedActions(HotkeyScope scope)
@@ -299,14 +304,14 @@ public partial class HotKeyProfileControl : UserControl
             HotkeyScope.Global =>
             [
                 HotKeyAction.Open,
+                HotKeyAction.TabSearch,
                 HotKeyAction.ToggleWinHook,
                 HotKeyAction.ToggleReuseTabs,
                 HotKeyAction.ToggleVisibility,
                 HotKeyAction.SnapRight,
                 HotKeyAction.SnapLeft,
                 HotKeyAction.SnapUp,
-                HotKeyAction.SnapDown,
-                HotKeyAction.TabSearch
+                HotKeyAction.SnapDown
             ],
             _ => Enum.GetValues(typeof(HotKeyAction))
                 .OfType<HotKeyAction>()
