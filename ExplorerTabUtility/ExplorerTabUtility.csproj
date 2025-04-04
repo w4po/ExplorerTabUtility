@@ -20,6 +20,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="ConfigureAwait.Fody" Version="3.3.2" PrivateAssets="all"/>
+        <PackageReference Include="Fody" Version="6.9.2" PrivateAssets="all"/>
         <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="2.0.1"/>
         <PackageReference Include="Autoupdater.NET.Extended.Markdown" Version="1.9.5.2"/>
         <PackageReference Include="H.Hooks" Version="1.7.0"/>
@@ -52,7 +54,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Resource Include="Icon.ico" />
+        <Resource Include="Icon.ico"/>
     </ItemGroup>
 
 </Project>

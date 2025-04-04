@@ -48,19 +48,19 @@ public sealed class HookManager
         switch (e.Profile.Action)
         {
             case HotKeyAction.Open:
-                await _windowHook.Open(e.Profile.Path, e.Profile.IsAsTab, e.ForegroundWindow, e.Profile.Delay).ConfigureAwait(false);
+                await _windowHook.Open(e.Profile.Path, e.Profile.IsAsTab, e.ForegroundWindow, e.Profile.Delay);
                 break;
 
             case HotKeyAction.Duplicate:
-                await _windowHook.DuplicateActiveTab(e.ForegroundWindow, e.Profile.IsAsTab).ConfigureAwait(false);
+                await _windowHook.DuplicateActiveTab(e.ForegroundWindow, e.Profile.IsAsTab);
                 break;
 
             case HotKeyAction.ReopenClosed:
-                await _windowHook.ReopenClosedTab(e.Profile.IsAsTab, e.ForegroundWindow).ConfigureAwait(false);
+                await _windowHook.ReopenClosedTab(e.Profile.IsAsTab, e.ForegroundWindow);
                 break;
 
             case HotKeyAction.DetachTab:
-                await _windowHook.DetachCurrentTab(e.ForegroundWindow).ConfigureAwait(false);
+                await _windowHook.DetachCurrentTab(e.ForegroundWindow);
                 break;
 
             case HotKeyAction.SetTargetWindow:
@@ -144,7 +144,7 @@ public sealed class HookManager
         if (snapKey == VirtualKey.None) return;
 
         if (delay > 0)
-            await Task.Delay(delay).ConfigureAwait(false);
+            await Task.Delay(delay);
 
         var inputs = new List<INPUT>();
         // Remove any currently pressed modifiers (Ctrl, Shift, Alt, Win)

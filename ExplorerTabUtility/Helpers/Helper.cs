@@ -27,7 +27,7 @@ public static class Helper
     {
         return Task.Run(async () =>
         {
-            await Task.Delay(delayMs, cancellationToken).ConfigureAwait(false);
+            await Task.Delay(delayMs, cancellationToken);
             action();
         }, cancellationToken);
     }
@@ -35,16 +35,16 @@ public static class Helper
     {
         return Task.Run(async () =>
         {
-            await Task.Delay(delayMs, cancellationToken).ConfigureAwait(false);
-            await action().ConfigureAwait(false);
+            await Task.Delay(delayMs, cancellationToken);
+            await action();
         }, cancellationToken);
     }
     public static Task<T> DoDelayedBackgroundAsync<T>(Func<Task<T>> action, int delayMs = 2_000, CancellationToken cancellationToken = default)
     {
         return Task.Run(async () =>
         {
-            await Task.Delay(delayMs, cancellationToken).ConfigureAwait(false);
-            return await action().ConfigureAwait(false);
+            await Task.Delay(delayMs, cancellationToken);
+            return await action();
         }, cancellationToken);
     }
 
@@ -132,11 +132,11 @@ public static class Helper
 
         while (!cancellationToken.IsCancellationRequested && !IsTimeUp(startTicks, timeMs))
         {
-            await action().ConfigureAwait(false);
+            await action();
             if (predicate())
                 return;
 
-            await Task.Delay(sleepMs).ConfigureAwait(false);
+            await Task.Delay(sleepMs);
         }
     }
     public static async Task<T> DoUntilConditionAsync<T>(Func<T> action, Predicate<T> predicate, int timeMs = 500, int sleepMs = 20, CancellationToken cancellationToken = default)
@@ -149,7 +149,7 @@ public static class Helper
             if (predicate(result))
                 return result;
 
-            await Task.Delay(sleepMs).ConfigureAwait(false);
+            await Task.Delay(sleepMs);
         }
 
         return action();
@@ -160,14 +160,14 @@ public static class Helper
 
         while (!cancellationToken.IsCancellationRequested && !IsTimeUp(startTicks, timeMs))
         {
-            var result = await action().ConfigureAwait(false);
+            var result = await action();
             if (predicate(result))
                 return result;
 
-            await Task.Delay(sleepMs).ConfigureAwait(false);
+            await Task.Delay(sleepMs);
         }
 
-        return await action().ConfigureAwait(false);
+        return await action();
     }
     public static async Task DoIfConditionAsync(Func<Task> action, Func<bool> predicate, bool justOnce = false, int timeMs = 500, int sleepMs = 20, CancellationToken cancellationToken = default)
     {
@@ -177,11 +177,11 @@ public static class Helper
         {
             if (predicate())
             {
-                await action().ConfigureAwait(false);
+                await action();
 
                 if (justOnce) return;
             }
-            await Task.Delay(sleepMs).ConfigureAwait(false);
+            await Task.Delay(sleepMs);
         }
     }
 
@@ -459,7 +459,7 @@ public static class Helper
         try
         {
             using var client = new System.Net.Http.HttpClient();
-            var svgContent = await client.GetStringAsync("https://cdn.jsdelivr.net/gh/w4po/sponsors/sponsors.svg").ConfigureAwait(false);
+            var svgContent = await client.GetStringAsync("https://cdn.jsdelivr.net/gh/w4po/sponsors/sponsors.svg");
 
             var supporters = new List<SupporterInfo>();
             var xmlDoc = new System.Xml.XmlDocument();
