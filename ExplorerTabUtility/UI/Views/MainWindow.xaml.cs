@@ -39,7 +39,7 @@ public partial class MainWindow : Window
         CbThemeIssue.IsChecked = SettingsManager.HaveThemeIssue;
         CbHideTrayIcon.IsChecked = SettingsManager.IsTrayIconHidden;
         CbAutoSaveProfiles.IsChecked = SettingsManager.SaveProfilesOnExit;
-        CbSaveClosedWindows.IsChecked = SettingsManager.SaveClosedWindows;
+        CbSaveClosedHistory.IsChecked = SettingsManager.SaveClosedHistory;
         UpdateTrayIconVisibility(false);
 
         if (SettingsManager.AutoUpdate)
@@ -64,8 +64,8 @@ public partial class MainWindow : Window
         BtnSave.Click += BtnSave_Click;
         CbAutoSaveProfiles.Checked += CbAutoSaveProfiles_CheckedChanged;
         CbAutoSaveProfiles.Unchecked += CbAutoSaveProfiles_CheckedChanged;
-        CbSaveClosedWindows.Checked += CbSaveClosedWindows_CheckedChanged;
-        CbSaveClosedWindows.Unchecked += CbSaveClosedWindows_CheckedChanged;
+        CbSaveClosedHistory.Checked += CbSaveClosedHistory_CheckedChanged;
+        CbSaveClosedHistory.Unchecked += CbSaveClosedHistory_CheckedChanged;
         CbAutoUpdate.Checked += CbAutoUpdate_CheckedChanged;
         CbAutoUpdate.Unchecked += CbAutoUpdate_CheckedChanged;
         CbThemeIssue.Checked += CbThemeIssue_CheckedChanged;
@@ -172,9 +172,9 @@ public partial class MainWindow : Window
         SettingsManager.HaveThemeIssue = CbThemeIssue.IsChecked ?? false;
     }
 
-    private void CbSaveClosedWindows_CheckedChanged(object? _, RoutedEventArgs __)
+    private void CbSaveClosedHistory_CheckedChanged(object? _, RoutedEventArgs __)
     {
-        SettingsManager.SaveClosedWindows = CbSaveClosedWindows.IsChecked ?? false;
+        SettingsManager.SaveClosedHistory = CbSaveClosedHistory.IsChecked ?? false;
     }
 
     private void CbHideTrayIcon_CheckedChanged(object? _, RoutedEventArgs __) => UpdateTrayIconVisibility(true);

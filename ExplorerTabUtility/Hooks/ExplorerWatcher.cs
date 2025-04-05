@@ -51,7 +51,7 @@ public class ExplorerWatcher : IHook
             throw new InvalidOperationException("Only one instance of ExplorerWatcher is allowed at a time.");
         _created = true;
 
-        if (SettingsManager.SaveClosedWindows && SettingsManager.ClosedWindows != null)
+        if (SettingsManager.SaveClosedHistory && SettingsManager.ClosedWindows != null)
             _closedWindows.AddRange(SettingsManager.ClosedWindows);
 
         _syncContext = SynchronizationContext.Current!;
@@ -86,9 +86,9 @@ public class ExplorerWatcher : IHook
             result.AddRange(
                 _windowEntryDict.Keys.Select(ie => new WindowRecord(GetLocation(ie), new IntPtr(ie.HWND), GetSelectedItems(ie), ie.LocationName)));
         
-        // Add closed windows
+        // Add closed windows in reverse order (last closed on top)
         lock (_closedWindowsLock)
-            result.AddRange(_closedWindows);
+            result.AddRange(_closedWindows.AsEnumerable().Reverse());
         
         return result.GroupBy(w => w.Location).Select(g => g.First()).ToList();
     }
@@ -902,14 +902,13 @@ public class ExplorerWatcher : IHook
         Marshal.ReleaseComObject(_shellWindows);
 
         _shellPathComparer.Dispose();
-
         _staTaskScheduler.Dispose();
     }
 
     public void Dispose()
     {
-        SettingsManager.ClosedWindows = SettingsManager.SaveClosedWindows
-            ? _closedWindows.AsEnumerable().Reverse().Take(100).ToArray()
+        SettingsManager.ClosedWindows = SettingsManager.SaveClosedHistory
+            ? _closedWindows.Skip(Math.Max(0, _closedWindows.Count - 100)).ToArray() // TakeLast 100
             : null;
 
         DisposeShellObjects();

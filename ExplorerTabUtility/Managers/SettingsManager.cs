@@ -160,7 +160,7 @@ public static class SettingsManager
         }
     }
 
-    public static bool SaveClosedWindows
+    public static bool SaveClosedHistory
     {
         get => Settings.SaveClosedWindows;
         set
