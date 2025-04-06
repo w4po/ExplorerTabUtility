@@ -33,6 +33,7 @@ public sealed class HookManager
         profileManager.KeybindingsHookStopped += KeybindingStopped;
         _keyboardHook.OnHotKeyProfileTriggered += OnHotKeyProfileTriggered;
         _mouseHook.OnHotKeyProfileTriggered += OnHotKeyProfileTriggered;
+        System.Windows.Application.Current.SessionEnding += (_, _) => Dispose();
     }
 
     public void StartMouseHook() => ChangeHookStatus(_mouseHook, true);

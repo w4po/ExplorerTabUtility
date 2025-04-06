@@ -40,6 +40,7 @@ public partial class MainWindow : Window
         CbHideTrayIcon.IsChecked = SettingsManager.IsTrayIconHidden;
         CbAutoSaveProfiles.IsChecked = SettingsManager.SaveProfilesOnExit;
         CbSaveClosedHistory.IsChecked = SettingsManager.SaveClosedHistory;
+        CbRestorePreviousWindows.IsChecked = SettingsManager.RestorePreviousWindows;
         UpdateTrayIconVisibility(false);
 
         if (SettingsManager.AutoUpdate)
@@ -66,6 +67,8 @@ public partial class MainWindow : Window
         CbAutoSaveProfiles.Unchecked += CbAutoSaveProfiles_CheckedChanged;
         CbSaveClosedHistory.Checked += CbSaveClosedHistory_CheckedChanged;
         CbSaveClosedHistory.Unchecked += CbSaveClosedHistory_CheckedChanged;
+        CbRestorePreviousWindows.Checked += CbRestorePreviousWindows_CheckedChanged;
+        CbRestorePreviousWindows.Unchecked += CbRestorePreviousWindows_CheckedChanged;
         CbAutoUpdate.Checked += CbAutoUpdate_CheckedChanged;
         CbAutoUpdate.Unchecked += CbAutoUpdate_CheckedChanged;
         CbThemeIssue.Checked += CbThemeIssue_CheckedChanged;
@@ -175,6 +178,11 @@ public partial class MainWindow : Window
     private void CbSaveClosedHistory_CheckedChanged(object? _, RoutedEventArgs __)
     {
         SettingsManager.SaveClosedHistory = CbSaveClosedHistory.IsChecked ?? false;
+    }
+
+    private void CbRestorePreviousWindows_CheckedChanged(object? _, RoutedEventArgs __)
+    {
+        SettingsManager.RestorePreviousWindows = CbRestorePreviousWindows.IsChecked ?? false;
     }
 
     private void CbHideTrayIcon_CheckedChanged(object? _, RoutedEventArgs __) => UpdateTrayIconVisibility(true);

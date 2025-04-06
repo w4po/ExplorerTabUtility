@@ -4,7 +4,7 @@ using ExplorerTabUtility.Helpers;
 
 namespace ExplorerTabUtility.Models;
 
-public class WindowRecord(string location, nint handle = 0, string[]? selectedItems = null, string name = "")
+public class WindowRecord(string location, nint handle = 0, string[]? selectedItems = null, string name = "", bool restore = false)
 {
     [JsonConverter(typeof(IntPtrConverter))]
     public nint Handle { get; set; } = handle;
@@ -12,8 +12,9 @@ public class WindowRecord(string location, nint handle = 0, string[]? selectedIt
     public string Location { get; set; } = location;
     public string[]? SelectedItems { get; set; } = selectedItems;
     public long CreatedAt { get; set; } = Environment.TickCount;
+    public bool Restore { get; set; } = restore;
 
-    [JsonIgnore] public string DisplayLocation => Location.Replace(@"file:\\\", "");
+    [JsonIgnore] public string DisplayLocation => Uri.UnescapeDataString(Location.Replace(@"file:\\\", ""));
 
     [JsonConstructor]
     private WindowRecord() : this(string.Empty)

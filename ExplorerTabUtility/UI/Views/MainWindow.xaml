@@ -217,6 +217,9 @@
                                             <CheckBox x:Name="CbSaveClosedHistory" Content="Save closed history"
                                                       Style="{StaticResource CustomCheckBoxStyle}"
                                                       ToolTip="Save closed windows history so you can reopen them later (ReopenClosed, Tab search)" />
+                                            <CheckBox x:Name="CbRestorePreviousWindows" Content="Restore previous windows"
+                                                      Style="{StaticResource CustomCheckBoxStyle}"
+                                                      ToolTip="Restore previously opened windows after restart or crash" />
                                             <CheckBox x:Name="CbHideTrayIcon" Content="Hide tray icon"
                                                       Style="{StaticResource CustomCheckBoxStyle}"
                                                       ToolTip="Hide the system tray icon" />

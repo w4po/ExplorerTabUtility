@@ -170,6 +170,16 @@ public static class SettingsManager
         }
     }
 
+    public static bool RestorePreviousWindows
+    {
+        get => Settings.RestorePreviousWindows;
+        set
+        {
+            Settings.RestorePreviousWindows = value;
+            SaveSettings();
+        }
+    }
+
     public static WindowRecord[]? ClosedWindows
     {
         get => Settings.ClosedWindows;
@@ -209,5 +219,6 @@ internal class AppSettings
     public bool AutoUpdate { get; set; }
     public string HotKeyProfiles { get; set; } = Constants.DefaultHotKeyProfiles;
     public bool SaveClosedWindows { get; set; }
+    public bool RestorePreviousWindows { get; set; }
     public WindowRecord[]? ClosedWindows { get; set; }
 }
