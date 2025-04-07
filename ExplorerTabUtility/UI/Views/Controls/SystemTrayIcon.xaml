@@ -89,7 +89,7 @@
                           Name="AddToStartup"
                           StaysOpenOnClick="True"
                           IsCheckable="True"
-                          IsChecked="{Binding Source={x:Static managers:RegistryManager.IsInStartup}, Mode=OneTime}"
+                          IsChecked="{Binding Source={x:Static managers:RegistryManager.IsStartupEnabled}, Mode=OneTime}"
                           ToolTip="Automatically start Explorer Tab Utility when Windows starts">
                     <MenuItem.Icon>
                         <TextBlock Text="&#xE7F4;" FontSize="14" />

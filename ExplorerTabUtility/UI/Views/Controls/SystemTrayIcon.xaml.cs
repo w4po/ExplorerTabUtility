@@ -175,7 +175,7 @@ public partial class SystemTrayIcon : UserControl, IDisposable
     private void ToggleStartup()
     {
         RegistryManager.ToggleStartup();
-        AddToStartup.IsChecked = RegistryManager.IsInStartup;
+        AddToStartup.IsChecked = RegistryManager.IsStartupEnabled;
     }
 
     private void PopulateHookProfiles(MenuItem parent, IEnumerable<HotKeyProfile> profiles, bool autoCheckParent = true)
