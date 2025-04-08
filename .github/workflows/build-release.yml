@@ -36,13 +36,7 @@ jobs:
       - name: Build Project
         run: |
           $outputDir = "../publish/${{ matrix.framework }}/${{ matrix.arch }}"
-          if ("${{ matrix.framework }}" -eq "net9.0-windows") {
-            # .NET 9.0 build
-            msbuild "${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}.csproj" /restore /t:Publish /p:Configuration=Release /p:TargetFramework=${{ matrix.framework }} /p:RuntimeIdentifier=win-${{ matrix.arch }} /p:PublishDir=$outputDir /p:DebugType=none /p:PublishSingleFile=true
-          } else {
-            # .NET Framework 4.8.1 build
-            msbuild "${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}.csproj" /restore /t:Publish /p:Configuration=Release /p:TargetFramework=${{ matrix.framework }} /p:RuntimeIdentifier=win-${{ matrix.arch }} /p:PublishDir=$outputDir /p:DebugType=none
-          }
+          msbuild "${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}.csproj" /restore /t:Publish /p:Configuration=Release /p:TargetFramework=${{ matrix.framework }} /p:RuntimeIdentifier=win-${{ matrix.arch }} /p:PublishDir=$outputDir /p:DebugType=none
         shell: pwsh
       
       - name: Zip Artifacts
@@ -75,15 +69,32 @@ jobs:
 
   create-release:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     permissions:
       contents: write       # Required to create releases
       pull-requests: read   # Required to read PRs for changelog generation
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
+          merge-multiple: true
           path: artifacts
+      
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+        shell: pwsh
+      
+      - name: Build Installer
+        run: |          
+          # Run Inno Setup Compiler with output directly to artifacts folder
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
+            /DMyAppVersion="${{ github.ref_name }}" `
+            /DSourceDir="..\artifacts" `
+            "installers\installer.iss"
+        shell: pwsh
         
       - name: Generate Changelog
         id: generate_changelog
@@ -126,5 +137,7 @@ jobs:
           body: |
             ${{ steps.generate_changelog.outputs.changelog }}
             
-            **Note:** If you are not sure, then you probably want [${{ env.PROJECT_NAME }}_${{ github.ref_name }}_x64_NetFW4.8.1.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ env.PROJECT_NAME }}_${{ github.ref_name }}_x64_NetFW4.8.1.zip).
-          files: artifacts/**/*.zip
+            **Note:** If you are not sure, then you probably want: [${{ env.PROJECT_NAME }}_${{ github.ref_name }}_Setup.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ env.PROJECT_NAME }}_${{ github.ref_name }}_Setup.exe)
+          files: |
+            artifacts/*.zip
+            artifacts/*.exe
