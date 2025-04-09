@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <UseWPF>True</UseWPF>
         <ApplicationIcon>Icon.ico</ApplicationIcon>
-        <Version>2.3.0</Version>
+        <Version>2.4.0</Version>
         <LangVersion>latest</LangVersion>
         <Title>Explorer Tab Utility</Title>
         <Authors>w4po</Authors>

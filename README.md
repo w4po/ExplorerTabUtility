@@ -56,9 +56,20 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
 - Reopen previously closed tabs/windows
 - Choose whether to reopen as a tab or new window (toggle `Tab` option)
 - Restores the exact location and selected items
+- History is saved across application restarts (enable "Save closed history" in settings)
 
 **See it in action:**
 ![Reopen closed tabs](https://cdn.jsdelivr.net/gh/w4po/ExplorerTabUtility@master/Assets/ReopenClosedTab.gif)
+</details>
+
+<details>
+<summary>🔄 Restore Previous Windows</summary>
+
+- Automatically restore previously opened windows if File-Explorer restart/crash or system reboot
+- Configurable via "Restore previous windows" setting
+- Confirmation dialog allows you to choose whether to restore windows on first launch
+
+![Restore Previous Windows](https://cdn.jsdelivr.net/gh/w4po/ExplorerTabUtility@master/Assets/RestorePrevious.png)
 </details>
 
 <details>
@@ -78,9 +89,9 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
 </details>
 
 <details>
-<summary>⬅️ Navigate Back & Up</summary>
+<summary>⬅️ Navigate Back & Forward</summary>
 
-- Navigate back/up in File Explorer using:
+- Navigate back/forward/up in File Explorer using:
   - Keyboard shortcuts (customizable)
   - Mouse clicks on any empty space in the folder
 - Perfect for quick navigation between directories
@@ -123,6 +134,14 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
 </details>
 
 <details>
+<summary>🪟 Force New Window with Ctrl+Shift</summary>
+
+- Hold Ctrl+Shift while opening a location to force it to open as a new window
+- Temporarily overrides the window hook and tab reuse settings
+- Perfect for when you need a separate window without disabling the tab functionality
+</details>
+
+<details>
 <summary>⚡ Performance & Reliability</summary>
 
 - Lightweight and resource-efficient
@@ -138,7 +157,7 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
     winget install w4po.ExplorerTabUtility
     ```
     ```powershell
-    choco install explorertabutility
+    choco install explorertabutility --version=2.4.0
     ```
 2. Run the application
 3. Look for the tray icon and you're ready to go!
@@ -154,8 +173,10 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
 <details>
 <summary>🔧 General Settings</summary>
 
-- **WindowHook**: Enable/disable new windows being converted to tabs
-- **ReuseTabs**: Enable/disable reusing existing tabs instead of creating new ones
+- **Window Hook**: Enable/disable automatic window-to-tab conversion
+- **Reuse Tabs**: Switch to existing tabs instead of opening duplicates
+- **Keyboard Hook**: Enable/disable keyboard shortcuts
+- **Mouse Hook**: Enable/disable mouse navigation features
 - **Startup**: Configure automatic startup with Windows
 - **Settings Persistence**:
   * Your settings are stored in a JSON file located in your AppData folder:
@@ -170,7 +191,8 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
 
 - **Auto update**: Automatically check for updates on startup to ensure you're always using the latest version
 - **I have theme issues**: Use an alternative window hiding method that preserves your custom File Explorer theme. Enable this if you experience theme-related issues
-- **Save closed windows**: Save recently closed windows when exiting the application and restore them on the next startup, allowing you to continue where you left off
+- **Save closed history**: Save recently closed windows for reopening later (ReopenClosed, Tab Search)
+- **Restore previous windows**: Restore previously opened windows after restart or crash
 - **Hide tray icon**: Hide the system tray icon for a cleaner taskbar experience.
   * You must first configure a hotkey with the `ToggleVisibility` action before enabling this option
 
@@ -189,30 +211,28 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
 ### Profile Settings
 Each profile contains the following settings:
 
-1. **Basic Settings**
-   - Profile Name
-   - Hotkey Combination (set by focusing the input field and pressing desired keys)
-   - Scope: Global or Explorer-only (triggers only when File Explorer is focused)
-
-2. **Action Settings**
+1. **Basic Configuration**
+   - Hotkey: Set keyboard shortcut (supports modifier keys)
+   - Scope: Global (system-wide) or Explorer (only in File Explorer)
    - Action Type:
-     - `Open`: Open a new tab (optionally with specified path)
-     - `Duplicate`: Duplicate current tab
-     - `ReopenClosed`: Reopen last closed tab
-     - `TabSearch`: Open the tab search popup for quick navigation
-     - `SetTargetWindow`: Set current Explorer window as the destination for new tabs
-     - `ToggleWinHook`: Toggle window hook
-     - `ToggleReuseTabs`: Toggle tab reuse
-     - `ToggleVisibility`: Toggle form visibility
-     - `NavigateBack`: Navigate back in the current Explorer window
-     - `NavigateUp`: Navigate up one directory level in the current Explorer window
+     - `Open`: Open a specific location
+     - `Duplicate`: Duplicate the current tab
+     - `ReopenClosed`: Reopen the last closed location
+     - `TabSearch`: Open the tab search/switcher popup
+     - `NavigateBack`: Navigate back in the current tab
+     - `NavigateForward`: Navigate forward in the current tab
+     - `NavigateUp`: Navigate up one directory level
+     - `SetTargetWindow`: Mark the current window as the target for new tabs
+     - `ToggleWinHook`: Toggle the window hook on/off
+     - `ToggleReuseTabs`: Toggle tab reuse on/off
+     - `ToggleVisibility`: Show/hide the main window
      - `DetachTab`: Detach the current tab to a new window
      - `Snap`: Snap the current window to the screen edges (right/left/top/bottom)
    - Path Field (for `Open` action)
      - Optional: Leave empty to open new tab
      - Supports multiple path formats (see Custom Path Navigation section)
 
-3. **Advanced Settings**
+2. **Advanced Settings**
    - Execution Delay: Slider to set delay before action execution
    - Key Handling: Toggle whether hotkeys are passed to other applications
    - Profile Deletion: Remove unwanted profiles
@@ -290,6 +310,29 @@ Each profile contains the following settings:
 - WPF (Windows Presentation Foundation) for modern UI
 </details>
 
+## 🗑️ Uninstallation
+
+The utility can be uninstalled in several ways depending on how you installed it:
+
+- **If you installed using the installer**: Use the standard Windows uninstaller
+  - Go to "Settings > Apps > Installed apps"
+  - Find "Explorer Tab Utility" and click "Uninstall"
+  - Or use Control Panel > Programs and Features
+  - Or run the uninstaller directly from the installation directory
+
+- **If you installed via winget**:
+  ```powershell
+  winget uninstall w4po.ExplorerTabUtility
+  ```
+
+- **If you installed via Chocolatey**:
+  ```powershell
+  choco uninstall explorertabutility
+  ```
+
+- **If you used the portable version**: Simply delete the application folder
+  - If you enabled the `Add to startup` option, make sure to disable it first before deletion
+
 ## Antivirus Detection
 
 > [!WARNING]
@@ -317,20 +360,6 @@ Alternatively, you can use PowerShell (Run as Administrator):
 ```powershell
 Add-MpPreference -ExclusionPath "PATH_TO_UTILITY_FOLDER"
 ```
-
-## 🗑️ Uninstallation
-
-The utility is portable and can be removed by simply deleting its folder. However:
-
-- If you enabled the `Add to startup` option, make sure to disable it first before deletion
-- If you installed via winget, run:
-  ```powershell
-  winget uninstall w4po.ExplorerTabUtility
-  ```
-- If you installed via Chocolatey, run:
-  ```powershell
-  choco uninstall explorertabutility
-  ```
 
 ## ℹ️ Notes
 
