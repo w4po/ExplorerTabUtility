@@ -3,8 +3,10 @@
   #define MyAppVersion "v1.0.0"
 #endif
 
-; Extract numeric version for VersionInfoVersion (remove 'v')
-#define MyAppNumericVersion StringChange(MyAppVersion, "v", "")
+; Extract numeric version for VersionInfoVersion (remove 'v' and any suffix after a dash)
+#define MyAppVersionWithoutV StringChange(MyAppVersion, "v", "")
+#define DashPos Pos("-", MyAppVersionWithoutV)
+#define MyAppNumericVersion (DashPos > 0) ? Copy(MyAppVersionWithoutV, 1, DashPos - 1) : MyAppVersionWithoutV
 
 #define MyAppPublisher "w4po"
 #define MyAppName "ExplorerTabUtility"

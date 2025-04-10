@@ -5,19 +5,18 @@ on:
     tags:
       - 'v*' # Triggers on tags like v1.3.0
   workflow_dispatch:
-    # Manual trigger for testing the workflow without creating a tag
     inputs:
       version:
         description: 'Version string to use (e.g., v1.0.0)'
         required: true
         type: string
-        default: 'v0.0.0-test'
+        default: 'v2.4.0-test'
 
 env:
   PROJECT_NAME: ExplorerTabUtility
   SIGNPATH_ORG_ID: c35b3bd9-3451-4e24-b4e0-332e901290bf
   SIGNPATH_PROJECT_SLUG: ExplorerTabUtility
-  SIGNPATH_POLICY_SLUG: test-signing  # TODO: Change for production
+  SIGNPATH_POLICY_SLUG: release-signing
   VERSION: ${{ github.event_name == 'push' && github.ref_name || inputs.version }}
 
 jobs:
@@ -87,19 +86,12 @@ jobs:
           path: ./artifacts
           merge-multiple: true
 
-      - name: Create signing bundle
-        run: |
-          mkdir -p ./signing-bundle
-          cp ./artifacts/*.zip ./signing-bundle/
-          zip -r ./all-artifacts-to-sign.zip ./signing-bundle
-        shell: bash
-
       - name: Upload signing bundle to GitHub
         id: upload-unsigned-bundle
         uses: actions/upload-artifact@v4
         with:
           name: unsigned-bundle
-          path: ./all-artifacts-to-sign.zip
+          path: ./artifacts/*.zip
 
       - name: Submit bundle for signing
         id: submit-signing
@@ -112,18 +104,9 @@ jobs:
           artifact-configuration-slug: multi-zip
           github-artifact-id: ${{ steps.upload-unsigned-bundle.outputs.artifact-id }}
           wait-for-completion: true
-          output-artifact-directory: './signed'
+          output-artifact-directory: './signed-output'
           parameters: |
             version: "${{ env.VERSION }}"
-
-      - name: Extract signed artifacts
-        run: |
-          mkdir -p ./signed-output
-          unzip "./signed/all-artifacts-to-sign.zip" -d "./signed-output"
-          # Move files from signing-bundle to the root
-          mv ./signed-output/signing-bundle/* ./signed-output/
-          rm -rf ./signed-output/signing-bundle
-        shell: bash
 
       - name: Upload signed artifacts
         uses: actions/upload-artifact@v4
@@ -172,7 +155,7 @@ jobs:
           organization-id: ${{ env.SIGNPATH_ORG_ID }}
           project-slug: ${{ env.SIGNPATH_PROJECT_SLUG }}
           signing-policy-slug: ${{ env.SIGNPATH_POLICY_SLUG }}
-          artifact-configuration-slug: executable
+          artifact-configuration-slug: single-zip-executable
           github-artifact-id: ${{ steps.upload-unsigned-installer.outputs.artifact-id }}
           wait-for-completion: true
           output-artifact-directory: './signed-installer'
