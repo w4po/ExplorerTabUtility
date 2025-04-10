@@ -1,24 +1,34 @@
-name: Build and Release
+name: Build, Sign and Release
 
 on:
   push:
     tags:
       - 'v*' # Triggers on tags like v1.3.0
+  workflow_dispatch:
+    # Manual trigger for testing the workflow without creating a tag
+    inputs:
+      version:
+        description: 'Version string to use (e.g., v1.0.0)'
+        required: true
+        type: string
+        default: 'v0.0.0-test'
 
 env:
-  PROJECT_NAME: ExplorerTabUtility  # project name
+  PROJECT_NAME: ExplorerTabUtility
+  SIGNPATH_ORG_ID: c35b3bd9-3451-4e24-b4e0-332e901290bf
+  SIGNPATH_PROJECT_SLUG: ExplorerTabUtility
+  SIGNPATH_POLICY_SLUG: test-signing  # TODO: Change for production
+  VERSION: ${{ github.event_name == 'push' && github.ref_name || inputs.version }}
 
 jobs:
   build:
     runs-on: windows-latest
-
     strategy:
       matrix:
         framework: [ 'net9.0-windows', 'net481' ]
         arch: [ 'x64', 'x86', 'arm64' ]
       fail-fast: true
       max-parallel: 6
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,7 +37,7 @@ jobs:
         uses: microsoft/setup-msbuild@v2
         with:
           vs-version: '17.0'  # Visual Studio 2022
-          
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -38,12 +48,12 @@ jobs:
           $outputDir = "../publish/${{ matrix.framework }}/${{ matrix.arch }}"
           msbuild "${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}.csproj" /restore /t:Publish /p:Configuration=Release /p:TargetFramework=${{ matrix.framework }} /p:RuntimeIdentifier=win-${{ matrix.arch }} /p:PublishDir=$outputDir /p:DebugType=none
         shell: pwsh
-      
+
       - name: Zip Artifacts
         id: zip_artifacts
         run: |
           $frameworkName = if ("${{ matrix.framework }}" -eq "net9.0-windows") { "Net9.0_FrameworkDependent" } else { "NetFW4.8.1" }
-          $zipName = "${{ env.PROJECT_NAME }}_${{ github.ref_name }}_${{ matrix.arch }}_${frameworkName}.zip"
+          $zipName = "${{ env.PROJECT_NAME }}_${{ env.VERSION }}_${{ matrix.arch }}_${frameworkName}.zip"
           
           # Create a temporary directory with PROJECT_NAME as the root
           $tempDir = "temp-$(New-Guid)"
@@ -67,8 +77,116 @@ jobs:
           name: ${{ steps.zip_artifacts.outputs.zipName }}
           path: ${{ steps.zip_artifacts.outputs.zipName }}
 
-  create-release:
+  sign-artifacts:
     needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+          merge-multiple: true
+
+      - name: Create signing bundle
+        run: |
+          mkdir -p ./signing-bundle
+          cp ./artifacts/*.zip ./signing-bundle/
+          zip -r ./all-artifacts-to-sign.zip ./signing-bundle
+        shell: bash
+
+      - name: Upload signing bundle to GitHub
+        id: upload-unsigned-bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-bundle
+          path: ./all-artifacts-to-sign.zip
+
+      - name: Submit bundle for signing
+        id: submit-signing
+        uses: signpath/github-action-submit-signing-request@v1.1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ env.SIGNPATH_ORG_ID }}
+          project-slug: ${{ env.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ env.SIGNPATH_POLICY_SLUG }}
+          artifact-configuration-slug: multi-zip
+          github-artifact-id: ${{ steps.upload-unsigned-bundle.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: './signed'
+          parameters: |
+            version: "${{ env.VERSION }}"
+
+      - name: Extract signed artifacts
+        run: |
+          mkdir -p ./signed-output
+          unzip "./signed/all-artifacts-to-sign.zip" -d "./signed-output"
+          # Move files from signing-bundle to the root
+          mv ./signed-output/signing-bundle/* ./signed-output/
+          rm -rf ./signed-output/signing-bundle
+        shell: bash
+
+      - name: Upload signed artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-artifacts
+          path: ./signed-output/*.zip
+
+  build-installer:
+    needs: sign-artifacts
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Signed Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: signed-artifacts
+          path: artifacts
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+        shell: pwsh
+
+      - name: Build Installer
+        run: |
+          # Run Inno Setup Compiler with output directly to artifacts folder
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
+            /DMyAppVersion="${{ env.VERSION }}" `
+            /DSourceDir="..\artifacts" `
+            "installers\installer.iss"
+        shell: pwsh
+
+      - name: Upload unsigned installer
+        id: upload-unsigned-installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PROJECT_NAME }}_${{ env.VERSION }}_Setup-unsigned
+          path: artifacts/*.exe
+
+      - name: Submit installer for signing
+        id: submit-installer-signing
+        uses: signpath/github-action-submit-signing-request@v1.1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ env.SIGNPATH_ORG_ID }}
+          project-slug: ${{ env.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ env.SIGNPATH_POLICY_SLUG }}
+          artifact-configuration-slug: executable
+          github-artifact-id: ${{ steps.upload-unsigned-installer.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: './signed-installer'
+          parameters: |
+            version: "${{ env.VERSION }}"
+
+      - name: Upload signed installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-installer
+          path: ./signed-installer/*.exe
+
+  create-release:
+    needs: [ sign-artifacts, build-installer ]
     runs-on: windows-latest
     permissions:
       contents: write       # Required to create releases
@@ -77,25 +195,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Artifacts
+      - name: Download Signed Artifacts
         uses: actions/download-artifact@v4
         with:
-          merge-multiple: true
-          path: artifacts
-      
-      - name: Install Inno Setup
-        run: choco install innosetup --no-progress -y
-        shell: pwsh
-      
-      - name: Build Installer
-        run: |          
-          # Run Inno Setup Compiler with output directly to artifacts folder
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
-            /DMyAppVersion="${{ github.ref_name }}" `
-            /DSourceDir="..\artifacts" `
-            "installers\installer.iss"
-        shell: pwsh
-        
+          name: signed-artifacts
+          path: release-artifacts
+
+      - name: Download Signed Installer
+        uses: actions/download-artifact@v4
+        with:
+          name: signed-installer
+          path: release-artifacts
+
       - name: Generate Changelog
         id: generate_changelog
         uses: mikepenz/release-changelog-builder-action@v5
@@ -127,17 +238,17 @@ jobs:
             }
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ env.PROJECT_NAME }} ${{ github.ref_name }}
+          tag_name: ${{ env.VERSION }}
+          name: ${{ env.PROJECT_NAME }} ${{ env.VERSION }}
           draft: true
           body: |
             ${{ steps.generate_changelog.outputs.changelog }}
             
-            **Note:** If you are not sure, then you probably want: [${{ env.PROJECT_NAME }}_${{ github.ref_name }}_Setup.exe](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ env.PROJECT_NAME }}_${{ github.ref_name }}_Setup.exe)
+            **Note:** If you are not sure, then you probably want: [${{ env.PROJECT_NAME }}_${{ env.VERSION }}_Setup.exe](https://github.com/${{ github.repository }}/releases/download/${{ env.VERSION }}/${{ env.PROJECT_NAME }}_${{ env.VERSION }}_Setup.exe)
           files: |
-            artifacts/*.zip
-            artifacts/*.exe
+            release-artifacts/*.zip
+            release-artifacts/*.exe
