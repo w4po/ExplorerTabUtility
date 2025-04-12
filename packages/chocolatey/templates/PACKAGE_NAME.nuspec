@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
     <metadata>
-        <id>{{PACKAGE_NAME}}</id>
+        <id>{{PACKAGE_ID}}</id>
         <version>{{VERSION}}</version>
         <title>{{PACKAGE_NAME}}</title>
         <authors>{{PUBLISHER}}</authors>
         <projectUrl>https://github.com/{{PUBLISHER}}/{{PACKAGE_NAME}}</projectUrl>
-        <iconUrl>https://raw.githubusercontent.com/{{PUBLISHER}}/{{PACKAGE_NAME}}/master/{{PACKAGE_NAME}}/Icon.ico</iconUrl>
+        <iconUrl>https://cdn.jsdelivr.net/gh/{{PUBLISHER}}/{{PACKAGE_NAME}}@master/Assets/Icon.png</iconUrl>
         <licenseUrl>https://github.com/{{PUBLISHER}}/{{PACKAGE_NAME}}/blob/master/LICENSE</licenseUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description><![CDATA[{{DESCRIPTION}}]]></description>

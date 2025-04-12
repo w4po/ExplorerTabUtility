@@ -105,6 +105,7 @@ function Write-TemplateFile
     # Basic replacements
     $content = $content.Replace('{{VERSION}}', $Version)
     $content = $content.Replace('{{PUBLISHER}}', $Publisher)
+    $content = $content.Replace('{{PACKAGE_ID}}', $Name.ToLower())
     $content = $content.Replace('{{PACKAGE_NAME}}', $Name)
     $content = $content.Replace('{{FILE_SUFFIX}}', $FileSuffix)
     $content = $content.Replace('{{DESCRIPTION}}', $Description)
