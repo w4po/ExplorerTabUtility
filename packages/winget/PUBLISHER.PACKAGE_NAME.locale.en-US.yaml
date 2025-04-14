@@ -7,7 +7,7 @@ PublisherSupportUrl: https://github.com/<PUBLISHER>/<PACKAGE_NAME>/issues
 PackageName: <PACKAGE_NAME>
 PackageUrl: https://github.com/<PUBLISHER>/<PACKAGE_NAME>
 License: MIT
-ShortDescription: "<DESCRIPTION>"
+ShortDescription: "<DESCRIPTION> (Requires Windows 11 22H2 Build 22621 or later)"
 ReleaseNotesUrl: https://github.com/<PUBLISHER>/<PACKAGE_NAME>/releases/tag/v<VERSION>
 Documentations:
 - DocumentLabel: Wiki
