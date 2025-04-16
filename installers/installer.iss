@@ -31,7 +31,7 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={autopf}\{#MyAppName}
+DefaultDirName={userpf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 PrivilegesRequired=lowest
@@ -240,6 +240,9 @@ end;
 // Handle download errors
 procedure HandleDownloadError(const ErrorMessage: String);
 begin
+  // Log the error for silent mode
+  Log('Download error: ' + ErrorMessage + '. Using .NET Framework 4.8.1 instead.');
+  
   if Pos('12007', ErrorMessage) > 0 then
     SuppressibleMsgBox('No internet connection available. The application will use .NET Framework 4.8.1 instead.', 
                        mbInformation, MB_OK, MB_OK)
@@ -314,7 +317,10 @@ begin
             // Verify installation was successful by checking again
             if not IsDotNet9Installed then
             begin
-              Log('Installation appeared to succeed but .NET 9 is still not detected');
+              Log('Installation completed but .NET 9 Desktop Runtime is still not detected');
+              SuppressibleMsgBox('Installation completed but .NET 9 Desktop Runtime is still not detected. ' +
+                                'The application will use .NET Framework 4.8.1 instead.', 
+                                mbInformation, MB_OK, MB_OK);
               Result := False;
             end;
           end
@@ -395,14 +401,23 @@ begin
   DotNet9Detected := IsDotNet9Installed;
   
   // Default to using .NET 9 (will be installed if not detected)
-  UseDotNet9 := True;
+  // In silent mode, default to .NET Framework 4.8.1 if .NET 9 is not installed
+  if WizardSilent and not DotNet9Detected then
+  begin
+    UseDotNet9 := False;
+    Log('Silent mode: .NET 9 not detected, defaulting to .NET Framework 4.8.1');
+  end
+  else
+  begin
+    UseDotNet9 := True;
+  end;
   
   // Create the download page for .NET 9 installer
   DownloadPage := CreateDownloadPage(SetupMessage(msgWizardPreparing), 
     SetupMessage(msgPreparingDesc), @OnDownloadProgress);
   
-  // If .NET 9 is not detected, inform the user that it will be installed
-  if not DotNet9Detected then
+  // If .NET 9 is not detected and not in silent mode, inform the user that it will be installed
+  if not DotNet9Detected and not WizardSilent then
   begin
     if MsgBox('.NET 9 Desktop Runtime is required but not installed.' + #13#10 + 
              'Would you like to download and install it now?' + #13#10 + #13#10 +
