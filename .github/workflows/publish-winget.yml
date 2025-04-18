@@ -1,84 +1,12 @@
-# Publish to Windows Package Manager (WinGet)
-#
-# This workflow creates and submits a manifest to the Windows Package Manager repository.
-# It is designed for portable applications distributed as ZIP files.
-#
-# Requirements:
-#   - Release artifacts must be ZIP files with the following structure:
-#     MyApp.zip
-#     └── MyApp/
-#         └── MyApp.exe
-#   - Each architecture should have its own ZIP file
-#   - ZIP names should follow the pattern: {name}_v{version}_{arch}{suffix}.zip
-#
-# Usage:
-#   1. Automatic (via release):
-#      - Create a new release in your repository
-#      - The workflow will run automatically with default settings
-#      - All architectures (x64, x86, arm64) will be included
-#
-#   2. Manual (workflow_dispatch):
-#      - Go to Actions -> Publish to WinGet -> Run workflow
-#      - Required inputs:
-#        * Version: The version to publish (e.g., v1.0.0)
-#        * Architectures: Comma-separated list (e.g., x64,arm64)
-#      - Optional inputs:
-#        * File suffix: Added to the end of artifact names (default: _Net9.0_FrameworkDependent)
-#
-# Note: 
-#   - Requires WINGET_TOKEN secret to be set in repository settings
-#   - If your ZIP structure is different, modify the installer.yaml template
-#     in the packages/winget directory
-
 name: Publish to WinGet
-
 on:
   release:
-    types: [ published ]
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to publish (e.g., v1.0.0)'
-        required: true
-        type: string
-        default: 'v1.0.0'
-      architectures:
-        description: 'Comma-separated list of architectures (e.g., x64,x86,arm64)'
-        required: true
-        type: string
-        default: 'x64,x86,arm64'
-      file_suffix:
-        description: 'File suffix for the artifacts'
-        required: false
-        type: string
-        default: '_Net9.0_FrameworkDependent'
-
+    types: [released]
 jobs:
   publish:
     runs-on: windows-latest
-    env:
-      WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
     steps:
-      - name: Install winget
-        uses: Cyberboss/install-winget@v1
+      - uses: vedantmgoyal9/winget-releaser@main
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install wingetcreate
-        run: winget install wingetcreate --disable-interactivity --accept-source-agreements
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Create manifest and submit PR
-        working-directory: ${{ github.workspace }}/packages/winget
-        run: |
-          $architectures = "${{ inputs.architectures || 'x64,x86,arm64' }}".Split(',')
-          ./build.ps1 `
-          -Publisher "${{ github.repository_owner }}" `
-          -Name "${{ github.event.repository.name }}" `
-          -Version "${{ github.event.release.tag_name || inputs.version }}" `
-          -Architectures $architectures `
-          -FileSuffix "${{ inputs.file_suffix || '_Net9.0_FrameworkDependent' }}" `
-          -Alias "expltab" `
-          -Description "🚀 Supercharge Windows 11's File Explorer: Auto-convert windows to tabs, duplicate tabs, reopen closed ones, and more!" `
-          -Token $env:WINGET_TOKEN
+          identifier: ${{ github.repository_owner }}.${{ github.event.repository.name }}
+          token: ${{ secrets.WINGET_TOKEN }}

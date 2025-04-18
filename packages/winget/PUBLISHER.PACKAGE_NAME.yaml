@@ -1,5 +1,0 @@
-PackageIdentifier: <PUBLISHER>.<PACKAGE_NAME>
-PackageVersion: <VERSION>
-DefaultLocale: en-US
-ManifestType: version
-ManifestVersion: 1.9.0

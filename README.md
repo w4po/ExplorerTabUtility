@@ -154,7 +154,7 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
 
 1. Download the latest version from the [Releases](https://github.com/w4po/ExplorerTabUtility/releases) page or install it via `winget` or `choco`:
     ```powershell
-    winget install w4po.ExplorerTabUtility
+    winget install w4po.ExplorerTabUtility --interactive
     ```
     ```powershell
     choco install explorertabutility --version=2.4.0
