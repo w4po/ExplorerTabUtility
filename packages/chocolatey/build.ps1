@@ -1,14 +1,10 @@
 # Chocolatey Package Builder
 #
-# This script downloads release artifacts and creates a Chocolatey package.
-# It calculates SHA256 hashes for each architecture and generates the required files.
+# This script downloads the installer from GitHub releases and creates a Chocolatey package.
+# It calculates the SHA256 hash for the installer and generates the required files.
 #
 # Requirements:
-#   - Release artifacts must be ZIP files containing portable executables
-#   - ZIP structure must be: 
-#     MyApp.zip
-#     └── MyApp/
-#         └── MyApp.exe
+#   - Installer filename should follow the pattern: {name}_v{version}_Setup.exe
 #
 # Usage:
 #   .\build.ps1 -Publisher "owner" -Name "repo" -Version "1.0.0"
@@ -20,10 +16,8 @@
 #
 # Optional Parameters:
 #   -ApiKey       : Chocolatey API key for publishing
-#   -FileSuffix   : Added to artifact filenames (e.g., "_Net9.0_FrameworkDependent")
 #   -Description  : Package description for the nuspec
 #   -Summary      : Short summary for the nuspec
-#   -Architectures: List of architectures to include in the package (default: x86, x64, arm64)
 
 Param
 (
@@ -37,14 +31,8 @@ Param
     [string]
     $Version,
     [parameter(Mandatory = $false)]
-    [string[]]
-    $Architectures = @('x86', 'x64', 'arm64'),
-    [parameter(Mandatory = $false)]
     [string]
     $ApiKey,
-    [parameter(Mandatory = $false)]
-    [string]
-    $FileSuffix,
     [parameter(Mandatory = $false)]
     [string]
     $Description,
@@ -53,7 +41,7 @@ Param
     $Summary
 )
 
-function Get-ArtifactHashes
+function Get-ArtifactHash
 {
     # Create temp directory
     $tempDir = Join-Path $env:TEMP "choco_artifacts_$([Guid]::NewGuid().ToString() )"
@@ -61,24 +49,17 @@ function Get-ArtifactHashes
 
     try
     {
-        $hashes = @{ }
+        $fileName = "$( $Name )_v$( $Version )_Setup.exe"
+        $downloadUrl = "https://github.com/$Publisher/$Name/releases/download/v$Version/$fileName"
+        $outputPath = Join-Path $tempDir $fileName
 
-        foreach ($arch in $Architectures)
-        {
-            $fileName = "$( $Name )_v$( $Version )_$( $arch )$( $FileSuffix ).zip"
-            $downloadUrl = "https://github.com/$Publisher/$Name/releases/download/v$Version/$fileName"
-            $outputPath = Join-Path $tempDir $fileName
+        # Download the file
+        Write-Host "Downloading installer from: $downloadUrl"
+        Invoke-WebRequest -Uri $downloadUrl -OutFile $outputPath -UseBasicParsing
 
-            # Download the file
-            Write-Host "Downloading $arch artifact from: $downloadUrl"
-            Invoke-WebRequest -Uri $downloadUrl -OutFile $outputPath -UseBasicParsing
-
-            # Calculate SHA256
-            $hash = (Get-FileHash -Algorithm SHA256 $outputPath).Hash
-            $hashes[$arch] = $hash.ToLower()
-        }
-
-        return $hashes
+        # Calculate SHA256
+        $hash = (Get-FileHash -Algorithm SHA256 $outputPath).Hash
+        return $hash.ToLower()
     }
     finally
     {
@@ -105,17 +86,11 @@ function Write-TemplateFile
     # Basic replacements
     $content = $content.Replace('{{VERSION}}', $Version)
     $content = $content.Replace('{{PUBLISHER}}', $Publisher)
-    $content = $content.Replace('{{PACKAGE_ID}}', $Name.ToLower())
+    $content = $content.Replace('{{PACKAGE_ID}}',$Name.ToLower())
     $content = $content.Replace('{{PACKAGE_NAME}}', $Name)
-    $content = $content.Replace('{{FILE_SUFFIX}}', $FileSuffix)
     $content = $content.Replace('{{DESCRIPTION}}', $Description)
     $content = $content.Replace('{{SUMMARY}}', $Summary)
-
-    # Handle checksums
-    foreach ($arch in $Architectures)
-    {
-        $content = $content.Replace("{{CHECKSUM_$($arch.ToUpper() )}}", $Hashes[$arch])
-    }
+    $content = $content.Replace('{{CHECKSUM}}', $Checksum)
 
     $content | Out-File -Encoding 'UTF8' $DestinationFile
 }
@@ -127,12 +102,6 @@ $Version = $Version.TrimStart('v')
 if (-not $Description)
 {
     $Description = $Name
-}
-
-#FileSuffix
-if (-not $FileSuffix)
-{
-    $FileSuffix = ""
 }
 
 # Summary
@@ -151,7 +120,7 @@ New-Item -Path $PWD -Name "package" -ItemType "directory" | Out-Null
 New-Item -Path $packageDir -Name "tools" -ItemType "directory" | Out-Null
 
 # Download artifacts and calculate hashes
-$Hashes = Get-ArtifactHashes
+$Checksum = Get-ArtifactHash
 
 # Process template files
 Write-TemplateFile -SourceFile "templates\PACKAGE_NAME.nuspec" -DestinationFile "package\$Name.nuspec"

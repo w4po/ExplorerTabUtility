@@ -16,10 +16,6 @@
         <packageSourceUrl>https://github.com/{{PUBLISHER}}/{{PACKAGE_NAME}}/tree/master/packages/chocolatey</packageSourceUrl>
         <docsUrl>https://github.com/{{PUBLISHER}}/{{PACKAGE_NAME}}/blob/master/README.md</docsUrl>
         <bugTrackerUrl>https://github.com/{{PUBLISHER}}/{{PACKAGE_NAME}}/issues</bugTrackerUrl>
-
-        <dependencies>
-            <dependency id="dotnet-desktopruntime" version="[9.0.0,10.0.0)"/>
-        </dependencies>
     </metadata>
     <files>
         <file src="tools\**" target="tools"/>
