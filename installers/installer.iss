@@ -99,6 +99,9 @@ Type: filesandordirs; Name: "{app}\*"
 ; Ensure all files in the app directory are removed during uninstall
 Type: filesandordirs; Name: "{app}\*"
 Type: dirifempty; Name: "{app}"
+; Remove startup registry entries regardless of how they were added
+Type: value; Name: "HKCU\Software\Microsoft\Windows\CurrentVersion\Run\{#MyAppName}"
+Type: value; Name: "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run\{#MyAppName}"
 
 [Run]
 ; Extract the ZIP file after installation
