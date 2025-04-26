@@ -6,6 +6,23 @@ $url = 'https://github.com/{{PUBLISHER}}/{{PACKAGE_NAME}}/releases/download/v{{V
 $checksum = '{{CHECKSUM}}'
 $checksumType = 'sha256'
 
+# Get package parameters
+$pp = Get-PackageParameters
+
+# Check for interactive mode - handle different parameter formats and case insensitivity
+$interactive = $false
+if ( $pp.ContainsKey('Interactive'))
+{
+    # If parameter exists with any value or no value
+    $interactive = $true
+
+    # If explicitly set to false, honor that
+    if ($pp.Interactive -is [string] -and $pp.Interactive.ToLower() -eq 'false')
+    {
+        $interactive = $false
+    }
+}
+
 # Check Windows version - ExplorerTabUtility requires Windows 11 (Build 22621 or later)
 $osVersion = [System.Environment]::OSVersion.Version
 $buildNumber = $osVersion.Build
@@ -15,11 +32,23 @@ if ($osVersion.Major -lt 10 -or ($osVersion.Major -eq 10 -and $buildNumber -lt 2
     Write-Warning "Installation will continue, but the application may not function correctly."
 }
 
+# Set installer arguments based on interactive mode
+if ($interactive)
+{
+    Write-Host "Running installer in interactive mode" -ForegroundColor Cyan
+    $silentArgs = ''
+}
+else
+{
+    Write-Host "Running installer in silent mode" -ForegroundColor Cyan
+    $silentArgs = '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-'
+}
+
 $packageArgs = @{
     packageName = $packageName
     fileType = 'EXE'
     url = $url
-    silentArgs = '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-'
+    silentArgs = $silentArgs
     validExitCodes = @(0)
     checksum = $checksum
     checksumType = $checksumType
