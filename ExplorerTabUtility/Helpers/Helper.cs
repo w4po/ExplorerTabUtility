@@ -341,7 +341,36 @@ public static class Helper
     {
         return WinApi.FindAllWindowsEx("CabinetWClass");
     }
+    public static Process? GetMainExplorerProcess()
+    {
+        Process? best = null;
+        var windowsFolder = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+        var expectedPath = System.IO.Path.Combine(windowsFolder, "explorer.exe");
+        var bestStart = DateTime.MaxValue;
 
+        foreach (var hWnd in WinApi.FindAllWindowsEx("Shell_TrayWnd")) // Taskbar
+        {
+            if (WinApi.GetWindowThreadProcessId(hWnd, out var pid) <= 0) continue;
+        
+            var processPath = WinApi.GetProcessPath((int)pid);
+            if (!string.Equals(processPath, expectedPath, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            try
+            {
+                // Pick the earliest start
+                var proc = Process.GetProcessById((int)pid);
+                if (proc.StartTime < bestStart)
+                {
+                    bestStart = proc.StartTime;
+                    best = proc;
+                }
+            }
+            catch { /* The Process might have terminated */ }
+        }
+        return best;
+    }
+    
     public static void UpdateWindowLayered(nint hWnd, bool remove)
     {
         var exStyle = WinApi.GetWindowLong(hWnd, WinApi.GWL_EXSTYLE);

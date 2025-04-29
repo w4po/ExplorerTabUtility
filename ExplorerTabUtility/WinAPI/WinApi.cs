@@ -92,7 +92,19 @@ public static class WinApi
     [return: MarshalAs(UnmanagedType.Bool)]
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     public static extern bool PostMessage(nint hWnd, uint Msg, nint wParam, nint lParam);
+    
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern uint GetWindowThreadProcessId(nint hWnd, out uint lpdwProcessId);
+    
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern nint OpenProcess(uint dwDesiredAccess, bool bInheritHandle, uint dwProcessId);
+    
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool CloseHandle(nint hObject);
 
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    private static extern bool QueryFullProcessImageName(nint hProcess, uint dwFlags, StringBuilder lpExeName, ref int lpdwSize);
+    
     [DllImport("shell32.dll", SetLastError = true)]
     public static extern int SHOpenFolderAndSelectItems(nint pidlFolder, uint cIdl, [In, MarshalAs(UnmanagedType.LPArray)] nint[] apidl, uint dwFlags);
 
@@ -153,5 +165,23 @@ public static class WinApi
         var currentClassName = GetWindowClassName(hWnd, className.Length);
 
         return string.Equals(currentClassName, className, comparison);
+    }
+    
+    public static string? GetProcessPath(int pid)
+    {
+        const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
+        var procHandle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)pid);
+        if (procHandle == 0) return null;
+        
+        try
+        {
+            var capacity = 260;
+            var sb = new StringBuilder(capacity);
+            return QueryFullProcessImageName(procHandle, 0, sb, ref capacity) ? sb.ToString() : null;
+        }
+        finally
+        {
+            CloseHandle(procHandle);
+        }
     }
 }

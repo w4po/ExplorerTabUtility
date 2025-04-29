@@ -22,21 +22,21 @@ using WindowEntry = DualKeyEntry<InternetExplorer, nint?, WindowInfo>;
 
 public class ExplorerWatcher : IHook
 {
-    private static bool _created;
+    private static bool _instanceRunning;
     private static Guid _shellBrowserGuid = typeof(IShellBrowser).GUID;
 
     private ShellWindows _shellWindows = null!;
     private ShellPathComparer _shellPathComparer = null!;
     private StaTaskScheduler _staTaskScheduler = null!;
-    private CancellationTokenSource? _processMonitorCts;
-    private int _disposedFlag;
     private nint _mainWindowHandle;
     private readonly ConcurrentDictionary<nint, byte> _processedHWnds = new();
     private readonly DualKeyDictionary<InternetExplorer, nint?, WindowInfo> _windowEntryDict = [];
     private readonly List<WindowRecord> _closedWindows = new();
-    private readonly object _windowEntryDictLock = new(), _closedWindowsLock = new();
+    private readonly object _windowEntryDictLock = new(), _closedWindowsLock = new(), _processLock = new();
     private readonly SemaphoreSlim _toOpenWindowsLock = new(1);
-    private readonly SynchronizationContext _syncContext;
+    private readonly ProcessWatcher _processWatcher;
+    private int _mainExplorerProcessId;
+    private Timer? _explorerCheckTimer;
 
     private nint _eventObjectShowHookId;
     private WinEventDelegate? _eventObjectShowHookCallback;
@@ -49,12 +49,13 @@ public class ExplorerWatcher : IHook
 
     public ExplorerWatcher()
     {
-        if (_created)
+        if (_instanceRunning)
             throw new InvalidOperationException("Only one instance of ExplorerWatcher is allowed at a time.");
-        _created = true;
+        _instanceRunning = true;
 
-        _syncContext = SynchronizationContext.Current!;
-        _ = MonitorExplorerProcess();
+        _processWatcher = new ProcessWatcher("explorer");
+        _processWatcher.ProcessTerminated += OnExplorerProcessTerminated;
+        StartExplorerProcessCheck();
     }
 
     public void StartHook()
@@ -343,6 +344,8 @@ public class ExplorerWatcher : IHook
             lock (_windowEntryDictLock)
             {
                 if (_windowEntryDict.Keys.Contains(window)) continue;
+                if (window.GetProperty("seenBefore") is not null) continue;
+                window.PutProperty("seenBefore", true);
 
                 windowInfo = new WindowInfo();
                 _windowEntryDict.Add(window, windowInfo);
@@ -371,7 +374,7 @@ public class ExplorerWatcher : IHook
             var shouldOpenAsWindow = Helper.IsCtrlShiftDown();
 
             WindowInfo windowInfo = null!;
-            var window = await Helper.DoUntilNotDefaultAsync(() => GetRecentlyCreatedWindow(out windowInfo!), 2_000, 40);
+            var window = await Helper.DoUntilNotDefaultAsync(() => GetRecentlyCreatedWindow(out windowInfo!), 2_500, 70);
             if (window == null) return;
 
             _ = GetTabHandle(window);
@@ -497,17 +500,22 @@ public class ExplorerWatcher : IHook
                 _windowEntryDict.Remove(window);
         }
     }
-    private void RemoveWindowAndUnhookEvents(InternetExplorer window, WindowInfo windowInfo)
+    private void RemoveWindowAndUnhookEvents(InternetExplorer window, WindowInfo windowInfo, bool useLock = true)
     {
         // Unsubscribe
         if (windowInfo.OnQuitHandler != null) window.OnQuit -= windowInfo.OnQuitHandler;
         if (windowInfo.OnNavigateHandler != null) window.NavigateComplete2 -= windowInfo.OnNavigateHandler;
 
         // Remove from dictionary
-        lock (_windowEntryDictLock)
+        if (useLock)
+        {
+            lock (_windowEntryDictLock)
+                _windowEntryDict.Remove(window);
+        }
+        else
             _windowEntryDict.Remove(window);
 
-        // Finally release the COM reference for this InternetExplorer instance
+        // Finally, release the COM reference for this InternetExplorer instance
         Marshal.ReleaseComObject(window);
     }
 
@@ -814,66 +822,72 @@ public class ExplorerWatcher : IHook
     {
         return Task.Factory.StartNew(action, ct, tco, _staTaskScheduler);
     }
-
-    private async Task MonitorExplorerProcess()
+    
+    private void StartExplorerProcessCheck() => _explorerCheckTimer = new Timer(CheckForMainExplorer, null, 0, 1000);
+    private void CheckForMainExplorer(object? state)
     {
-        _processMonitorCts = new CancellationTokenSource();
-
-        var currentSessionId = Process.GetCurrentProcess().SessionId;
-        var cancellationToken = _processMonitorCts.Token;
-        Process[] explorerProcesses;
-        do
+        var process = Helper.GetMainExplorerProcess();
+        Debug.WriteLine($"{nameof(CheckForMainExplorer)} Checking...");
+        if (process == null) return;
+        
+        lock (_processLock)
         {
-            explorerProcesses = Process.GetProcessesByName("explorer")
-                .Where(p => p.SessionId == currentSessionId)
-                .ToArray();
-
-            if (explorerProcesses.Length > 0 || cancellationToken.IsCancellationRequested) break;
-
-            await Task.Delay(1000);
-        }
-        while (explorerProcesses.Length == 0);
-        if (cancellationToken.IsCancellationRequested) return;
-
-        _disposedFlag = 0;
-        _syncContext.Send(_ => InitializeShellObjects(), null);
-
-        foreach (var process in explorerProcesses)
-        {
-            try
+            if (_mainExplorerProcessId == 0)
             {
-                process.EnableRaisingEvents = true;
-                process.Exited += (_, _) =>
+                _mainExplorerProcessId = process.Id;
+                InitializeShellObjects();
+            }
+        }
+        _explorerCheckTimer?.Dispose();
+        _explorerCheckTimer = null;
+    }
+    private void OnExplorerProcessTerminated(object? s, ProcessEventArgs e)
+    {
+        // Main explorer.exe process (_shellWindows must be restarted)
+        lock (_processLock)
+        {
+            if (e.ProcessId == _mainExplorerProcessId)
+            {
+                _mainExplorerProcessId = 0;
+                DisposeShellObjects();
+                StartExplorerProcessCheck();
+                return;
+            }
+        }
+        
+        // Other explorer.exe processes
+        lock (_windowEntryDictLock)
+        {
+            if (_windowEntryDict.Count == 0) return;
+            var crashCount = 0;
+            for (var i = _windowEntryDict.Count - 1; i >= 0; i--)
+            {
+                var (window, info) = _windowEntryDict.ElementAt<WindowEntry>(i);
+                try
                 {
-                    if (cancellationToken.IsCancellationRequested) return;
-
-                    if (Interlocked.CompareExchange(ref _disposedFlag, 1, 0) != 0) return;
-
-                    _syncContext.Send(_ => DisposeShellObjects(), null);
-
-                    if (!_created) return;
-
-                    _ = MonitorExplorerProcess();
-                };
+                    _ = window.HWND;
+                }
+                catch
+                {
+                    if (info.OnNavigateHandler != null)
+                    {
+                        crashCount++;
+                        lock (_closedWindowsLock)
+                            _closedWindows.Add(new WindowRecord(info.Location!, name: info.Name!));
+                    }
+                    
+                    RemoveWindowAndUnhookEvents(window, info, useLock: false);
+                }
             }
-            catch
+            if (!SettingsManager.RestorePreviousWindows || _windowEntryDict.Count > 0) return;
+            lock (_closedWindowsLock)
             {
-                //
+                for (var i = 1; i <= crashCount; i++)
+                    _closedWindows[_closedWindows.Count - i].Restore = true;
             }
         }
     }
-    private void CancelMonitorToken()
-    {
-        try
-        {
-            _processMonitorCts?.Cancel();
-            _processMonitorCts?.Dispose();
-        }
-        catch
-        {
-            //
-        }
-    }
+
     private void InitializeShellObjects()
     {
         _shellPathComparer = new ShellPathComparer();
@@ -904,6 +918,7 @@ public class ExplorerWatcher : IHook
 
             var windowInfo = new WindowInfo();
             _windowEntryDict.Add(window, windowInfo);
+            window.PutProperty("seenBefore", true);
 
             _ = GetTabHandle(window);
             HookWindowEvents(window, windowInfo);
@@ -915,7 +930,6 @@ public class ExplorerWatcher : IHook
     }
     private void DisposeShellObjects()
     {
-        CancelMonitorToken();
         PersistWindows();
 
         // Unhook global event
@@ -958,7 +972,7 @@ public class ExplorerWatcher : IHook
             _closedWindows.Clear();
         }
 
-        // Save currently open windows (explorer crash / system restart,logoff / AppExit)
+        // Save currently open windows (explorer crash / system restart, logoff / AppExit)
         if (SettingsManager.RestorePreviousWindows)
             lock (_windowEntryDictLock)
             {
@@ -980,7 +994,8 @@ public class ExplorerWatcher : IHook
     public void Dispose()
     {
         DisposeShellObjects();
-        _created = false;
+        _instanceRunning = false;
+        _processWatcher.Dispose();
         GC.SuppressFinalize(this);
     }
 }
