@@ -46,6 +46,7 @@ public class ExplorerWatcher : IHook
     private bool _reuseTabs = true;
     private bool _isForcingTabs;
     public bool IsHookActive => _isForcingTabs;
+    public event Action? OnShellInitialized;
 
     public ExplorerWatcher()
     {
@@ -827,19 +828,19 @@ public class ExplorerWatcher : IHook
     private void CheckForMainExplorer(object? state)
     {
         var process = Helper.GetMainExplorerProcess();
-        Debug.WriteLine($"{nameof(CheckForMainExplorer)} Checking...");
         if (process == null) return;
+        
+        _explorerCheckTimer?.Dispose();
+        _explorerCheckTimer = null;
         
         lock (_processLock)
         {
-            if (_mainExplorerProcessId == 0)
-            {
-                _mainExplorerProcessId = process.Id;
-                InitializeShellObjects();
-            }
+            if (_mainExplorerProcessId != 0) return;
+            
+            _mainExplorerProcessId = process.Id;
+            InitializeShellObjects();
+            OnShellInitialized?.Invoke();
         }
-        _explorerCheckTimer?.Dispose();
-        _explorerCheckTimer = null;
     }
     private void OnExplorerProcessTerminated(object? s, ProcessEventArgs e)
     {

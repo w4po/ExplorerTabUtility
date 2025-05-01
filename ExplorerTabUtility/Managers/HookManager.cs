@@ -20,6 +20,7 @@ public sealed class HookManager
     public event Action? OnVisibilityToggled;
     public event Action? OnWindowHookToggled;
     public event Action? OnReuseTabsToggled;
+    public event Action? OnShellInitialized;
 
     public HookManager(ProfileManager profileManager)
     {
@@ -33,6 +34,7 @@ public sealed class HookManager
         profileManager.KeybindingsHookStopped += KeybindingStopped;
         _keyboardHook.OnHotKeyProfileTriggered += OnHotKeyProfileTriggered;
         _mouseHook.OnHotKeyProfileTriggered += OnHotKeyProfileTriggered;
+        _windowHook.OnShellInitialized += () => OnShellInitialized?.Invoke();
         System.Windows.Application.Current.SessionEnding += (_, _) => Dispose();
     }
 
