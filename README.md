@@ -157,7 +157,7 @@ Say goodbye to cluttered desktops with multiple Explorer windows! Explorer Tab U
     winget install w4po.ExplorerTabUtility --interactive
     ```
     ```powershell
-    choco install explorertabutility --version=2.4.0
+    choco install explorertabutility --version 2.5.0 --params "/interactive"
     ```
 2. Run the application
 3. Look for the tray icon and you're ready to go!
