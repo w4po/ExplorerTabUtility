@@ -1,0 +1,148 @@
+//Language Info
+LanguageName:English
+
+//JsonFileFilter
+JsonFiles:JSON files (*.json)
+AllFiles :All Files
+
+//Shortcuts Menu
+Shortcuts          :Shortcuts
+ShortcutsToolTip   :Configure keyboard and mouse shortcuts
+OpenApplicationMenu:Open application menu
+New                :NEW
+NewToolTip         :Create a new profile
+Import             :IMPORT
+ImportToolTip      :Import profiles from a file
+Export             :EXPORT
+ExportToolTip      :Export profiles to a file
+Save               :SAVE
+SaveToolTip        :Persist all profile changes
+AutoSave           :Auto save
+AutoSaveToolTip    :Automatically save profiles when closing the window
+
+//Preferences Menu
+Preferences                  :Preferences
+PreferencesToolTip           :Configure application settings
+ApplicationSettings          :Application Settings
+AutoUpdate                   :Auto update
+AutoUpdateToolTip            :Automatically check for updates on startup
+ThemeIssue                   :I have theme issues
+ThemeIssueToolTip            :Use alternative window hiding method that preserves your custom File-Explorer theme.&#x0a;Enable this if you have theme-related issues
+SaveClosedHistory            :Save closed history
+SaveClosedHistoryToolTip     :Save closed windows history so you can reopen them later (ReopenClosed, Tab search)
+RestorePreviousWindows       :Restore previous windows
+RestorePreviousWindowsToolTip:Restore previously opened windows after restart or crash
+HideTrayIcon                 :Hide tray icon
+HideTrayIconToolTip          :Hide the system tray icon
+SelectLanguage               :Language
+SelectLanguageToolTip        :Select Language
+
+//About Menu
+About             :About
+AboutToolTip      :About the application and support options
+Profile           :Enhance your Windows File Explorer experience
+Star              :Star on GitHub
+SupportProject    :Support the Project
+SupportProjectText:If you find this utility helpful, consider supporting its development through one of these options:
+GitHubSponsors    :GitHub Sponsors
+Patreon           :Patreon
+Coffee            :Buy Me A Coffee
+PayPal            :PayPal
+Developer         :Developer
+Supporters        :Current Supporters
+SupportersText    :Thank you to all the amazing people who support this project!
+FirstSupport      :Be the first to support this project!
+SupportMeaning    :Your support helps keep this project alive
+
+//Taskbar Menu
+NotifyIconText        :Explorer Tab Utility: Force new windows to tabs.
+KeyboardHook          :Keyboard Hook
+KeyboardHookToolTip   :Enable or disable keyboard shortcuts
+MouseHook             :Mouse Hook
+MouseHookToolTip      :Enable or disable mouse shortcuts
+WindowHook            :Window Hook
+WindowHookToolTip     :Toggle automatic redirection of new Explorer windows to tabs
+ReuseTabs             :Reuse Tabs
+ReuseTabsToolTip      :When enabled, navigates to existing tabs instead of opening duplicate tabs
+AddToStartup          :Add to startup
+AddToStartupToolTip   :Automatically start Explorer Tab Utility when Windows starts
+CheckForUpdates       :Check for updates
+CheckForUpdatesToolTip:Check if a newer version of Explorer Tab Utility is available
+Settings              :Settings
+SettingsToolTip       :Open the settings window to configure the application
+Exit                  :Exit
+ExitToolTip           :Close Explorer Tab Utility and stop all hooks
+
+//HotKeyProfileControl
+EnabledToolTip       :Enable or disable this profile
+Name                 :Name
+NameToolTip          :Name of the profile
+Hotkeys              :Hotkeys
+HotkeysToolTip       :Keyboard or mouse keys to listen for. Click to record a new key combination.
+ScopeToolTip         :Scope of the hotkeys: Global (anywhere) or only when File Explorer is focused
+ActionToolTip        :Action to perform when the hotkeys are pressed
+ExpanderToggleToolTip:Show more options
+DeleteToolTip        :Delete this profile
+Path                 :Location
+PathToolTip          :Path to open when the hotkeys are pressed. (folder, file, website, CLSID)
+Delay                :Delay
+DelayToolTip         :Delay in milliseconds before performing the action
+Handled              :Handled
+HandledToolTip       :Prevent further processing of the hotkeys in other applications
+OpenAsTab            :Tab
+OpenAsTabToolTip     :Open as tab instead of a new window
+
+//CustomMessageBox
+Ok    :OK
+Cancel:Cancel
+Yes   :Yes
+No    :No
+
+//TabSearchPopup
+ClearToolTip:Clear closed windows history
+
+//Message
+AlreadyRunning                :Another instance is already running.\r\nCheck in System Tray Icons.
+RestorePreviouslyOpenedWindows:Do you want to restore previously opened windows?
+HideTrayIconWithHotkeys       :You can show the app again by pressing {0}
+HideTrayIconWithOutHotkeys    :Cannot hide tray icon if no hotkey is configured to toggle visibility.
+ConfirmClearHistory           :Are you sure you want to clear the closed windows history?
+ConfirmClearHistoryTitle      :Confirm Clear History
+
+//HotkeyScope Enum
+Global      :Global
+FileExplorer:FileExplorer
+
+//HotKeyAction Enum
+Open                   :Open
+OpenToolTip            :Open a new tab/window with the specified location.
+Duplicate              :Duplicate
+DuplicateToolTip       :Duplicate the current tab.
+ReopenClosed           :ReopenClosed
+ReopenClosedToolTip    :Reopen the last closed location.
+TabSearch              :TabSearch
+TabSearchToolTip       :Open tab search popup to find and switch between tabs.
+NavigateBack           :NavigateBack
+NavigateBackToolTip    :Navigate back.
+NavigateUp             :NavigateUp
+NavigateUpToolTip      :Navigate up.
+NavigateForward        :NavigateForward
+NavigateForwardToolTip :Navigate forward.
+SetTargetWindow        :SetTargetWindow
+SetTargetWindowToolTip :Mark the window that will receive the new tabs.
+ToggleWinHook          :ToggleWinHook
+ToggleWinHookToolTip   :Toggle the window hook.
+ToggleReuseTabs        :ToggleReuseTabs
+ToggleReuseTabsToolTip :Toggle the reuse tabs option.
+ToggleVisibility       :ToggleVisibility
+ToggleVisibilityToolTip:Show/Hide the app.
+DetachTab              :DetachTab
+DetachTabToolTip       :Detach the current tab.
+SnapRight              :SnapRight
+SnapRightToolTip       :Snap the current window to the right.
+SnapLeft               :SnapLeft
+SnapLeftToolTip        :Snap the current window to the left.
+SnapUp                 :SnapUp
+SnapUpToolTip          :Snap the current window to the top.
+SnapDown               :SnapDown
+SnapDownToolTip        :Snap the current window to the bottom.

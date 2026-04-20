@@ -3,7 +3,7 @@
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
 
     <!-- Fonts -->
-    <FontFamily x:Key="DefaultFontFamily">Segoe UI, Segoe UI Variable, Segoe MDL2 Assets, Roboto, 'Noto Sans', Arial, sans-serif</FontFamily>
+    <FontFamily x:Key="DefaultFontFamily">Segoe UI, Segoe UI Variable, Segoe MDL2 Assets, Roboto, 'Noto Sans', Arial, sans-serif, SimSun</FontFamily>
     <FontWeight x:Key="DefaultFontWeight">Normal</FontWeight>
     <system:Double x:Key="DefaultFontSize">16</system:Double>
 

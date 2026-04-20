@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:language="clr-namespace:ExplorerTabUtility.Languages.Manager"
              xmlns:controls="clr-namespace:ExplorerTabUtility.UI.Views.Controls"
              mc:Ignorable="d"
              TextBlock.Foreground="{StaticResource TextPrimaryBrush}"
@@ -36,30 +37,32 @@
 
                 <!-- Enabled Toggle -->
                 <ToggleButton x:Name="CbEnabled" Grid.Column="0" Style="{StaticResource ToggleButtonStyle}"
-                              VerticalAlignment="Stretch" ToolTip="Enable or disable this profile" />
+                              VerticalAlignment="Stretch" ToolTip="{Binding LanguageFields.EnabledToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
 
                 <!-- Name -->
-                <TextBox x:Name="TxtName" Grid.Column="1" Tag="Name" Style="{StaticResource CustomTextBoxStyle}"
-                         ToolTip="Name of the profile" />
+                <TextBox x:Name="TxtName" Grid.Column="1" Style="{StaticResource CustomTextBoxStyle}"
+                         Tag="{Binding LanguageFields.Name,Source={x:Static language:LangeuageHelper.Instance}}"
+                         ToolTip="{Binding LanguageFields.NameToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
 
                 <!-- Hotkeys -->
-                <TextBox x:Name="TxtHotKeys" Grid.Column="3" Tag="Hotkeys" Style="{StaticResource CustomTextBoxStyle}"
-                         ToolTip="Keyboard or mouse keys to listen for. Click to record a new key combination." />
+                <TextBox x:Name="TxtHotKeys" Grid.Column="3" Style="{StaticResource CustomTextBoxStyle}"
+                         Tag="{Binding LanguageFields.Hotkeys,Source={x:Static language:LangeuageHelper.Instance}}"
+                         ToolTip="{Binding LanguageFields.HotkeysToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
 
                 <!-- Scope -->
                 <ComboBox x:Name="CbScope" Grid.Column="5" Style="{StaticResource CustomComboBoxStyle}"
-                          ToolTip="Scope of the hotkeys: Global (anywhere) or only when File Explorer is focused" />
+                          ToolTip="{Binding LanguageFields.ScopeToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
 
                 <!-- Action -->
                 <ComboBox x:Name="CbAction" Grid.Column="6" Style="{StaticResource CustomComboBoxStyle}" Width="150"
-                          ToolTip="Action to perform when the hotkeys are pressed" />
+                          ToolTip="{Binding LanguageFields.ActionToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
 
                 <!-- Expander button -->
                 <ToggleButton x:Name="ExpanderToggle" Grid.Column="7" Margin="4, 0" Style="{StaticResource ToggleButtonArrowStyle}"
-                              ToolTip="Show more options" />
+                              ToolTip="{Binding LanguageFields.ExpanderToggleToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
 
                 <!-- Delete Button -->
-                <Button x:Name="BtnDelete" Grid.Column="8" ToolTip="Delete this profile">
+                <Button x:Name="BtnDelete" Grid.Column="8" ToolTip="{Binding LanguageFields.DeleteToolTip,Source={x:Static language:LangeuageHelper.Instance}}">
                     <Path Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
                           Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Stretch="Uniform" Width="16"
                           Height="16" />
@@ -87,14 +90,16 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Path -->
-                <TextBox Grid.Column="0" x:Name="TxtPath" Tag="Location" Style="{StaticResource CustomTextBoxStyle}"
+                <TextBox Grid.Column="0" x:Name="TxtPath" Style="{StaticResource CustomTextBoxStyle}"
                          ContextMenu="{StaticResource TextBoxCustomContextMenu}"
-                         ToolTip="Path to open when the hotkeys are pressed. (folder, file, website, CLSID)" />
+                         Tag="{Binding LanguageFields.Path,Source={x:Static language:LangeuageHelper.Instance}}"
+                         ToolTip="{Binding LanguageFields.PathToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
 
                 <!-- Delay -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="6"
-                            ToolTip="Delay in milliseconds before performing the action">
-                    <TextBlock Text="Delay" VerticalAlignment="Center" Margin="0,0,6,0" />
+                            ToolTip="{Binding LanguageFields.DelayToolTip,Source={x:Static language:LangeuageHelper.Instance}}">
+                    <TextBlock VerticalAlignment="Center" Margin="0,0,6,0"
+                               Text="{Binding LanguageFields.Delay,Source={x:Static language:LangeuageHelper.Instance}}"/>
 
                     <controls:NumericInputControl x:Name="NDelay"
                                                   Margin="0"
@@ -107,12 +112,14 @@
                 </StackPanel>
 
                 <!-- Handled -->
-                <ToggleButton Grid.Column="2" x:Name="CbHandled" Content="Handled" Style="{StaticResource ToggleButtonStyle}" Margin="5,0"
-                              ToolTip="Prevent further processing of the hotkeys in other applications" />
+                <ToggleButton Grid.Column="2" x:Name="CbHandled" Style="{StaticResource ToggleButtonStyle}" Margin="5,0"
+                              Content="{Binding LanguageFields.Handled,Source={x:Static language:LangeuageHelper.Instance}}"
+                              ToolTip="{Binding LanguageFields.HandledToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
 
                 <!-- Open as Tab -->
-                <ToggleButton Grid.Column="3" x:Name="CbOpenAsTab" Content="Tab" Style="{StaticResource ToggleButtonStyle}" Margin="5,0"
-                              ToolTip="Open as tab instead of a new window" />
+                <ToggleButton Grid.Column="3" x:Name="CbOpenAsTab" Style="{StaticResource ToggleButtonStyle}" Margin="5,0"
+                              Content="{Binding LanguageFields.OpenAsTab,Source={x:Static language:LangeuageHelper.Instance}}"
+                              ToolTip="{Binding LanguageFields.OpenAsTabToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
             </Grid>
         </Grid>
     </Border>

@@ -1,0 +1,148 @@
+//语言信息
+LanguageName:简体中文
+
+//文件筛选
+JsonFiles:Json文件(*.json)
+AllFiles :所有文件(*.*)
+
+//快捷键菜单
+Shortcuts          :快捷键
+ShortcutsToolTip   :配置键盘和鼠标快捷键
+OpenApplicationMenu:打开程序菜单
+New                :添加
+NewToolTip         :添加新快捷键配置
+Import             :导入
+ImportToolTip      :导入快捷键配置
+Export             :导出
+ExportToolTip      :导出快捷键配置
+Save               :保存
+SaveToolTip        :保存所有配置
+AutoSave           :自动保存
+AutoSaveToolTip    :关闭窗口时自动保存配置
+
+//偏好菜单
+Preferences                  :设置
+PreferencesToolTip           :配置程序设置
+ApplicationSettings          :程序设置
+AutoUpdate                   :自动更新
+AutoUpdateToolTip            :启动时自动检查更新
+ThemeIssue                   :我有主题问题
+ThemeIssueToolTip            :如果您遇到与主题相关的问题，请勾选此选项
+SaveClosedHistory            :保存关闭历史
+SaveClosedHistoryToolTip     :保存已关闭窗口的历史记录，以便稍后重新打开（重新打开已关闭的窗口、标签页搜索）
+RestorePreviousWindows       :恢复窗口
+RestorePreviousWindowsToolTip:重启或崩溃后恢复之前打开的窗口
+HideTrayIcon                 :隐藏托盘图标
+HideTrayIconToolTip          :隐藏系统托盘图标
+SelectLanguage               :语言
+SelectLanguageToolTip        :选择语言
+
+//关于菜单
+About             :关于
+AboutToolTip      :关于程序和支持选项
+Profile           :提升您的Windows文件资源管理器使用体验
+Star              :GitHub星标
+SupportProject    :支持项目
+SupportProjectText:如果您觉得这个程序有用，可以考虑通过以下方式支持其开发：
+GitHubSponsors    :GitHub赞助
+Patreon           :Patreon众筹
+Coffee            :请我喝杯咖啡
+PayPal            :PayPal付款
+Developer         :开发者
+Supporters        :支持者
+SupportersText    :感谢所有支持这个项目的人！
+FirstSupport      :成为首位支持此项目的人！
+SupportMeaning    :您的支持有助于这个项目走的更远
+
+//任务栏菜单
+NotifyIconText        :资源管理器实用工具：强制将新窗口转换为标签页
+KeyboardHook          :键盘钩子
+KeyboardHookToolTip   :启用或禁用键盘快捷键
+MouseHook             :鼠标钩子
+MouseHookToolTip      :启用或禁用鼠标快捷键
+WindowHook            :资源管理器钩子
+WindowHookToolTip     :在标签页打开新资源管理器
+ReuseTabs             :重用标签页
+ReuseTabsToolTip      :启用后，将导航至现有标签页，而非打开重复的标签页
+AddToStartup          :开机启动
+AddToStartupToolTip   :开机时自动打开Explorer Tab Utility
+CheckForUpdates       :检查更新
+CheckForUpdatesToolTip:检查是否有可用的更新
+Settings              :设置
+SettingsToolTip       :打开设置窗口
+Exit                  :退出
+ExitToolTip           :退出Explorer Tab Utility并停止所有的钩子
+
+//快捷键配置控件
+EnabledToolTip       :启用或禁用配置
+Name                 :名称
+NameToolTip          :配置名称
+Hotkeys              :快捷键
+HotkeysToolTip       :要监听的键盘或鼠标按键。点击以录制新的按键组合
+ScopeToolTip         :快捷键的作用范围：全局（任何地方）或仅当文件资源管理器处于焦点时
+ActionToolTip        :按下快捷键时要执行的操作
+ExpanderToggleToolTip:显示更多配置
+DeleteToolTip        :删除当前配置
+Path                 :路径
+PathToolTip          :按下快捷键时打开的路径（文件夹、文件、网站、CLSID唯一标识符）
+Delay                :延迟
+DelayToolTip         :执行操作前的延迟时间，单位毫秒
+Handled              :已处理
+HandledToolTip       :阻止在其他应用程序中处理此快捷键
+OpenAsTab            :标签页
+OpenAsTabToolTip     :以标签页形式打开，而非新窗口
+
+//自定义消息弹窗控件
+Ok    :确定
+Cancel:取消
+Yes   :是
+No    :否
+
+//标签页搜索控件
+ClearToolTip:清除已关闭窗口的历史记录
+
+//提示消息
+AlreadyRunning                :另一个实例已在运行。\r\n请检查系统托盘图标。
+RestorePreviouslyOpenedWindows:您想恢复之前打开的窗口吗？
+HideTrayIconWithHotkeys       :您可以通过按下{0}来恢复显示。
+HideTrayIconWithOutHotkeys    :如果未配置快捷键来切换显示，则无法隐藏托盘图标。
+ConfirmClearHistory           :您确定要清除已关闭窗口的历史记录吗？
+ConfirmClearHistoryTitle      :确认清除历史记录
+
+//HotkeyScope枚举
+Global      :全局
+FileExplorer:资源管理器
+
+//HotKeyAction枚举
+Open                   :打开
+OpenToolTip            :在新标签页或者窗口打开指定的路径
+Duplicate              :重复
+DuplicateToolTip       :重复当前标签页
+ReopenClosed           :重新打开
+ReopenClosedToolTip    :重新打开上一个已关闭的路径
+TabSearch              :标签页搜索
+TabSearchToolTip       :打开标签页搜索框，以查找切换标签页
+NavigateBack           :后退
+NavigateBackToolTip    :导航后退
+NavigateUp             :父目录
+NavigateUpToolTip      :返回父目录
+NavigateForward        :前进
+NavigateForwardToolTip :导航前进
+SetTargetWindow        :标记窗口
+SetTargetWindowToolTip :标记接收新标签页的窗口
+ToggleWinHook          :资源管理器开关
+ToggleWinHookToolTip   :切换是否在标签页打开新资源管理器
+ToggleReuseTabs        :重用标签页开关
+ToggleReuseTabsToolTip :切换是否重用标签页
+ToggleVisibility       :程序显隐开关
+ToggleVisibilityToolTip:切换显示或隐藏程序
+DetachTab              :分离标签
+DetachTabToolTip       :分离当前标签页
+SnapRight              :右贴靠
+SnapRightToolTip       :将当前窗口贴靠到屏幕右侧
+SnapLeft               :左贴靠
+SnapLeftToolTip        :将当前窗口贴靠到屏幕左侧
+SnapUp                 :上贴靠
+SnapUpToolTip          :将当前窗口贴靠到屏幕上侧
+SnapDown               :底贴靠
+SnapDownToolTip        :将当前窗口贴靠到屏幕底侧

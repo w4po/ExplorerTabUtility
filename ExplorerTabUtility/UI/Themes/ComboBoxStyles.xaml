@@ -4,7 +4,7 @@
                     xmlns:behaviors="clr-namespace:ExplorerTabUtility.UI.Behaviors">
 
     <!-- Converters -->
-    <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+    <converters:ComboBoxItemInfoConverter x:Key="ComboBoxItemInfoConverter" />
 
     <!-- ComboBox Item Style -->
     <Style x:Key="CustomComboBoxItemStyle" TargetType="ComboBoxItem">
@@ -22,7 +22,7 @@
                             CornerRadius="2"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter TextElement.Foreground="{StaticResource TextPrimaryBrush}"
-                                          ToolTip="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                          ToolTip="{Binding Converter={StaticResource ComboBoxItemInfoConverter}}" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -70,7 +70,7 @@
                                        Margin="{TemplateBinding Padding}"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Left"
-                                       Text="{Binding SelectedItem, RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"
+                                       Text="{Binding SelectedValue, RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"
                                        Foreground="{StaticResource TextPrimaryBrush}" />
                             <Path x:Name="Arrow"
                                   Grid.Column="1"
@@ -111,6 +111,8 @@
         <Setter Property="MinWidth" Value="100" />
         <Setter Property="behaviors:HoverBrightness.IsEnabled" Value="True" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="DisplayMemberPath" Value="Display"/>
+        <Setter Property="SelectedValuePath" Value="Display"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">

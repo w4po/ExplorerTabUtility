@@ -63,7 +63,10 @@ public class ProfileManager
         _tempProfiles.Remove(profile);
         var control = FindControlByProfile(profile);
         if (control != null)
+        {
             _profilePanel.Children.Remove(control);
+            control.Dispose();
+        }
     }
 
     private void RefreshPanel()
