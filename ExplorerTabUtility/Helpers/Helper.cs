@@ -277,7 +277,7 @@ public static class Helper
     }
     public static bool IsFileExplorerWindow(nint window)
     {
-        return window != 0 && WinApi.IsWindowHasClassName(window, "CabinetWClass");
+        return window != 0 && WinApi.IsWindow(window) && WinApi.IsWindowHasClassName(window, "CabinetWClass");
     }
     public static bool IsFileExplorerForeground(out nint foregroundWindow)
     {

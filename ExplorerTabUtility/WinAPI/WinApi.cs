@@ -66,6 +66,10 @@ public static class WinApi
     public static extern bool IsIconic(nint handle);
 
     [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool IsWindow(nint hWnd);
+
+    [DllImport("user32.dll")]
     public static extern nint GetForegroundWindow();
 
     [DllImport("user32.dll", SetLastError = true)]
