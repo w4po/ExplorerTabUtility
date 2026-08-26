@@ -24,6 +24,7 @@ public class ExplorerWatcher : IHook
 {
     private static bool _instanceRunning;
     private static Guid _shellBrowserGuid = typeof(IShellBrowser).GUID;
+    private int _disposed;
 
     private ShellWindows _shellWindows = null!;
     private ShellPathComparer _shellPathComparer = null!;
@@ -931,6 +932,7 @@ public class ExplorerWatcher : IHook
     }
     private void DisposeShellObjects()
     {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
         PersistWindows();
 
         // Unhook global event
