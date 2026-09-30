@@ -1,0 +1,10 @@
+﻿<controls:BaseBookmarkWindow x:Class="ExplorerTabUtility.UI.Views.BookmarkNavigatePopup"
+                             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                             xmlns:controls="clr-namespace:ExplorerTabUtility.UI.Views.Controls"
+                             Style="{StaticResource BaseBookmarkWindowStyle}"
+                             Width="500" Height="50">
+    <Border Style="{StaticResource BaseBookmarkWindowBorderStyle}">
+        <controls:BookmarkMenu x:Name="BookmarkMenu" Style="{StaticResource BookmarkMenuStyle}"/>
+    </Border>
+</controls:BaseBookmarkWindow>

@@ -6,11 +6,14 @@ using System.Collections.Generic;
 using ExplorerTabUtility.Models;
 using ExplorerTabUtility.Helpers;
 using H.Hooks;
+using ScopeItem = ExplorerTabUtility.Models.ComboBoxItemInfo<ExplorerTabUtility.Models.HotkeyScope>;
+using ActionItem = ExplorerTabUtility.Models.ComboBoxItemInfo<ExplorerTabUtility.Models.HotKeyAction>;
+using ExplorerTabUtility.Languages.Manager;
 
 namespace ExplorerTabUtility.UI.Views;
 
 // ReSharper disable once RedundantExtendsListEntry
-public partial class HotKeyProfileControl : UserControl
+public partial class HotKeyProfileControl : UserControl, IDisposable
 {
     // Fields
     private Key _lastClickKey;
@@ -54,11 +57,13 @@ public partial class HotKeyProfileControl : UserControl
             TxtHotKeys.Text = _profile.HotKeys.HotKeysToString(_profile.IsDoubleClick);
 
         // Setup ComboBoxes
-        CbScope.ItemsSource = Enum.GetValues(typeof(HotkeyScope));
-        CbScope.SelectedItem = _profile.Scope;
+        var scopes = ((HotkeyScope[])Enum.GetValues(typeof(HotkeyScope)))
+            .Select(t => new ScopeItem(t, LangeuageHelper.Instance.LanguageFields.GetValue(t.ToString())))
+            .ToList();
+        CbScope.ItemsSource = scopes;
+        CbScope.SelectedItem = scopes.FirstOrDefault(t => t.Key == _profile.Scope);
 
-        UpdateActionComboBox();
-        CbAction.SelectedItem = _profile.Action;
+        UpdateActionComboBox(_profile.Action);
 
         TxtPath.Text = _profile.Path ?? string.Empty;
         NDelay.Value = _profile.Delay;
@@ -88,6 +93,32 @@ public partial class HotKeyProfileControl : UserControl
         CbHandled.Unchecked += CbHandled_CheckedChanged;
         CbOpenAsTab.Checked += CbOpenAsTab_CheckedChanged;
         CbOpenAsTab.Unchecked += CbOpenAsTab_CheckedChanged;
+
+        LangeuageHelper.Instance.OnLangeuageChanged += Instance_OnLangeuageChanged;
+    }
+
+    private void Instance_OnLangeuageChanged()
+    {
+        var scopes = (List<ScopeItem>)CbScope.ItemsSource;
+        foreach (var item in scopes)
+        {
+            item.Display = LangeuageHelper.Instance.LanguageFields.GetValue(item.Key.ToString());
+        }
+
+        var actions = (List<ActionItem>)CbAction.ItemsSource;
+        foreach (var item in actions)
+        {
+            var name = item.Key.ToString();
+            item.Display = LangeuageHelper.Instance.LanguageFields.GetValue(name);
+            item.ToolTip = LangeuageHelper.Instance.LanguageFields.GetValue($"{name}ToolTip");
+        }
+
+        //重新设置选中项，没有的话选中项的不会更新
+        var scopeSelectedIndex = CbScope.SelectedIndex;
+        var actionSelectedIndex = CbAction.SelectedIndex;
+        CbScope.SelectedIndex = -1;
+        CbScope.SelectedIndex = scopeSelectedIndex;
+        CbAction.SelectedIndex = actionSelectedIndex;
     }
 
     // Event handlers
@@ -96,7 +127,7 @@ public partial class HotKeyProfileControl : UserControl
 
     private void CbScope_SelectedIndexChanged(object _, SelectionChangedEventArgs __)
     {
-        _profile.Scope = (HotkeyScope)(CbScope.SelectedItem ?? 0);
+        _profile.Scope = GetSelectedHotkeyScope();
         UpdateActionComboBox();
     }
 
@@ -237,15 +268,14 @@ public partial class HotKeyProfileControl : UserControl
     }
 
     // Methods
-    private void UpdateActionComboBox()
+    private void UpdateActionComboBox(HotKeyAction? action = null)
     {
         var allowedActions = GetAllowedActions(_profile.Scope);
 
         // Preserve the current action if it's allowed, otherwise use the first allowed action
-        var currentAction = (HotKeyAction)(CbAction.SelectedItem ?? 0);
-        var desiredAction = allowedActions.Contains(currentAction)
-            ? currentAction
-            : allowedActions.FirstOrDefault();
+        var currentAction = action ?? GetSelectedHotKeyAction();
+        var desiredAction = allowedActions.FirstOrDefault(t => t.Key == currentAction)
+            ?? allowedActions.FirstOrDefault();
 
         CbAction.ItemsSource = allowedActions;
         CbAction.SelectedItem = desiredAction;
@@ -271,7 +301,7 @@ public partial class HotKeyProfileControl : UserControl
 
     private void UpdateAction()
     {
-        var selectedAction = (HotKeyAction)(CbAction.SelectedItem ?? 0);
+        var selectedAction = GetSelectedHotKeyAction();
         _profile.Action = selectedAction;
         switch (selectedAction)
         {
@@ -290,16 +320,16 @@ public partial class HotKeyProfileControl : UserControl
                 CbOpenAsTab.IsEnabled = false;
                 break;
         }
-        
+
         // If the name is empty or is an exact match of an action, set it to the hotkey.
-        var isExactMatch = Enum.GetNames(typeof(HotKeyAction)).Any(a => a == TxtName.Text);
-        if (string.IsNullOrWhiteSpace(TxtName.Text) || isExactMatch)
-            TxtName.Text = selectedAction.ToString();
+        var isExactMatch = Enum.GetNames(typeof(HotKeyAction)).Any(a => LangeuageHelper.Instance.LanguageFields.ContainsValue(a, TxtName.Text));
+        if (string.IsNullOrWhiteSpace(TxtName.Text) || TxtName.Text == TxtHotKeys.Text || isExactMatch)
+            TxtName.Text = LangeuageHelper.Instance.LanguageFields.GetValue(selectedAction.ToString());
     }
 
-    private static HotKeyAction[] GetAllowedActions(HotkeyScope scope)
+    private static List<ActionItem> GetAllowedActions(HotkeyScope scope)
     {
-        return scope switch
+        var actions = scope switch
         {
             HotkeyScope.Global =>
             [
@@ -317,6 +347,13 @@ public partial class HotKeyProfileControl : UserControl
                 .OfType<HotKeyAction>()
                 .ToArray()
         };
+        return actions.Select(t =>
+        {
+            var name = t.ToString();
+            var display = LangeuageHelper.Instance.LanguageFields.GetValue(name);
+            var tooltip = LangeuageHelper.Instance.LanguageFields.GetValue($"{name}ToolTip");
+            return new ActionItem(t, display, tooltip);
+        }).ToList();
     }
 
     private void InitializeKeybindingHooks()
@@ -351,5 +388,20 @@ public partial class HotKeyProfileControl : UserControl
 
         if (inform)
             _keybindingHookStopped?.Invoke();
+    }
+
+    private HotkeyScope GetSelectedHotkeyScope()
+    {
+        return ((ScopeItem)CbScope.SelectedItem)?.Key ?? HotkeyScope.Global;
+    }
+
+    private HotKeyAction GetSelectedHotKeyAction()
+    {
+        return ((ActionItem)CbAction.SelectedItem)?.Key ?? HotKeyAction.Open;
+    }
+
+    public void Dispose()
+    {
+        LangeuageHelper.Instance.OnLangeuageChanged -= Instance_OnLangeuageChanged;
     }
 }

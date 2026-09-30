@@ -1,0 +1,932 @@
+﻿<ResourceDictionary x:Class="ExplorerTabUtility.UI.Themes.BookmarkStyles"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:language="clr-namespace:ExplorerTabUtility.Languages.Manager"
+                    xmlns:managers="clr-namespace:ExplorerTabUtility.Managers"
+                    xmlns:models="clr-namespace:ExplorerTabUtility.Models"
+                    xmlns:behaviors="clr-namespace:ExplorerTabUtility.UI.Behaviors"
+                    xmlns:converters="clr-namespace:ExplorerTabUtility.UI.Converters"
+                    xmlns:controls="clr-namespace:ExplorerTabUtility.UI.Views.Controls">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/ExplorerTabUtility;component/UI/Themes/ComboBoxStyles.xaml"/>
+        <ResourceDictionary Source="pack://application:,,,/ExplorerTabUtility;component/UI/Themes/TextBoxStyles.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    <converters:LevelToThicknessConverter x:Key="LevelToThicknessConverter"/>
+
+    <!--#region 窗体样式 -->
+    <!-- BaseBookmarkWindow Style -->
+    <Style x:Key="BaseBookmarkWindowStyle" TargetType="controls:BaseBookmarkWindow">
+        <Setter Property="AllowsTransparency" Value="True"/>
+        <Setter Property="SizeToContent" Value="Height"/>
+        <Setter Property="ShowInTaskbar" Value="False"/>
+        <Setter Property="WindowStyle" Value="None"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="ResizeMode" Value="NoResize"/>
+        <Setter Property="Topmost" Value="True"/>
+    </Style>
+    <!--#endregion-->
+
+    <!--#region Border样式 -->
+    <!-- BaseBookmarkWindow Border Style -->
+    <Style x:Key="BaseBookmarkWindowBorderStyle" TargetType="Border">
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderGradientBrush}"/>
+        <Setter Property="Background" Value="{StaticResource BackgroundGradientBrush}"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="{StaticResource ShadowColor}"
+                              Direction="270"
+                              ShadowDepth="5"
+                              BlurRadius="15"
+                              Opacity="0.4"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <!--#endregion-->
+
+    <!--#region TextBlock样式 -->
+    <!-- Bookmark Normal TextBlock Style-->
+    <Style x:Key="BookmarkTextBlockStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- Bookmark Header TextBlock Style-->
+    <Style x:Key="BookmarkHeaderTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BookmarkTextBlockStyle}">
+        <Setter Property="Margin" Value="4 0 0 10"/>
+    </Style>
+
+    <!-- Bookmark Title TextBlock Style-->
+    <Style x:Key="BookmarkTitleTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BookmarkHeaderTextBlockStyle}">
+        <Setter Property="FontSize" Value="18"/>
+    </Style>
+
+    <!-- Bookmark Manage Menu TextBlock Style-->
+    <Style x:Key="BookmarkManageMenuTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource BookmarkTitleTextBlockStyle}">
+        <Setter Property="behaviors:BookmarkHelper.OpenContentMenuOnLeftClick" Value="True"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="TextAlignment" Value="Center"/>
+        <Setter Property="Width" Value="24"/>
+        <Setter Property="Height" Value="24"/>
+    </Style>
+
+    <!-- Bookmark ListBoxItem Icon Style -->
+    <Style x:Key="BookmarkListBoxItemIconStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI Emoji"/>
+        <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="0 0 10 0"/>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--Bookmark ListBoxItem Location Style-->
+    <Style x:Key="BookmarkListBoxItemNameStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}"/>
+        <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="2"/>
+    </Style>
+
+    <!--Bookmark ListBoxItem Location Style-->
+    <Style x:Key="BookmarkListBoxItemLocationStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BookmarkListBoxItemNameStyle}">
+        <Setter Property="Visibility" Value="Collapsed"/>
+        <Setter Property="Margin" Value="10 2 0 2"/>
+        <Setter Property="Opacity" Value="0.5"/>
+    </Style>
+
+    <!--BookmarkMenu Icon Style-->
+    <Style x:Key="BookmarkMenuIconStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI Emoji"/>
+        <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="4"/>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--BookmarkMenu Display Style-->
+    <Style x:Key="BookmarkMenuDisplayStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}"/>
+        <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="4"/>
+    </Style>
+
+    <!--Bookmark TreeView Icon Style-->
+    <Style x:Key="BookmarkTreeViewIconStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI Emoji"/>
+        <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--Bookmark TreeView Display Style-->
+    <Style x:Key="BookmarkTreeViewDisplayStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="FontFamily" Value="{StaticResource DefaultFontFamily}"/>
+        <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="2"/>
+        <Setter Property="Padding" Value="8,4"/>
+    </Style>
+    <!--#endregion-->
+
+    <!--#region TextBox样式 -->
+    <!-- Bookmark Search TextBox Style -->
+    <Style x:Key="BookmarkSearchTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource CustomTextBoxStyle}">
+        <Setter Property="Margin" Value="4"/>
+        <Setter Property="Padding" Value="8,3"/>
+    </Style>
+
+    <!--Bookmark TreeView Edit Style-->
+    <Style x:Key="BookmarkTreeViewEditStyle" TargetType="{x:Type TextBox}" BasedOn="{StaticResource CustomTextBoxStyle}">
+        <Setter Property="Width" Value="200"/>
+        <Setter Property="Margin" Value="2"/>
+        <Setter Property="Padding" Value="6,4,6,3"/>
+    </Style>
+    <!--#endregion-->
+
+    <!--#region Button样式 -->
+    <!-- BookmarkButton Style-->
+    <Style x:Key="BookmarkButtonStyle" TargetType="ButtonBase">
+        <Setter Property="MinWidth" Value="60"/>
+        <Setter Property="Margin" Value="10 15 10 15"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ButtonBase">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="10 4 10 6"
+                            CornerRadius="4">
+                        <ContentPresenter x:Name="Main" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="RenderTransform" TargetName="Main">
+                                <Setter.Value>
+                                    <TranslateTransform X="1" Y="1"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Bookmark ComboBox Button Style-->
+    <Style x:Key="BookmarkComboBoxButtonStyle" TargetType="ButtonBase">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="8,8"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ButtonBase">
+                    <Border x:Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="Transparent"
+                            BorderThickness="1"
+                            CornerRadius="2"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter TextElement.Foreground="{StaticResource TextPrimaryBrush}"
+                                          HorizontalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource ControlHoverBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <!--#endregion-->
+
+    <!--#region 右键菜单 -->
+    <!--#region ListBoxItem右键菜单 -->
+    <!-- 多选右键菜单 -->
+    <ContextMenu x:Key="MultiSelectListBoxItemContextMenu">
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Delete"
+                  Header="{Binding LanguageFields.Delete,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Delete}"/>
+        <Separator/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+T"
+                  Header="{Binding LanguageFields.OpenInNewTab,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInNewTab}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+W"
+                  Header="{Binding LanguageFields.OpenInNewWindow,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInNewWindow}"/>
+        <Separator/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+X"
+                  Header="{Binding LanguageFields.Cut,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Cut}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+C"
+                  Header="{Binding LanguageFields.Copy,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Copy}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+V"
+                  Header="{Binding LanguageFields.Paste,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Paste}"
+                  IsEnabled="{Binding Source={x:Static managers:BookmarkManager.ClipboardManager},Path=ListBoxCanPaste}"/>
+    </ContextMenu>
+
+    <!-- 文件夹的右键菜单 -->
+    <ContextMenu x:Key="FolderListBoxItemContextMenu">
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+G"
+                  Header="{Binding LanguageFields.ShowInFolder,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.ShowInFolder}"
+                  Visibility="{Binding Source={x:Static managers:BookmarkManager.ClipboardManager},Path=IsSearch,Converter={StaticResource BoolToVisibilityConverter}}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="F2"
+                  Header="{Binding LanguageFields.Rename,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Rename}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Delete"
+                  Header="{Binding LanguageFields.Delete,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Delete}"/>
+        <Separator/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+T"
+                  Header="{Binding LanguageFields.OpenInNewTab,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInNewTab}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+W"
+                  Header="{Binding LanguageFields.OpenInNewWindow,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInNewWindow}"/>
+        <Separator/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+X"
+                  Header="{Binding LanguageFields.Cut,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Cut}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+C"
+                  Header="{Binding LanguageFields.Copy,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Copy}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+V"
+                  Header="{Binding LanguageFields.Paste,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Paste}"
+                  IsEnabled="{Binding Source={x:Static managers:BookmarkManager.ClipboardManager},Path=ListBoxCanPaste}"/>
+    </ContextMenu>
+
+    <!-- 书签的右键菜单 -->
+    <ContextMenu x:Key="BookmarkListBoxItemContextMenu">
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+G"
+                  Header="{Binding LanguageFields.ShowInFolder,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.ShowInFolder}"
+                  Visibility="{Binding Source={x:Static managers:BookmarkManager.ClipboardManager},Path=IsSearch,Converter={StaticResource BoolToVisibilityConverter}}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="F2"
+                  Header="{Binding LanguageFields.Edit,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Edit}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Delete"
+                  Header="{Binding LanguageFields.Delete,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Delete}"/>
+        <Separator/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+O"
+                  Header="{Binding LanguageFields.OpenInCurrentTab,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInCurrentTab}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+T"
+                  Header="{Binding LanguageFields.OpenInNewTab,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInNewTab}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+W"
+                  Header="{Binding LanguageFields.OpenInNewWindow,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInNewWindow}"/>
+        <Separator/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+X"
+                  Header="{Binding LanguageFields.Cut,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Cut}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+C"
+                  Header="{Binding LanguageFields.Copy,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Copy}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+V"
+                  Header="{Binding LanguageFields.Paste,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Paste}"
+                  IsEnabled="{Binding Source={x:Static managers:BookmarkManager.ClipboardManager},Path=ListBoxCanPaste}"/>
+    </ContextMenu>
+    <!--#endregion-->
+
+    <!--#region MenuItem右键菜单 -->
+    <!-- 特殊文件夹的右键菜单 -->
+    <ContextMenu x:Key="SpecialFolderMenuItemContextMenu">
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+LMB"
+                  Header="{Binding LanguageFields.OpenInNewTab,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInNewTab}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Shift+LMB"
+                  Header="{Binding LanguageFields.OpenInNewWindow,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInNewWindow}"/>
+        <Separator/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}"
+                  Header="{Binding LanguageFields.NewFolder,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.NewFolder}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}"
+                  Header="{Binding LanguageFields.NewBookmark,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.NewBookmark}"/>
+        <Separator/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}"
+                  Header="{Binding LanguageFields.ManageBookmarks,Source={x:Static language:LangeuageHelper.Instance}}"
+                  InputGestureText="{Binding Source={x:Static managers:BookmarkManager.ClipboardManager},Path=ManageHotKey}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.ManageBookmarks}"/>
+    </ContextMenu>
+
+    <!-- 文件夹的右键菜单 -->
+    <ContextMenu x:Key="FolderMenuItemContextMenu">
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+LMB"
+                  Header="{Binding LanguageFields.OpenInNewTab,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInNewTab}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Shift+LMB"
+                  Header="{Binding LanguageFields.OpenInNewWindow,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInNewWindow}"/>
+        <Separator/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}"
+                  Header="{Binding LanguageFields.NewFolder,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.NewFolder}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}"
+                  Header="{Binding LanguageFields.NewBookmark,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.NewBookmark}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}"
+                  Header="{Binding LanguageFields.Rename,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Rename}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}"
+                  Header="{Binding LanguageFields.Delete,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Delete}"/>
+        <Separator/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}"
+                  Header="{Binding LanguageFields.ManageBookmarks,Source={x:Static language:LangeuageHelper.Instance}}"
+                  InputGestureText="{Binding Source={x:Static managers:BookmarkManager.ClipboardManager},Path=ManageHotKey}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.ManageBookmarks}"/>
+    </ContextMenu>
+
+    <!-- 书签的右键菜单 -->
+    <ContextMenu x:Key="BookmarkMenuItemContextMenu">
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="LMB"
+                  Header="{Binding LanguageFields.OpenInCurrentTab,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInCurrentTab}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+LMB"
+                  Header="{Binding LanguageFields.OpenInNewTab,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInNewTab}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Shift+LMB"
+                  Header="{Binding LanguageFields.OpenInNewWindow,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInNewWindow}"/>
+        <Separator/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}"
+                  Header="{Binding LanguageFields.NewFolder,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.NewFolder}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}"
+                  Header="{Binding LanguageFields.NewBookmark,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.NewBookmark}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}"
+                  Header="{Binding LanguageFields.Edit,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Edit}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}"
+                  Header="{Binding LanguageFields.Delete,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Delete}"/>
+        <Separator/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}"
+                  Header="{Binding LanguageFields.ManageBookmarks,Source={x:Static language:LangeuageHelper.Instance}}"
+                  InputGestureText="{Binding Source={x:Static managers:BookmarkManager.ClipboardManager},Path=ManageHotKey}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.ManageBookmarks}"/>
+    </ContextMenu>
+    <!--#endregion-->
+
+    <!--#region TreeViewItem右键菜单 -->
+    <!-- 保存界面右键菜单 -->
+    <ContextMenu x:Key="SaveTreeViewItemContextMenu">
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="F2"
+                  Header="{Binding LanguageFields.Rename,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Rename}"
+                  Visibility="{Binding FirstLevel,Converter={StaticResource BoolToVisibilityConverter},ConverterParameter={x:Static Visibility.Collapsed}}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Delete"
+                  Header="{Binding LanguageFields.Delete,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Delete}"
+                  Visibility="{Binding FirstLevel,Converter={StaticResource BoolToVisibilityConverter},ConverterParameter={x:Static Visibility.Collapsed}}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+N"
+                  Header="{Binding LanguageFields.NewFolder,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.NewFolder}"/>
+    </ContextMenu>
+
+    <!-- 管理界面右键菜单 -->
+    <ContextMenu x:Key="ManageTreeViewItemContextMenu">
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="F2"
+                  Header="{Binding LanguageFields.Rename,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Rename}"
+                  Visibility="{Binding FirstLevel,Converter={StaticResource BoolToVisibilityConverter},ConverterParameter={x:Static Visibility.Collapsed}}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Delete"
+                  Header="{Binding LanguageFields.Delete,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Delete}"
+                  Visibility="{Binding FirstLevel,Converter={StaticResource BoolToVisibilityConverter},ConverterParameter={x:Static Visibility.Collapsed}}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+N"
+                  Header="{Binding LanguageFields.NewFolder,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.NewFolder}"/>
+        <Separator/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+T"
+                  Header="{Binding LanguageFields.OpenInNewTab,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInNewTab}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+W"
+                  Header="{Binding LanguageFields.OpenInNewWindow,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.OpenInNewWindow}"/>
+        <Separator/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+X"
+                  Header="{Binding LanguageFields.Cut,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Cut}"
+                  Visibility="{Binding FirstLevel,Converter={StaticResource BoolToVisibilityConverter},ConverterParameter={x:Static Visibility.Collapsed}}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+C"
+                  Header="{Binding LanguageFields.Copy,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Copy}"/>
+        <MenuItem Style="{StaticResource TextBoxContextMenuItemStyle}" InputGestureText="Ctrl+V"
+                  Header="{Binding LanguageFields.Paste,Source={x:Static language:LangeuageHelper.Instance}}"
+                  Command="{Binding PlacementTarget.DataContext.MenuClickCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                  CommandParameter="{x:Static models:BookmarkAction.Paste}"
+                  IsEnabled="{Binding Source={x:Static managers:BookmarkManager.ClipboardManager},Path=TreeViewCanPaste}"/>
+    </ContextMenu>
+    <!--#endregion-->
+    <!--#endregion-->
+
+    <!--#region ComboBox样式 -->
+    <!-- Bookmark ComboBox Style -->
+    <Style x:Key="BookmarkComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource CustomComboBoxStyle}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid>
+                        <ToggleButton x:Name="ToggleButton"
+                                      BorderBrush="{TemplateBinding BorderBrush}"
+                                      Background="{TemplateBinding Background}"
+                                      BorderThickness="{TemplateBinding BorderThickness}"
+                                      Padding="{TemplateBinding Padding}"
+                                      IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                      Focusable="False"
+                                      Style="{StaticResource ComboBoxToggleButtonStyle}"/>
+                        <Popup x:Name="Popup"
+                               Placement="Bottom"
+                               IsOpen="{TemplateBinding IsDropDownOpen}"
+                               AllowsTransparency="True"
+                               Focusable="False"
+                               PopupAnimation="Slide">
+                            <Grid x:Name="DropDown"
+                                  SnapsToDevicePixels="True"
+                                  MinWidth="{TemplateBinding ActualWidth}"
+                                  MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition Height="auto"/>
+                                </Grid.RowDefinitions>
+                                <Border x:Name="DropDownBorder"
+                                        Background="{StaticResource DropdownBackgroundBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1"/>
+                                <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
+                                    <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                </ScrollViewer>
+                                <Border Grid.Row="1"
+                                        Background="{StaticResource DropdownBackgroundBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="0 1 0 0"
+                                        CornerRadius="0,0,2,2">
+                                    <Button x:Name="BtnSelectOtherFolder" Style="{StaticResource BookmarkComboBoxButtonStyle}"
+                                            Content="{TemplateBinding behaviors:BookmarkHelper.SelectOtherFolderText}"/>
+                                </Border>
+                            </Grid>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasItems" Value="False">
+                            <Setter TargetName="DropDownBorder" Property="MinHeight" Value="95"/>
+                        </Trigger>
+                        <Trigger Property="IsGrouping" Value="True">
+                            <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="ToggleButton" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter TargetName="ToggleButton" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <!--#endregion-->
+
+    <!--#region ListBox样式 -->
+    <!-- Bookmark ListBoxItem Style -->
+    <Style x:Key="BookmarkListBoxItemStyle" TargetType="ListBoxItem">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="12, 10"/>
+        <Setter Property="Margin" Value="4,2"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border x:Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="auto" MaxWidth="360"/>
+                                <ColumnDefinition Width="auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding Icon}" Style="{StaticResource BookmarkListBoxItemIconStyle}"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Name}" Style="{StaticResource BookmarkListBoxItemNameStyle}"/>
+                            <TextBlock Grid.Column="2" x:Name="PART_Location" Text="{Binding CurrentBookmark.Location}" Style="{StaticResource BookmarkListBoxItemLocationStyle}"/>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource ControlHoverBrush}"/>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                        </Trigger>
+                        <DataTrigger Binding="{Binding IsFolder}" Value="False">
+                            <Setter TargetName="PART_Location" Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ToolTip">
+            <Setter.Value>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right"
+                               Text="{Binding LanguageFields.BookmarkName,Source={x:Static language:LangeuageHelper.Instance}}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="："/>
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Name}"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right"
+                               Text="{Binding LanguageFields.BookmarkLocation,Source={x:Static language:LangeuageHelper.Instance}}"
+                               Visibility="{Binding IsFolder,Converter={StaticResource BoolToVisibilityConverter},ConverterParameter={x:Static Visibility.Collapsed}}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="："
+                               Visibility="{Binding IsFolder,Converter={StaticResource BoolToVisibilityConverter},ConverterParameter={x:Static Visibility.Collapsed}}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding CurrentBookmark.Location}"
+                               Visibility="{Binding IsFolder,Converter={StaticResource BoolToVisibilityConverter},ConverterParameter={x:Static Visibility.Collapsed}}"/>
+                </Grid>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Path=(behaviors:ListBoxHelper.IsMultipleSelected),RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True">
+                <Setter Property="ContextMenu" Value="{StaticResource MultiSelectListBoxItemContextMenu}"/>
+            </DataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding Path=(behaviors:ListBoxHelper.IsMultipleSelected),RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="False"/>
+                    <Condition Binding="{Binding IsFolder}" Value="True"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="ContextMenu" Value="{StaticResource FolderListBoxItemContextMenu}"/>
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding Path=(behaviors:ListBoxHelper.IsMultipleSelected),RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="False"/>
+                    <Condition Binding="{Binding IsFolder}" Value="False"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="ContextMenu" Value="{StaticResource BookmarkListBoxItemContextMenu}"/>
+            </MultiDataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Bookmark ListBox Style -->
+    <Style x:Key="BookmarkListBoxStyle" TargetType="ListBox">
+        <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Margin" Value="4"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ItemContainerStyle" Value="{StaticResource BookmarkListBoxItemStyle}"/>
+        <Setter Property="SelectionMode" Value="Extended"/>
+        <Setter Property="behaviors:ListBoxHelper.MonitorSelection" Value="True"/>
+    </Style>
+    <!--#endregion-->
+
+    <!--#region Menu样式 -->
+    <!--子项容器样式-->
+    <HierarchicalDataTemplate x:Key="BookmarkMenuItemTemplate" DataType="{x:Type models:BookmarkMenuInfo}" ItemsSource="{Binding Path=Children}"/>
+
+    <!--菜单项样式-->
+    <Style x:Key="BookmarkMenuItemStyle" TargetType="MenuItem">
+        <Setter Property="Command" Value="{Binding ClickCommand}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Grid x:Name="PART_Grid" Background="{StaticResource ControlBackgroundBrush}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="auto"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="{Binding Icon}" Style="{StaticResource BookmarkMenuIconStyle}"
+                                   Visibility="{Binding IsShowIcon,Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter={x:Static Visibility.Visible}}"/>
+
+                        <TextBlock x:Name="TxtName" Grid.Column="1" Text="{Binding DisplayName}" Style="{StaticResource BookmarkMenuDisplayStyle}"
+                                   ToolTip="{Binding NameTooltip}"
+                                   Visibility="{Binding IsVisibility,Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter={x:Static Visibility.Visible}}"/>
+
+                        <TextBlock Grid.Column="2" Text="{Binding SubIcon}" Style="{StaticResource BookmarkMenuIconStyle}"
+                                   Visibility="{Binding IsShowSubIcon,Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter={x:Static Visibility.Visible}}"/>
+
+                        <Popup Placement="{Binding PlacementMode}" AllowsTransparency="True" Focusable="False"
+                               IsOpen="{Binding Path=IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}">
+                            <Border BorderThickness="1" BorderBrush="Black" SnapsToDevicePixels="True">
+                                <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                            </Border>
+                        </Popup>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding RelativeSource={RelativeSource Self},Path=IsMouseOver}" Value="True"/>
+                                <Condition Binding="{Binding SubIcon}" Value=">"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="PART_Grid" Property="Background" Value="{StaticResource ControlHoverBrush}"/>
+                        </MultiDataTrigger>
+                        <DataTrigger Binding="{Binding FirstLevel}" Value="False">
+                            <Setter TargetName="TxtName" Property="MinWidth" Value="200"/>
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsFolder}" Value="True"/>
+                    <Condition Binding="{Binding IsSpecialFolder}" Value="True"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="ContextMenu" Value="{StaticResource SpecialFolderMenuItemContextMenu}"/>
+            </MultiDataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsFolder}" Value="True"/>
+                    <Condition Binding="{Binding IsSpecialFolder}" Value="False"/>
+                </MultiDataTrigger.Conditions>
+                <Setter Property="ContextMenu" Value="{StaticResource FolderMenuItemContextMenu}"/>
+            </MultiDataTrigger>
+            <DataTrigger Binding="{Binding IsFolder}" Value="False">
+                <Setter Property="ContextMenu" Value="{StaticResource BookmarkMenuItemContextMenu}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsDockRight}" Value="True">
+                <Setter Property="DockPanel.Dock" Value="Right"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--菜单样式-->
+    <Style x:Key="BookmarkMenuStyle" TargetType="{x:Type controls:BookmarkMenu}">
+        <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}"/>
+        <Setter Property="ItemTemplate" Value="{StaticResource BookmarkMenuItemTemplate}"/>
+        <Setter Property="ItemContainerStyle" Value="{StaticResource BookmarkMenuItemStyle}"/>
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate >
+                    <DockPanel LastChildFill="False"/>
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <!--#endregion-->
+
+    <!--#region TreeView -->
+    <!--展开按钮图标和样式-->
+    <PathGeometry x:Key="TreeArrow" Figures="M0,0 L0,6 L6,0 z"/>
+    <Style x:Key="ExpandCollapseToggleStyle" TargetType="{x:Type ToggleButton}">
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Width" Value="16"/>
+        <Setter Property="Height" Value="16"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <Border Background="Transparent" Height="16" Padding="5,5,5,5" Width="16">
+                        <Path x:Name="ExpandPath" Data="{StaticResource TreeArrow}" Fill="{StaticResource TextPrimaryBrush}" Stroke="{StaticResource TextPrimaryBrush}">
+                            <Path.RenderTransform>
+                                <RotateTransform Angle="135" CenterY="3" CenterX="3"/>
+                            </Path.RenderTransform>
+                        </Path>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter Property="RenderTransform" TargetName="ExpandPath">
+                                <Setter.Value>
+                                    <RotateTransform Angle="180" CenterY="3" CenterX="3"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--焦点样式-->
+    <Style x:Key="TreeViewItemFocusVisual">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Rectangle/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!--保存书签的显示样式-->
+    <HierarchicalDataTemplate x:Key="BookmarkItemTemplate" DataType="{x:Type models:BookmarkTreeViewInfo}" ItemsSource="{Binding Children}">
+        <Border x:Name="RowBorder" CornerRadius="4" BorderThickness="1" Background="{StaticResource ControlBackgroundBrush}"
+                Visibility="{Binding Visibility}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition MinWidth="19" Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <ToggleButton x:Name="Expander" ClickMode="Press" Style="{StaticResource ExpandCollapseToggleStyle}" IsChecked="{Binding IsExpanded}"
+                              Margin="{Binding Level,Converter={StaticResource LevelToThicknessConverter},ConverterParameter={x:Static behaviors:BookmarkHelper.TreeViewItemLeftOffset}}"/>
+
+                <TextBlock x:Name="Icon" Grid.Column="1" Text="{Binding Icon}" Style="{StaticResource BookmarkTreeViewIconStyle}"/>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <TextBlock Text="{Binding Name}" Style="{StaticResource BookmarkTreeViewDisplayStyle}"
+                               Visibility="{Binding IsEditMode,Converter={StaticResource BoolToVisibilityConverter},ConverterParameter={x:Static Visibility.Collapsed}}"/>
+                    <TextBox Text="{Binding Name}" Style="{StaticResource BookmarkTreeViewEditStyle}"
+                             Tag="{Binding LanguageFields.BookmarkNameTag,Source={x:Static language:LangeuageHelper.Instance}}"
+                             behaviors:BookmarkHelper.IsFocused="{Binding IsEditMode}"
+                             LostFocus="BookmarkEdit_LostFocus" KeyDown="BookmarkEdit_KeyDown"
+                             Visibility="{Binding IsEditMode,Converter={StaticResource BoolToVisibilityConverter},ConverterParameter={x:Static Visibility.Visible}}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        <HierarchicalDataTemplate.Triggers>
+            <DataTrigger Binding="{Binding HasVisibilityItems}" Value="False">
+                <Setter TargetName="Expander" Property="Visibility" Value="Hidden"/>
+            </DataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsExpanded}" Value="true"/>
+                    <Condition Binding="{Binding HasVisibilityItems}" Value="true"/>
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="Icon" Property="Text" Value="{Binding ExpandedIcon}"/>
+            </MultiDataTrigger>
+            <Trigger SourceName="RowBorder" Property="IsMouseOver" Value="True">
+                <Setter TargetName="RowBorder" Property="Background" Value="{StaticResource ControlHoverBrush}"/>
+                <Setter TargetName="RowBorder" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+            </Trigger>
+            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type TreeViewItem}}}" Value="True">
+                <Setter TargetName="RowBorder" Property="Background" Value="{StaticResource PrimaryBrush}"/>
+            </DataTrigger>
+        </HierarchicalDataTemplate.Triggers>
+    </HierarchicalDataTemplate>
+
+    <!--保存书签的容器样式-->
+    <Style x:Key="BookmarkItemContainerStyle" TargetType="{x:Type TreeViewItem}">
+        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource TreeViewItemFocusVisual}"/>
+        <Setter Property="behaviors:BookmarkHelper.IsBringIntoViewWhenSelected" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TreeViewItem}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <ContentPresenter x:Name="PART_Header" ContentSource="Header" HorizontalAlignment="Stretch" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        <ItemsPresenter x:Name="ItemsHost" Grid.Column="0" Grid.Row="1"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsExpanded" Value="false">
+                            <Setter Property="Visibility" TargetName="ItemsHost" Value="Collapsed"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="VirtualizingPanel.IsVirtualizing" Value="true">
+                <Setter Property="ItemsPanel">
+                    <Setter.Value>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel/>
+                        </ItemsPanelTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+            <DataTrigger Binding="{Binding Path=(behaviors:TreeViewHelper.HaveExtraMenu),RelativeSource={RelativeSource AncestorType={x:Type TreeView}}}" Value="True">
+                <Setter Property="ContextMenu" Value="{StaticResource ManageTreeViewItemContextMenu}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Path=(behaviors:TreeViewHelper.HaveExtraMenu),RelativeSource={RelativeSource AncestorType={x:Type TreeView}}}" Value="False">
+                <Setter Property="ContextMenu" Value="{StaticResource SaveTreeViewItemContextMenu}"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--保存书签的树形控件样式-->
+    <Style x:Key="BookmarkTreeViewStyle" TargetType="TreeView">
+        <Setter Property="Margin" Value="4"/>
+        <Setter Property="BorderBrush" Value="{StaticResource ControlBackgroundBrush}"/>
+        <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}"/>
+        <Setter Property="ItemTemplate" Value="{StaticResource BookmarkItemTemplate}"/>
+        <Setter Property="ItemContainerStyle" Value="{StaticResource BookmarkItemContainerStyle}"/>
+    </Style>
+    <!--#endregion-->
+</ResourceDictionary>

@@ -1,0 +1,68 @@
+﻿<controls:BaseBookmarkWindow x:Class="ExplorerTabUtility.UI.Views.BookmarkSavePopup"
+                             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                             xmlns:language="clr-namespace:ExplorerTabUtility.Languages.Manager"
+                             xmlns:behaviors="clr-namespace:ExplorerTabUtility.UI.Behaviors"
+                             xmlns:controls="clr-namespace:ExplorerTabUtility.UI.Views.Controls"
+                             WindowStartupLocation="CenterScreen"
+                             Style="{StaticResource BaseBookmarkWindowStyle}"
+                             Width="500" MinHeight="100">
+    <Border Style="{StaticResource BaseBookmarkWindowBorderStyle}">
+        <Grid Margin="10 5 10 0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock x:Name="TxtTitle" Grid.Row="0" Style="{StaticResource BookmarkTitleTextBlockStyle}"
+                        Text="{Binding LanguageFields.AddBookmark,Source={x:Static language:LangeuageHelper.Instance}}"/>
+
+            <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
+                <TextBlock Style="{StaticResource BookmarkHeaderTextBlockStyle}"
+                           Text="{Binding LanguageFields.BookmarkName,Source={x:Static language:LangeuageHelper.Instance}}"/>
+                <TextBox x:Name="TxtName" Style="{StaticResource CustomTextBoxStyle}"
+                         Tag="{Binding LanguageFields.BookmarkName,Source={x:Static language:LangeuageHelper.Instance}}"/>
+            </StackPanel>
+
+            <StackPanel x:Name="SpLocation" Grid.Row="2" Grid.ColumnSpan="2">
+                <TextBlock Style="{StaticResource BookmarkHeaderTextBlockStyle}"
+                           Text="{Binding LanguageFields.BookmarkLocation,Source={x:Static language:LangeuageHelper.Instance}}"/>
+                <TextBox x:Name="TxtLocation" Style="{StaticResource CustomTextBoxStyle}"
+                         Tag="{Binding LanguageFields.BookmarkLocation,Source={x:Static language:LangeuageHelper.Instance}}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="3" Grid.ColumnSpan="2">
+                <TextBlock x:Name="TxtFolder" Style="{StaticResource BookmarkHeaderTextBlockStyle}"
+                           Text="{Binding LanguageFields.BookmarkFolder,Source={x:Static language:LangeuageHelper.Instance}}"/>
+            </StackPanel>
+
+            <controls:BookmarkComboBox x:Name="CbSelectSavePath" Grid.Row="4" Grid.ColumnSpan="2" Style="{StaticResource BookmarkComboBoxStyle}"
+                                       behaviors:BookmarkHelper.SelectOtherFolderText="{Binding LanguageFields.SelectOtherFolder,Source={x:Static language:LangeuageHelper.Instance}}"/>
+
+            <controls:BookmarkTreeView x:Name="TvSelectSavePath" Grid.Row="5" Grid.ColumnSpan="2" Height="300" Style="{StaticResource BookmarkTreeViewStyle}"
+                                       behaviors:TreeViewHelper.HaveExtraMenu="False"
+                                       behaviors:TreeViewHelper.EnableRightClickSelection="True"/>
+
+            <StackPanel Grid.Row="6" Grid.Column="0" HorizontalAlignment="Left">
+                <Button x:Name="BtnNewFolder" Style="{StaticResource BookmarkButtonStyle}" ToolTip="Ctrl+N" Width="110"
+                        Content="{Binding LanguageFields.NewFolder,Source={x:Static language:LangeuageHelper.Instance}}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="6" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="BtnSave" Style="{StaticResource BookmarkButtonStyle}" ToolTip="Ctrl+S"
+                        Content="{Binding LanguageFields.Save,Source={x:Static language:LangeuageHelper.Instance}}"/>
+                <Button x:Name="BtnCancel" Style="{StaticResource BookmarkButtonStyle}" ToolTip="Esc"
+                        Content="{Binding LanguageFields.Cancel,Source={x:Static language:LangeuageHelper.Instance}}"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</controls:BaseBookmarkWindow>

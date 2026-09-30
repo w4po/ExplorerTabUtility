@@ -58,14 +58,16 @@
                             <ContentPresenter Grid.Column="1"
                                               ContentSource="Header"
                                               Margin="{TemplateBinding Padding}"
-                                              VerticalAlignment="Center" />
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left"/>
 
                             <!-- InputGestureText -->
                             <TextBlock Grid.Column="2"
                                        Text="{TemplateBinding InputGestureText}"
                                        Margin="8,0,8,0"
                                        Foreground="{StaticResource TextTertiaryBrush}"
-                                       VerticalAlignment="Center" />
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Right"/>
 
                             <!-- Submenu Arrow -->
                             <Path x:Name="Arrow"

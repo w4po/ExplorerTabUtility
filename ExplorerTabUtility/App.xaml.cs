@@ -3,6 +3,7 @@ using System.Threading;
 using System.Windows.Controls;
 using ExplorerTabUtility.UI.Views;
 using ExplorerTabUtility.Helpers;
+using ExplorerTabUtility.Languages.Manager;
 
 namespace ExplorerTabUtility;
 
@@ -24,10 +25,7 @@ public partial class App : Application
             return;
         }
 
-        CustomMessageBox.Show("""
-                              Another instance is already running.
-                              Check in System Tray Icons.
-                              """, Constants.AppName, icon: MessageBoxImage.Information);
+        CustomMessageBox.Show(LangeuageHelper.Instance.LanguageFields.AlreadyRunning, Constants.AppName, icon: MessageBoxImage.Information);
         Shutdown();
     }
 

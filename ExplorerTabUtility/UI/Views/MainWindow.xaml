@@ -3,6 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:ExplorerTabUtility.UI.Views"
         xmlns:managers="clr-namespace:ExplorerTabUtility.Managers"
+        xmlns:converters="clr-namespace:ExplorerTabUtility.UI.Converters"
+        xmlns:language="clr-namespace:ExplorerTabUtility.Languages.Manager"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         Title="Explorer Tab Utility"
         Width="850" Height="600"
         MinWidth="700" MinHeight="175"
@@ -13,6 +16,13 @@
         WindowStartupLocation="CenterScreen"
         TextBlock.Foreground="{StaticResource TextPrimaryBrush}"
         TextElement.Foreground="{StaticResource TextPrimaryBrush}">
+
+    <Window.Resources>
+        <converters:MenuIconTextConverter x:Key="MenuIconTextConverter" />
+        <sys:String x:Key="ShortcutsIcon">&#x1F5F2;</sys:String>
+        <sys:String x:Key="PreferencesIcon">&#xE713;</sys:String>
+        <sys:String x:Key="AboutIcon">&#xE939;</sys:String>
+    </Window.Resources>
 
     <Border Background="{StaticResource BackgroundGradientBrush}"
             BorderBrush="{StaticResource BorderGradientBrush}"
@@ -36,7 +46,7 @@
 
                     <!-- Menu Button -->
                     <ToggleButton x:Name="DrawerButton" Grid.Column="0" Style="{StaticResource ToggleButtonIconStyle}" Margin="6,0,0,0"
-                                  Content="&#x2630;" Focusable="False" ToolTip="Open application menu" />
+                                  Content="&#x2630;" Focusable="False" ToolTip="{Binding LanguageFields.OpenApplicationMenu,Source={x:Static language:LangeuageHelper.Instance}}" />
 
                     <!-- Window Title -->
                     <TextBlock Grid.Column="1" Text="Explorer Tab Utility" VerticalAlignment="Center" Margin="8,0"
@@ -105,14 +115,35 @@
                                         <BeginStoryboard Storyboard="{StaticResource CloseDrawerStoryboard}"/>
                                     </EventTrigger>
                                 </ListBox.Triggers>
-                                <ListBoxItem ToolTip="Configure keyboard and mouse shortcuts">
-                                    <TextBlock Text="&#x1F5F2;  Shortcuts" VerticalAlignment="Center" />
+                                <ListBoxItem ToolTip="{Binding LanguageFields.ShortcutsToolTip,Source={x:Static language:LangeuageHelper.Instance}}">
+                                    <TextBlock VerticalAlignment="Center">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{StaticResource MenuIconTextConverter}">
+                                                <Binding Source="{StaticResource ShortcutsIcon}"/>
+                                                <Binding Source="{x:Static language:LangeuageHelper.Instance}" Path="LanguageFields.Shortcuts"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
                                 </ListBoxItem>
-                                <ListBoxItem ToolTip="Configure application settings">
-                                    <TextBlock Text="&#xE713;  Preferences" VerticalAlignment="Center" />
+                                <ListBoxItem ToolTip="{Binding LanguageFields.PreferencesToolTip,Source={x:Static language:LangeuageHelper.Instance}}">
+                                    <TextBlock VerticalAlignment="Center">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{StaticResource MenuIconTextConverter}">
+                                                <Binding Source="{StaticResource PreferencesIcon}"/>
+                                                <Binding Source="{x:Static language:LangeuageHelper.Instance}" Path="LanguageFields.Preferences"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
                                 </ListBoxItem>
-                                <ListBoxItem ToolTip="About the application and support options">
-                                    <TextBlock Text="&#xE939;  About" VerticalAlignment="Center" />
+                                <ListBoxItem ToolTip="{Binding LanguageFields.AboutToolTip,Source={x:Static language:LangeuageHelper.Instance}}">
+                                    <TextBlock VerticalAlignment="Center">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{StaticResource MenuIconTextConverter}">
+                                                <Binding Source="{StaticResource AboutIcon}"/>
+                                                <Binding Source="{x:Static language:LangeuageHelper.Instance}" Path="LanguageFields.About"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
                                 </ListBoxItem>
                             </ListBox>
                         </DockPanel>
@@ -177,20 +208,24 @@
                                     <DockPanel Grid.Row="0" Margin="16,8" LastChildFill="False">
                                         <!-- Action Buttons -->
                                         <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
-                                            <Button x:Name="BtnNewProfile" Content="NEW" Style="{StaticResource FlatButtonStyle}"
-                                                    ToolTip="Create a new profile" />
-                                            <Button x:Name="BtnImport" Content="IMPORT" Style="{StaticResource FlatButtonStyle}"
-                                                    ToolTip="Import profiles from a file" />
-                                            <Button x:Name="BtnExport" Content="EXPORT" Style="{StaticResource FlatButtonStyle}"
-                                                    ToolTip="Export profiles to a file" />
-                                            <Button x:Name="BtnSave" Content="SAVE" Style="{StaticResource FlatButtonStyle}"
-                                                    ToolTip="Persist all profile changes" />
+                                            <Button x:Name="BtnNewProfile" Style="{StaticResource FlatButtonStyle}"
+                                                    Content="{Binding LanguageFields.New,Source={x:Static language:LangeuageHelper.Instance}}"
+                                                    ToolTip="{Binding LanguageFields.NewToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
+                                            <Button x:Name="BtnImport" Style="{StaticResource FlatButtonStyle}"
+                                                    Content="{Binding LanguageFields.Import,Source={x:Static language:LangeuageHelper.Instance}}"
+                                                    ToolTip="{Binding LanguageFields.ImportToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
+                                            <Button x:Name="BtnExport" Style="{StaticResource FlatButtonStyle}"
+                                                    Content="{Binding LanguageFields.Export,Source={x:Static language:LangeuageHelper.Instance}}"
+                                                    ToolTip="{Binding LanguageFields.ExportToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
+                                            <Button x:Name="BtnSave" Style="{StaticResource FlatButtonStyle}"
+                                                    Content="{Binding LanguageFields.Save,Source={x:Static language:LangeuageHelper.Instance}}"
+                                                    ToolTip="{Binding LanguageFields.SaveToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
                                         </StackPanel>
 
                                         <!-- Save on Exit Toggle -->
-                                        <CheckBox DockPanel.Dock="Right" x:Name="CbAutoSaveProfiles"
-                                                  Content="Auto save" Style="{StaticResource CustomCheckBoxStyle}"
-                                                  ToolTip="Automatically save profiles when closing the window" />
+                                        <CheckBox DockPanel.Dock="Right" x:Name="CbAutoSaveProfiles" Style="{StaticResource CustomCheckBoxStyle}"
+                                                  Content="{Binding LanguageFields.AutoSave,Source={x:Static language:LangeuageHelper.Instance}}"
+                                                  ToolTip="{Binding LanguageFields.AutoSaveToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
                                     </DockPanel>
 
                                     <!-- Profiles Panel -->
@@ -205,24 +240,29 @@
                             <!-- Preferences Tab -->
                             <TabItem Header="Preferences" Visibility="Collapsed">
                                 <StackPanel Margin="16, 8">
-                                    <GroupBox Header="Application Settings"
+                                    <GroupBox Header="{Binding LanguageFields.ApplicationSettings,Source={x:Static language:LangeuageHelper.Instance}}"
                                               Style="{StaticResource CustomGroupBoxStyle}">
                                         <StackPanel Margin="8">
-                                            <CheckBox x:Name="CbAutoUpdate" Content="Auto update"
-                                                      Style="{StaticResource CustomCheckBoxStyle}"
-                                                      ToolTip="Automatically check for updates on startup" />
-                                            <CheckBox x:Name="CbThemeIssue" Content="I have theme issues"
-                                                      Style="{StaticResource CustomCheckBoxStyle}"
-                                                      ToolTip="Use alternative window hiding method that preserves your custom File-Explorer theme.&#x0a;Enable this if you have theme-related issues" />
-                                            <CheckBox x:Name="CbSaveClosedHistory" Content="Save closed history"
-                                                      Style="{StaticResource CustomCheckBoxStyle}"
-                                                      ToolTip="Save closed windows history so you can reopen them later (ReopenClosed, Tab search)" />
-                                            <CheckBox x:Name="CbRestorePreviousWindows" Content="Restore previous windows"
-                                                      Style="{StaticResource CustomCheckBoxStyle}"
-                                                      ToolTip="Restore previously opened windows after restart or crash" />
-                                            <CheckBox x:Name="CbHideTrayIcon" Content="Hide tray icon"
-                                                      Style="{StaticResource CustomCheckBoxStyle}"
-                                                      ToolTip="Hide the system tray icon" />
+                                            <CheckBox x:Name="CbAutoUpdate" Style="{StaticResource CustomCheckBoxStyle}"
+                                                      Content="{Binding LanguageFields.AutoUpdate,Source={x:Static language:LangeuageHelper.Instance}}"
+                                                      ToolTip="{Binding LanguageFields.AutoUpdateToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
+                                            <CheckBox x:Name="CbThemeIssue" Style="{StaticResource CustomCheckBoxStyle}"
+                                                      Content="{Binding LanguageFields.ThemeIssue,Source={x:Static language:LangeuageHelper.Instance}}"
+                                                      ToolTip="{Binding LanguageFields.ThemeIssueToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
+                                            <CheckBox x:Name="CbSaveClosedHistory" Style="{StaticResource CustomCheckBoxStyle}"
+                                                      Content="{Binding LanguageFields.SaveClosedHistory,Source={x:Static language:LangeuageHelper.Instance}}"
+                                                      ToolTip="{Binding LanguageFields.SaveClosedHistoryToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
+                                            <CheckBox x:Name="CbRestorePreviousWindows" Style="{StaticResource CustomCheckBoxStyle}"
+                                                      Content="{Binding LanguageFields.RestorePreviousWindows,Source={x:Static language:LangeuageHelper.Instance}}"
+                                                      ToolTip="{Binding LanguageFields.RestorePreviousWindowsToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
+                                            <CheckBox x:Name="CbHideTrayIcon" Style="{StaticResource CustomCheckBoxStyle}"
+                                                      Content="{Binding LanguageFields.HideTrayIcon,Source={x:Static language:LangeuageHelper.Instance}}"
+                                                      ToolTip="{Binding LanguageFields.HideTrayIconToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
+                                            <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding LanguageFields.SelectLanguage,Source={x:Static language:LangeuageHelper.Instance}}" VerticalAlignment="Center" Margin="0 8 0 8"/>
+                                                <ComboBox x:Name="CbLanguage" Style="{StaticResource CustomComboBoxStyle}" MinWidth="150" Margin="0 0 0 8"
+                                                          ToolTip="{Binding LanguageFields.SelectLanguageToolTip,Source={x:Static language:LangeuageHelper.Instance}}" />
+                                            </StackPanel>
                                         </StackPanel>
                                     </GroupBox>
                                 </StackPanel>
@@ -262,7 +302,7 @@
                                     </Style>
                                 </Ellipse.Style>
                             </Ellipse>
-                            <TextBlock Text="Window Hook" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding LanguageFields.WindowHook,Source={x:Static language:LangeuageHelper.Instance}}" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
                         </StackPanel>
 
                         <!-- Reuse Tabs Status -->
@@ -286,7 +326,7 @@
                                     </Style>
                                 </Ellipse.Style>
                             </Ellipse>
-                            <TextBlock Text="Reuse Tabs" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding LanguageFields.ReuseTabs,Source={x:Static language:LangeuageHelper.Instance}}" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
                         </StackPanel>
 
                         <!-- Keyboard Hook Status -->
@@ -310,7 +350,7 @@
                                     </Style>
                                 </Ellipse.Style>
                             </Ellipse>
-                            <TextBlock Text="Keyboard Hook" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding LanguageFields.KeyboardHook,Source={x:Static language:LangeuageHelper.Instance}}" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
                         </StackPanel>
 
                         <!-- Mouse Hook Status -->
@@ -334,7 +374,7 @@
                                     </Style>
                                 </Ellipse.Style>
                             </Ellipse>
-                            <TextBlock Text="Mouse Hook" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding LanguageFields.MouseHook,Source={x:Static language:LangeuageHelper.Instance}}" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
                         </StackPanel>
                     </StackPanel>
             </Border>

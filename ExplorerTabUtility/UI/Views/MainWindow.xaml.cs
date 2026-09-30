@@ -9,6 +9,8 @@ using ExplorerTabUtility.Managers;
 using ExplorerTabUtility.Helpers;
 using ExplorerTabUtility.Models;
 using ExplorerTabUtility.UI.Views.Controls;
+using ExplorerTabUtility.Languages.Manager;
+using System.Windows.Controls;
 
 namespace ExplorerTabUtility.UI.Views;
 
@@ -19,6 +21,7 @@ public partial class MainWindow : Window
     private readonly ProfileManager _profileManager;
     private readonly SystemTrayIcon _notifyIconManager;
     private nint _handle;
+    private string _fileFilter;
 
     public MainWindow()
     {
@@ -31,7 +34,9 @@ public partial class MainWindow : Window
         _profileManager = new ProfileManager(ProfilesPanel);
         _hookManager = new HookManager(_profileManager);
         _notifyIconManager = new SystemTrayIcon(_profileManager, _hookManager, ShowWindow);
+        _fileFilter = GetFileFilter();
 
+        InitLanguageComboBox();
         SetupEventHandlers();
         StartHooks();
 
@@ -52,6 +57,12 @@ public partial class MainWindow : Window
             SettingsManager.IsFirstRun = false;
             Show();
         }
+    }
+
+    private void InitLanguageComboBox()
+    {
+        CbLanguage.ItemsSource = LangeuageHelper.Instance.Languages;
+        CbLanguage.SelectedItem = LangeuageHelper.Instance.CurrentLanguage;
     }
 
     private void SetupEventHandlers()
@@ -75,6 +86,7 @@ public partial class MainWindow : Window
         CbThemeIssue.Unchecked += CbThemeIssue_CheckedChanged;
         CbHideTrayIcon.Checked += CbHideTrayIcon_CheckedChanged;
         CbHideTrayIcon.Unchecked += CbHideTrayIcon_CheckedChanged;
+        CbLanguage.SelectionChanged += CbLanguage_SelectionChanged;
 
         // Window events
         SizeChanged += MainWindow_SizeChanged;
@@ -86,6 +98,19 @@ public partial class MainWindow : Window
         MinimizeButton.Click += MinimizeButton_Click;
         MaximizeButton.Click += MaximizeButton_Click;
         CloseButton.Click += CloseButton_Click;
+    }
+
+    private void CbLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        LangeuageHelper.Instance.CurrentLanguage = (ComboBoxItemInfo)CbLanguage.SelectedItem;
+        _fileFilter = GetFileFilter();
+    }
+
+    private string GetFileFilter()
+    {
+        var jsonFiles = LangeuageHelper.Instance.LanguageFields.JsonFiles;
+        var allFiles = LangeuageHelper.Instance.LanguageFields.AllFiles;
+        return $"{jsonFiles}|*.json|{allFiles}|*.*";
     }
 
     private void StartHooks()
@@ -128,7 +153,7 @@ public partial class MainWindow : Window
         var ofd = new OpenFileDialog
         {
             FileName = Constants.HotKeyProfilesFileName,
-            Filter = Constants.JsonFileFilter
+            Filter = _fileFilter
         };
 
         if (ofd.ShowDialog() != true) return;
@@ -143,7 +168,7 @@ public partial class MainWindow : Window
         var sfd = new SaveFileDialog
         {
             FileName = Constants.HotKeyProfilesFileName,
-            Filter = Constants.JsonFileFilter
+            Filter = _fileFilter
         };
 
         if (sfd.ShowDialog() != true) return;
@@ -201,8 +226,8 @@ public partial class MainWindow : Window
         if (isChecked && showAlert && !SettingsManager.IsTrayIconHidden)
         {
             var message = canToggleVisibility
-                ? $"You can show the app again by pressing {profile!.HotKeys!.HotKeysToString(profile.IsDoubleClick)}"
-                : "Cannot hide tray icon if no hotkey is configured to toggle visibility.";
+                ? string.Format(LangeuageHelper.Instance.LanguageFields.HideTrayIconWithHotkeys, profile!.HotKeys!.HotKeysToString(profile.IsDoubleClick))
+                : LangeuageHelper.Instance.LanguageFields.HideTrayIconWithOutHotkeys;
 
             CustomMessageBox.Show(this, message, Constants.AppName);
         }

@@ -1,6 +1,7 @@
 <Window x:Class="ExplorerTabUtility.UI.Views.TabSearchPopup"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:language="clr-namespace:ExplorerTabUtility.Languages.Manager"
         Height="450"
         Width="600"
         WindowStyle="None"
@@ -138,7 +139,7 @@
                 </Border>
 
                 <!-- Clear Button -->
-                <Button Grid.Column="1" ToolTip="Clear closed windows history"
+                <Button Grid.Column="1" ToolTip="{Binding LanguageFields.ClearToolTip,Source={x:Static language:LangeuageHelper.Instance}}"
                         Margin="5,0,0,0"
                         Focusable="False"
                         Width="40" Height="Auto"

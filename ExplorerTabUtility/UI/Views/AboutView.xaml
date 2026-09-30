@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:converters="clr-namespace:ExplorerTabUtility.UI.Converters"
+             xmlns:language="clr-namespace:ExplorerTabUtility.Languages.Manager"
              xmlns:views="clr-namespace:ExplorerTabUtility.UI.Views"
              xmlns:models="clr-namespace:ExplorerTabUtility.Models"
              mc:Ignorable="d"
@@ -405,7 +406,7 @@
                                        VerticalAlignment="Bottom" />
                         </StackPanel>
 
-                        <TextBlock Text="Enhance your Windows File Explorer experience"
+                        <TextBlock Text="{Binding LanguageFields.Profile,Source={x:Static language:LangeuageHelper.Instance}}"
                                    Foreground="{StaticResource TextSecondaryBrush}"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,4" />
@@ -450,7 +451,7 @@
                                         <ScaleTransform ScaleX="1" ScaleY="1" />
                                     </TextBlock.RenderTransform>
                                 </TextBlock>
-                                <TextBlock Text="Star on GitHub"
+                                <TextBlock Text="{Binding LanguageFields.Star,Source={x:Static language:LangeuageHelper.Instance}}"
                                            FontWeight="SemiBold"
                                            VerticalAlignment="Center" />
                             </StackPanel>
@@ -468,10 +469,10 @@
 
                     <!-- Left Column: Support Options -->
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Support the Project"
+                        <TextBlock Text="{Binding LanguageFields.SupportProject,Source={x:Static language:LangeuageHelper.Instance}}"
                                    Style="{StaticResource SectionTitleStyle}" />
 
-                        <TextBlock Text="If you find this utility helpful, consider supporting its development through one of these options:"
+                        <TextBlock Text="{Binding LanguageFields.SupportProjectText,Source={x:Static language:LangeuageHelper.Instance}}"
                                    TextWrapping="Wrap"
                                    Foreground="{StaticResource TextSecondaryBrush}"
                                    Height="42"
@@ -484,7 +485,7 @@
                                 <TextBlock Text="💖"
                                            Style="{StaticResource ColorfulEmojiStyle}"
                                            Foreground="#EA4AAA" />
-                                <TextBlock Text="GitHub Sponsors"
+                                <TextBlock Text="{Binding LanguageFields.GitHubSponsors,Source={x:Static language:LangeuageHelper.Instance}}"
                                            FontSize="16"
                                            VerticalAlignment="Center" />
                             </StackPanel>
@@ -497,7 +498,7 @@
                                 <TextBlock Text="🏆"
                                            Style="{StaticResource ColorfulEmojiStyle}"
                                            Foreground="#F96854" />
-                                <TextBlock Text="Patreon"
+                                <TextBlock Text="{Binding LanguageFields.Patreon,Source={x:Static language:LangeuageHelper.Instance}}"
                                            FontSize="16"
                                            VerticalAlignment="Center" />
                             </StackPanel>
@@ -510,7 +511,7 @@
                                 <TextBlock Text="☕"
                                            Style="{StaticResource ColorfulEmojiStyle}"
                                            Foreground="#FFDD00" />
-                                <TextBlock Text="Buy Me A Coffee"
+                                <TextBlock Text="{Binding LanguageFields.Coffee,Source={x:Static language:LangeuageHelper.Instance}}"
                                            FontSize="16"
                                            VerticalAlignment="Center" />
                             </StackPanel>
@@ -523,7 +524,7 @@
                                 <TextBlock Text="💸"
                                            Style="{StaticResource ColorfulEmojiStyle}"
                                            Foreground="#00457C" />
-                                <TextBlock Text="PayPal"
+                                <TextBlock Text="{Binding LanguageFields.PayPal,Source={x:Static language:LangeuageHelper.Instance}}"
                                            FontSize="16"
                                            VerticalAlignment="Center" />
                             </StackPanel>
@@ -532,7 +533,7 @@
                         <Border Margin="0,24,0,0" CornerRadius="8"
                                 Style="{StaticResource ProfileCardStyle}">
                             <StackPanel>
-                                <TextBlock Text="Developer"
+                                <TextBlock Text="{Binding LanguageFields.Developer,Source={x:Static language:LangeuageHelper.Instance}}"
                                            FontWeight="SemiBold"
                                            FontSize="18"
                                            Foreground="{StaticResource TextPrimaryBrush}"
@@ -591,10 +592,10 @@
 
                     <!-- Right Column: Supporters -->
                     <StackPanel Grid.Column="2">
-                        <TextBlock Text="Current Supporters"
+                        <TextBlock Text="{Binding LanguageFields.Supporters,Source={x:Static language:LangeuageHelper.Instance}}"
                                    Style="{StaticResource SectionTitleStyle}" />
 
-                        <TextBlock Text="Thank you to all the amazing people who support this project!"
+                        <TextBlock Text="{Binding LanguageFields.SupportersText,Source={x:Static language:LangeuageHelper.Instance}}"
                                    TextWrapping="Wrap"
                                    Foreground="{StaticResource TextSecondaryBrush}"
                                    Height="42"
@@ -631,13 +632,13 @@
                                                                                               Opacity="0.5" />
                                                                         </TextBlock.Effect>
                                                                     </TextBlock>
-                                                                    <TextBlock Text="Be the first to support this project!"
+                                                                    <TextBlock Text="{Binding LanguageFields.FirstSupport,Source={x:Static language:LangeuageHelper.Instance}}"
                                                                                TextWrapping="Wrap"
                                                                                FontSize="16"
                                                                                FontWeight="Medium"
                                                                                Foreground="{StaticResource TextSecondaryBrush}"
                                                                                HorizontalAlignment="Center" />
-                                                                    <TextBlock Text="Your support helps keep this project alive"
+                                                                    <TextBlock Text="{Binding LanguageFields.SupportMeaning,Source={x:Static language:LangeuageHelper.Instance}}"
                                                                                TextWrapping="Wrap"
                                                                                Margin="0,8,0,0"
                                                                                Foreground="{StaticResource TextSecondaryBrush}"

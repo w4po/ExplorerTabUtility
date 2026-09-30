@@ -8,6 +8,7 @@ using ExplorerTabUtility.Models;
 using ExplorerTabUtility.Helpers;
 using ExplorerTabUtility.Managers;
 using ExplorerTabUtility.UI.Commands;
+using ExplorerTabUtility.Languages.Manager;
 
 namespace ExplorerTabUtility.UI.Views.Controls;
 
@@ -26,7 +27,7 @@ public partial class SystemTrayIcon : UserControl, IDisposable
         InitializeCommands();
 
         TrayIcon.Icon = Helper.GetIcon();
-        TrayIcon.ToolTipText = Constants.NotifyIconText;
+        TrayIcon.ToolTipText = LangeuageHelper.Instance.LanguageFields.NotifyIconText;
 
         _profileManager = profileManager;
         _hookManager = hookManager;
@@ -35,9 +36,15 @@ public partial class SystemTrayIcon : UserControl, IDisposable
         _hookManager.OnShellInitialized += HookManager_OnShellInitialized;
         _hookManager.OnWindowHookToggled += HookManager_OnWindowHookToggled;
         _hookManager.OnReuseTabsToggled += HookManager_OnReuseTabsToggled;
+        LangeuageHelper.Instance.OnLangeuageChanged += Instance_OnLangeuageChanged;
 
         // Populate submenus for keyboard & mouse profiles
         UpdateMenuItems(autoCheckParent: false);
+    }
+
+    private void Instance_OnLangeuageChanged()
+    {
+        TrayIcon.ToolTipText = LangeuageHelper.Instance.LanguageFields.NotifyIconText;
     }
 
     private void InitializeCommands()
