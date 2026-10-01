@@ -1,0 +1,28 @@
+name: Navigation regression checks
+
+on:
+  pull_request:
+    paths:
+      - 'ExplorerTabUtility/**'
+      - 'tests/**'
+      - '.github/workflows/navigation-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+      - uses: microsoft/setup-msbuild@v2
+      - name: Run navigation lifecycle regression checks
+        run: dotnet run --project tests/NavigationCompletion.Tests.csproj --configuration Release
+      - name: Build both supported target frameworks
+        run: msbuild ExplorerTabUtility/ExplorerTabUtility.csproj /restore /p:Configuration=Release

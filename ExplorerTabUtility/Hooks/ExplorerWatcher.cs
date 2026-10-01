@@ -629,30 +629,35 @@ public class ExplorerWatcher : IHook
             var window = await Helper.DoUntilNotDefaultAsync(() => GetWindowByTabHandle(newTabHandle), 2_000, 50);
             if (window == null) return;
 
-            var tcs = new TaskCompletionSource<bool>();
             DWebBrowserEvents2_NavigateComplete2EventHandler navigateHandler = null!;
-            navigateHandler = (object _, ref object _) =>
-            {
-                window.NavigateComplete2 -= navigateHandler;
-                tcs.TrySetResult(true);
-                SelectItems(window, windowToOpen.SelectedItems);
-            };
-
-            window.NavigateComplete2 += navigateHandler;
             try
             {
-                await Navigate(window, windowToOpen.Location);
+                var completed = await NavigationCompletion.WaitAsync(
+                    signal =>
+                    {
+                        navigateHandler = (object _, ref object _) => signal();
+                        window.NavigateComplete2 += navigateHandler;
+                    },
+                    _ =>
+                    {
+                        try { window.NavigateComplete2 -= navigateHandler; }
+                        catch (COMException) { /* The tab may have closed. */ }
+                        catch (InvalidComObjectException) { /* Already released on close. */ }
+                    },
+                    async () =>
+                    {
+                        try { await Navigate(window, windowToOpen.Location); }
+                        finally { WinApi.RestoreWindowToForeground(mainWindowHWnd); }
+                    });
+
+                // Selection must happen outside Explorer's navigation callback.
+                if (completed)
+                    SelectItems(window, windowToOpen.SelectedItems);
             }
-            catch
+            catch (Exception ex)
             {
-                window.NavigateComplete2 -= navigateHandler;
-                tcs.TrySetResult(false);
+                Debug.WriteLine($"Tab navigation failed: {ex}");
             }
-
-            WinApi.RestoreWindowToForeground(mainWindowHWnd);
-
-            var timeoutTask = Task.Delay(5000);
-            await Task.WhenAny(tcs.Task, timeoutTask);
         }
         finally
         {
