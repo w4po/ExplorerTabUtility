@@ -421,7 +421,10 @@ public class ExplorerWatcher : IHook
             {
                 showAgain = false;
 
-                _ = OpenTabNavigateWithSelection(new WindowRecord(location, hWnd, GetSelectedItems(window)), _mainWindowHandle);
+                // Shell registration can precede Explorer's /select request.
+                // Keep the source alive until selection has had time to arrive.
+                var selection = await CaptureInitialSelectionAsync(window);
+                _ = OpenTabNavigateWithSelection(new WindowRecord(location, hWnd, selection), _mainWindowHandle);
 
                 window.Quit();
                 RemoveWindowAndUnhookEvents(window, windowInfo);
@@ -599,6 +602,9 @@ public class ExplorerWatcher : IHook
                 {
                     windowHandle = WinApi.GetParent(existingTab);
                     await SelectTabByHandle(windowHandle, existingTab);
+                    var existingWindow = GetWindowByTabHandle(existingTab);
+                    if (existingWindow != null)
+                        await RestoreSelectionAsync(existingWindow, windowToOpen);
                     WinApi.RestoreWindowToForeground(windowHandle);
                     return;
                 }
@@ -635,7 +641,6 @@ public class ExplorerWatcher : IHook
             {
                 window.NavigateComplete2 -= navigateHandler;
                 tcs.TrySetResult(true);
-                SelectItems(window, windowToOpen.SelectedItems);
             };
 
             window.NavigateComplete2 += navigateHandler;
@@ -653,6 +658,7 @@ public class ExplorerWatcher : IHook
 
             var timeoutTask = Task.Delay(5000);
             await Task.WhenAny(tcs.Task, timeoutTask);
+            await RestoreSelectionAsync(window, windowToOpen);
         }
         finally
         {
@@ -752,7 +758,8 @@ public class ExplorerWatcher : IHook
         var result = new string[count];
         for (var i = 0; i < count; i++)
         {
-            result[i] = selectedItems.Item(i).Name;
+            // Display names can omit extensions or be localized (.lnk, folders).
+            result[i] = selectedItems.Item(i).Path;
         }
 
         return result;
@@ -766,10 +773,48 @@ public class ExplorerWatcher : IHook
         for (var i = 0; i < names.Length; i++)
         {
             var name = names[i];
-            object item = document.Folder.ParseName(name);
+            object item = document.Folder.ParseName(System.IO.Path.GetFileName(name))
+                          ?? document.Folder.ParseName(name);
             if (item == null) continue;
-            document.SelectItem(ref item, 1);
+            // First item: select, clear old selection, scroll into view and focus.
+            document.SelectItem(ref item, i == 0 ? 29 : 1);
         }
+    }
+    private static async Task<string[]?> CaptureInitialSelectionAsync(InternetExplorer window)
+    {
+        var timer = Stopwatch.StartNew();
+        do
+        {
+            try
+            {
+                var items = GetSelectedItems(window);
+                if (items?.Length > 0) return items;
+            }
+            catch (COMException) { }
+            await Task.Delay(50);
+        } while (timer.ElapsedMilliseconds < 800);
+        return null;
+    }
+    private static async Task RestoreSelectionAsync(InternetExplorer window, WindowRecord record)
+    {
+        if (record.SelectedItems == null || record.SelectedItems.Length == 0) return;
+        var timer = Stopwatch.StartNew();
+        do
+        {
+            try
+            {
+                // Never apply an old request to a folder the user navigated to.
+                if (!string.Equals(GetLocation(window), record.Location, StringComparison.OrdinalIgnoreCase))
+                    return;
+                SelectItems(window, record.SelectedItems);
+                var actual = GetSelectedItems(window);
+                if (actual != null && record.SelectedItems.All(expected =>
+                    actual.Any(value => string.Equals(value, expected, StringComparison.OrdinalIgnoreCase))))
+                    return;
+            }
+            catch (COMException) { }
+            await Task.Delay(75);
+        } while (timer.ElapsedMilliseconds < 1500);
     }
     private static string GetLocation(InternetExplorer window)
     {
