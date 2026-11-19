@@ -32,6 +32,8 @@ public class ExplorerWatcher : IHook
     private readonly ConcurrentDictionary<nint, byte> _processedHWnds = new();
     // Top-level HWNDs of windows ETU already tracks (value = number of tab objects), so the foreground hook never hides them
     private readonly ConcurrentDictionary<nint, int> _registeredHWnds = new();
+    // Explorer windows that already had their SHOW event (only a first SHOW may be hidden)
+    private readonly ConcurrentDictionary<nint, byte> _shownHWnds = new();
     private readonly DualKeyDictionary<InternetExplorer, nint?, WindowInfo> _windowEntryDict = [];
     private readonly List<WindowRecord> _closedWindows = new();
     private readonly object _windowEntryDictLock = new(), _closedWindowsLock = new(), _processLock = new();
@@ -329,18 +331,51 @@ public class ExplorerWatcher : IHook
     }
     private void OnWindowShown(nint hWinEventHook, uint eventType, nint hWnd, int idObject, int idChild, uint dwEventThread, uint dWmsEventTime)
     {
-        if (!_isForcingTabs || idObject != 0 || idChild != 0) return;
-        
+        if (idObject != 0 || idChild != 0) return;
+
+        if (!WinApi.IsWindowHasClassName(hWnd, "CabinetWClass")) return;
+
+        // Record every Explorer window's SHOW, only the first one can belong to a new window
+        var isFirstShow = MarkWindowShown(hWnd);
+
+        if (!_isForcingTabs) return;
+
         // Check if the hWnd was processed by OnShellWindowRegistered
         if (_processedHWnds.TryRemove(hWnd, out _)) return;
 
         // Never hide a window ETU already tracks (nothing would show it again)
         if (_registeredHWnds.ContainsKey(hWnd)) return;
 
-        if (!WinApi.IsWindowHasClassName(hWnd, "CabinetWClass")) return;
+        // Re-shown window (e.g. untracked Control Panel window): never hide it
+        if (!isFirstShow) return;
 
         if (_windowEntryDict.Count < 2 || Helper.IsCtrlShiftDown()) return;
+        HideWindowWithFailsafe(hWnd);
+    }
+    private bool MarkWindowShown(nint hWnd)
+    {
+        if (_shownHWnds.ContainsKey(hWnd)) return false;
+
+        // Forget destroyed windows so a reused HWND counts as new
+        foreach (var shown in _shownHWnds.Keys)
+            if (!WinApi.IsWindow(shown)) _shownHWnds.TryRemove(shown, out _);
+
+        return _shownHWnds.TryAdd(hWnd, 0);
+    }
+    private static void HideWindowWithFailsafe(nint hWnd)
+    {
         Helper.HideWindow(hWnd, SettingsManager.HaveThemeIssue);
+
+        // Failsafe: a window hidden here that was never converted to a tab (destroyed) nor shown again
+        // (cache removed) must not stay invisible. Show it the same way OnShellWindowRegistered does.
+        _ = Task.Delay(5_000).ContinueWith(_ =>
+        {
+            if (!WinApi.IsWindow(hWnd) || !Helper.HiddenWindows.ContainsKey(hWnd)) return;
+
+            Helper.ShowWindow(hWnd, removeCache: true);
+            if (!SettingsManager.HaveThemeIssue)
+                Helper.UpdateWindowLayered(hWnd, remove: true);
+        }, TaskScheduler.Default);
     }
     // EVENT_SYSTEM_FOREGROUND fires for a new window before EVENT_OBJECT_SHOW, hide it early to avoid the flash.
     // OnWindowShown stays as the fallback.
@@ -355,7 +390,7 @@ public class ExplorerWatcher : IHook
         if (!WinApi.IsWindowHasClassName(hWnd, "CabinetWClass")) return;
 
         if (_windowEntryDict.Count < 2 || Helper.IsCtrlShiftDown()) return;
-        Helper.HideWindow(hWnd, SettingsManager.HaveThemeIssue);
+        HideWindowWithFailsafe(hWnd);
     }
     private void RegisterHWnd(nint hWnd)
     {
@@ -1056,6 +1091,7 @@ public class ExplorerWatcher : IHook
         }
         _windowEntryDict.Clear();
         _registeredHWnds.Clear();
+        _shownHWnds.Clear();
 
         // Release the ShellWindows COM object
         Marshal.ReleaseComObject(_shellWindows);
