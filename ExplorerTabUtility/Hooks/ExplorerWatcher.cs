@@ -30,6 +30,10 @@ public class ExplorerWatcher : IHook
     private StaTaskScheduler _staTaskScheduler = null!;
     private nint _mainWindowHandle;
     private readonly ConcurrentDictionary<nint, byte> _processedHWnds = new();
+    // Top-level HWNDs of windows ETU already tracks (value = number of tab objects), so the foreground hook never hides them
+    private readonly ConcurrentDictionary<nint, int> _registeredHWnds = new();
+    // Explorer windows that already had their SHOW event (only a first SHOW may be hidden)
+    private readonly ConcurrentDictionary<nint, byte> _shownHWnds = new();
     private readonly DualKeyDictionary<InternetExplorer, nint?, WindowInfo> _windowEntryDict = [];
     private readonly List<WindowRecord> _closedWindows = new();
     private readonly object _windowEntryDictLock = new(), _closedWindowsLock = new(), _processLock = new();
@@ -40,6 +44,9 @@ public class ExplorerWatcher : IHook
 
     private nint _eventObjectShowHookId;
     private WinEventDelegate? _eventObjectShowHookCallback;
+    private nint _eventSystemForegroundHookId;
+    private WinEventDelegate? _eventSystemForegroundHookCallback;
+    private int _winEventHooksGeneration;
     private DShellWindowsEvents_WindowRegisteredEventHandler? _windowRegisteredHandler;
 
     private string _defaultLocation = null!;
@@ -324,15 +331,82 @@ public class ExplorerWatcher : IHook
     }
     private void OnWindowShown(nint hWinEventHook, uint eventType, nint hWnd, int idObject, int idChild, uint dwEventThread, uint dWmsEventTime)
     {
-        if (!_isForcingTabs || idObject != 0 || idChild != 0) return;
-        
+        if (idObject != 0 || idChild != 0) return;
+
+        if (!WinApi.IsWindowHasClassName(hWnd, "CabinetWClass")) return;
+
+        // Record every Explorer window's SHOW, only the first one can belong to a new window
+        var isFirstShow = MarkWindowShown(hWnd);
+
+        if (!_isForcingTabs) return;
+
         // Check if the hWnd was processed by OnShellWindowRegistered
         if (_processedHWnds.TryRemove(hWnd, out _)) return;
-        
+
+        // Never hide a window ETU already tracks (nothing would show it again)
+        if (_registeredHWnds.ContainsKey(hWnd)) return;
+
+        // Re-shown window (e.g. untracked Control Panel window): never hide it
+        if (!isFirstShow) return;
+
+        if (_windowEntryDict.Count < 2 || Helper.IsCtrlShiftDown()) return;
+        HideWindowWithFailsafe(hWnd);
+    }
+    private bool MarkWindowShown(nint hWnd)
+    {
+        if (_shownHWnds.ContainsKey(hWnd)) return false;
+
+        // Forget destroyed windows so a reused HWND counts as new
+        foreach (var shown in _shownHWnds.Keys)
+            if (!WinApi.IsWindow(shown)) _shownHWnds.TryRemove(shown, out _);
+
+        return _shownHWnds.TryAdd(hWnd, 0);
+    }
+    private static void HideWindowWithFailsafe(nint hWnd)
+    {
+        Helper.HideWindow(hWnd, SettingsManager.HaveThemeIssue);
+
+        // Failsafe: a window hidden here that was never converted to a tab (destroyed) nor shown again
+        // (cache removed) must not stay invisible. Show it the same way OnShellWindowRegistered does.
+        _ = Task.Delay(5_000).ContinueWith(_ =>
+        {
+            if (!WinApi.IsWindow(hWnd) || !Helper.HiddenWindows.ContainsKey(hWnd)) return;
+
+            Helper.ShowWindow(hWnd, removeCache: true);
+            if (!SettingsManager.HaveThemeIssue)
+                Helper.UpdateWindowLayered(hWnd, remove: true);
+        }, TaskScheduler.Default);
+    }
+    // EVENT_SYSTEM_FOREGROUND fires for a new window before EVENT_OBJECT_SHOW, hide it early to avoid the flash.
+    // OnWindowShown stays as the fallback.
+    private void OnWindowForeground(nint hWinEventHook, uint eventType, nint hWnd, int idObject, int idChild, uint dwEventThread, uint dWmsEventTime)
+    {
+        if (!_isForcingTabs || idObject != 0 || idChild != 0) return;
+
+        // Only brand-new windows: not visible yet, not processed by OnShellWindowRegistered, not already tracked
+        if (WinApi.IsWindowVisible(hWnd)) return;
+        if (_processedHWnds.ContainsKey(hWnd) || _registeredHWnds.ContainsKey(hWnd)) return;
+
         if (!WinApi.IsWindowHasClassName(hWnd, "CabinetWClass")) return;
 
         if (_windowEntryDict.Count < 2 || Helper.IsCtrlShiftDown()) return;
-        Helper.HideWindow(hWnd, SettingsManager.HaveThemeIssue);
+        HideWindowWithFailsafe(hWnd);
+    }
+    private void RegisterHWnd(nint hWnd)
+    {
+        if (hWnd == 0) return;
+        lock (_registeredHWnds)
+            _registeredHWnds[hWnd] = _registeredHWnds.TryGetValue(hWnd, out var count) ? count + 1 : 1;
+    }
+    private void UnregisterHWnd(nint hWnd)
+    {
+        if (hWnd == 0) return;
+        lock (_registeredHWnds)
+        {
+            if (!_registeredHWnds.TryGetValue(hWnd, out var count)) return;
+            if (count <= 1) _registeredHWnds.TryRemove(hWnd, out _);
+            else _registeredHWnds[hWnd] = count - 1;
+        }
     }
     private InternetExplorer? GetRecentlyCreatedWindow(out WindowInfo? windowInfo)
     {
@@ -455,9 +529,13 @@ public class ExplorerWatcher : IHook
     }
     private void HookWindowEvents(InternetExplorer window, WindowInfo windowInfo)
     {
+        nint registeredHWnd = 0;
+
         // Create strongly-typed handlers so we can remove them later
         windowInfo.OnQuitHandler = () =>
         {
+            UnregisterHWnd(registeredHWnd);
+
             var location = windowInfo.Location ?? GetLocation(window);
             var locationName = windowInfo.Name ?? window.LocationName;
             var windowRecord = new WindowRecord(location, new IntPtr(window.HWND), name: locationName);
@@ -493,7 +571,8 @@ public class ExplorerWatcher : IHook
             }
 
             // Make sure the window is still alive (User might have closed it immediately after opening it)
-            _ = window.HWND;
+            registeredHWnd = new IntPtr(window.HWND);
+            RegisterHWnd(registeredHWnd);
         }
         catch
         {
@@ -904,9 +983,8 @@ public class ExplorerWatcher : IHook
         _windowRegisteredHandler = OnShellWindowRegistered;
         _shellWindows.WindowRegistered += _windowRegisteredHandler;
 
-        // Hook the global "OBJECT_SHOW" event
-        _eventObjectShowHookCallback = OnWindowShown;
-        _eventObjectShowHookId = WinApi.SetWinEventHook(WinApi.EVENT_OBJECT_SHOW, WinApi.EVENT_OBJECT_SHOW, 0, _eventObjectShowHookCallback, 0, 0, 0);
+        // Hook the global "OBJECT_SHOW" and "SYSTEM_FOREGROUND" events (on the UI thread, it pumps messages)
+        InstallWinEventHooks();
 
         // Hook the event handlers for already-open windows
         var hasOpen = false;
@@ -929,6 +1007,66 @@ public class ExplorerWatcher : IHook
         lock (_closedWindowsLock)
             foreach (var window in _closedWindows) window.Restore = false;
     }
+    // Out-of-context WinEvent callbacks are delivered only to a thread that pumps messages,
+    // so the hooks live on the WPF UI thread (InitializeShellObjects runs on a thread-pool timer thread).
+    // All hook fields are touched only on the UI thread. The generation makes a queued call a no-op
+    // once a later install/uninstall was requested, so an old unhook cannot remove newer hooks.
+    private void InstallWinEventHooks()
+    {
+        var generation = Interlocked.Increment(ref _winEventHooksGeneration);
+        RunOnUiThread(() =>
+        {
+            if (generation != Volatile.Read(ref _winEventHooksGeneration)) return;
+
+            // Never double-install
+            UnhookWinEventsOnUiThread();
+
+            _eventObjectShowHookCallback = OnWindowShown;
+            _eventObjectShowHookId = WinApi.SetWinEventHook(WinApi.EVENT_OBJECT_SHOW, WinApi.EVENT_OBJECT_SHOW, 0, _eventObjectShowHookCallback, 0, 0, 0);
+
+            // Fires before OBJECT_SHOW for new windows
+            _eventSystemForegroundHookCallback = OnWindowForeground;
+            _eventSystemForegroundHookId = WinApi.SetWinEventHook(WinApi.EVENT_SYSTEM_FOREGROUND, WinApi.EVENT_SYSTEM_FOREGROUND, 0, _eventSystemForegroundHookCallback, 0, 0, 0);
+        });
+    }
+    private void UninstallWinEventHooks()
+    {
+        var generation = Interlocked.Increment(ref _winEventHooksGeneration);
+        RunOnUiThread(() =>
+        {
+            if (generation != Volatile.Read(ref _winEventHooksGeneration)) return;
+            UnhookWinEventsOnUiThread();
+        });
+    }
+    private void UnhookWinEventsOnUiThread()
+    {
+        if (_eventObjectShowHookCallback != null)
+        {
+            WinApi.UnhookWinEvent(_eventObjectShowHookId);
+            _eventObjectShowHookId = 0;
+            _eventObjectShowHookCallback = null;
+        }
+        if (_eventSystemForegroundHookCallback != null)
+        {
+            WinApi.UnhookWinEvent(_eventSystemForegroundHookId);
+            _eventSystemForegroundHookId = 0;
+            _eventSystemForegroundHookCallback = null;
+        }
+    }
+    private static void RunOnUiThread(Action action)
+    {
+        try
+        {
+            var dispatcher = System.Windows.Application.Current?.Dispatcher;
+            if (dispatcher == null || dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished) return;
+
+            if (dispatcher.CheckAccess())
+                action();
+            else
+                dispatcher.BeginInvoke(action);
+        }
+        catch {/* Dispatcher gone (shutting down), the hooks die with the process */}
+    }
     private void DisposeShellObjects()
     {
         PersistWindows();
@@ -939,11 +1077,7 @@ public class ExplorerWatcher : IHook
             _shellWindows.WindowRegistered -= _windowRegisteredHandler;
             _windowRegisteredHandler = null;
         }
-        if (_eventObjectShowHookCallback != null)
-        {
-            WinApi.UnhookWinEvent(_eventObjectShowHookId);
-            _eventObjectShowHookCallback = null;
-        }
+        UninstallWinEventHooks();
 
         // Unsubscribe from each InternetExplorer instance's events
         foreach (var (window, windowInfo) in _windowEntryDict)
@@ -956,6 +1090,8 @@ public class ExplorerWatcher : IHook
             Marshal.ReleaseComObject(window);
         }
         _windowEntryDict.Clear();
+        _registeredHWnds.Clear();
+        _shownHWnds.Clear();
 
         // Release the ShellWindows COM object
         Marshal.ReleaseComObject(_shellWindows);

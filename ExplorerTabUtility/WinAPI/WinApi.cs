@@ -14,6 +14,7 @@ namespace ExplorerTabUtility.WinAPI;
 public static class WinApi
 {
     public const int EVENT_OBJECT_SHOW = 0x8002;
+    public const int EVENT_SYSTEM_FOREGROUND = 0x0003;
 
     public const int WM_COMMAND = 0x111; // Send a command
 
@@ -37,6 +38,12 @@ public static class WinApi
 
     [DllImport("user32.dll")]
     public static extern bool UnhookWinEvent(nint hWinEventHook);
+
+    [DllImport("user32.dll")]
+    public static extern bool IsWindowVisible(nint hWnd);
+
+    [DllImport("user32.dll")]
+    public static extern bool IsWindow(nint hWnd);
 
     [DllImport("user32.dll")]
     public static extern nint GetParent(nint hWnd);
